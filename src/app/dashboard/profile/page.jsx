@@ -1,5 +1,5 @@
 import StudentDashboardLayout from "@/components/student/StudentDashboardLayout"
-import ProfileForm from "@/components/profile/ProfileForm"
+// import ProfileForm from "@/components/profile/ProfileForm"
 
 export default function StudentProfilePage() {
   // In a real app, you'd get this from authentication context
@@ -8,7 +8,7 @@ export default function StudentProfilePage() {
   return (
     <StudentDashboardLayout>
       <div className="space-y-6">
-        <ProfileForm userId={userId} />
+        {/* <ProfileForm userId={userId} /> */}
       </div>
     </StudentDashboardLayout>
   )
