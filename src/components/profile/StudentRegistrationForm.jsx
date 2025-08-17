@@ -6,9 +6,9 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Label } from "@/components/ui/label"
-import { Checkbox } from "@/components/ui/checkbox"
 import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Textarea } from "@/components/ui/textarea"
 import {
   Upload,
   User,
@@ -17,9 +17,10 @@ import {
   Phone,
   Mail,
   CalendarIcon,
-  Clock,
   FileText,
-  CreditCard,
+  Briefcase,
+  Globe,
+  Star,
 } from "lucide-react"
 import { toast } from "sonner"
 import Loader from "@/components/shared/Loader"
@@ -27,24 +28,6 @@ import { useAuth } from "../auth/AuthContext"
 import axios from "axios"
 import { format } from "date-fns"
 import { cn } from "@/lib/utils"
-
-// Mock data for qualifications and subjects - replace with actual API data
-const QUALIFICATIONS = [
-  { id: 1, name: "Matric" },
-  { id: 2, name: "Intermediate" },
-  { id: 3, name: "Bachelor's" },
-  { id: 4, name: "Master's" },
-  { id: 5, name: "PhD" },
-]
-
-const SUBJECTS = [
-  { id: 1, name: "Mathematics" },
-  { id: 2, name: "Physics" },
-  { id: 3, name: "Chemistry" },
-  { id: 4, name: "Biology" },
-  { id: 5, name: "English" },
-  { id: 6, name: "Computer Science" },
-]
 
 export default function StudentRegistrationForm() {
   const [formData, setFormData] = useState({
@@ -55,37 +38,68 @@ export default function StudentRegistrationForm() {
     email: "",
     phone: "",
     date_of_birth: "",
-    cnic: "",
-    gender: "", // New field
+    age: "",
+    gender: "",
+    bio: "",
 
     // Location
-    country: "Pakistan",
+    address: "",
     city: "",
-    area: "",
-    timezone: "",
+    country: "",
 
     // Academic Information
-    highest_qualification: "",
-    education_level: "", // New field
-    qualifications: [], // Array of IDs
-    subjects: [], // Array of IDs
-    institute: "",
-    employment_status: "", // New field
+    education_level: "",
+    institution: "",
+    field_of_study: "",
+    graduation_year: "",
+    gpa: "",
 
-    // Study Preferences
-    preffered_method: "", // Note: double 'f' as requested
-    days_to_study: "",
-    timing_to_study: "",
+    // Employment Information
+    employment_status: "",
+    current_job_title: "",
+    company: "",
+    career_goals: "",
+
+    // Social Profiles
+    linkedin_profile: "",
+    github_profile: "",
+    portfolio_website: "",
+
+    // Skills & Interests (as arrays)
+    skills: [],
+    interests: [],
+
+    // Preferences (as arrays)
+    preferred_learning_time: [],
+    notification_preferences: [],
+    language_preferences: [],
+    social_links: [],
 
     // File uploads
     profile_picture: null,
     cnic_or_form_b_picture: null,
     degree: null,
-    certificates: [], // Change from {} to []
+    certificates: [],
   })
 
   const [certificates, setCertificates] = useState([])
   const [newCertificateName, setNewCertificateName] = useState("")
+
+  // Skills and interests management
+  const [skillsList, setSkillsList] = useState([])
+  const [interestsList, setInterestsList] = useState([])
+  const [newSkill, setNewSkill] = useState("")
+  const [newInterest, setNewInterest] = useState("")
+
+  // Preferences management
+  const [preferredLearningTimes, setPreferredLearningTimes] = useState([])
+  const [notificationPrefs, setNotificationPrefs] = useState([])
+  const [languagePrefs, setLanguagePrefs] = useState([])
+  const [socialLinks, setSocialLinks] = useState([])
+  const [newPreferredTime, setNewPreferredTime] = useState("")
+  const [newNotificationPref, setNewNotificationPref] = useState("")
+  const [newLanguagePref, setNewLanguagePref] = useState("")
+  const [newSocialLink, setNewSocialLink] = useState("")
 
   const { user } = useAuth()
   const [loading, setLoading] = useState(true)
@@ -108,45 +122,81 @@ export default function StudentRegistrationForm() {
           return
         }
 
-        const response = await axios.get(`${API_BASE}/api/auth/profile`, {
+        const response = await axios.get(`${API_BASE}/api/auth/profile/update/`, {
           headers: { Authorization: `Bearer ${token}` },
         })
-
+        console.log("Profile Response:", response.data)
         if (response.status === 200) {
           const { data } = response.data
           setFormData({
-            full_name: data.name || data.full_name || "",
+            full_name: data.full_name || "",
             first_name: data.first_name || data.user?.first_name || "",
             last_name: data.last_name || data.user?.last_name || "",
             email: data.email || data.user?.email || "",
             phone: data.phone || "",
             date_of_birth: data.date_of_birth || "",
-            cnic: data.cnic || "",
+            age: data.age || "",
             gender: data.gender || data.user?.gender || "",
-            country: data.country || data.user?.country || "Pakistan",
+            bio: data.bio || "",
+            address: data.address || "",
             city: data.city || data.user?.city || "",
-            area: data.profile?.area || "",
-            timezone: data.profile?.timezone || "",
-            highest_qualification: data.profile?.highest_qualification || "",
+            country: data.country || data.user?.country || "",
             education_level: data.education_level || "",
-            qualifications: data.profile?.qualifications || [],
-            subjects: data.profile?.subjects || [],
-            institute: data.institution || data.profile?.institute || "",
+            institution: data.institution || "",
+            field_of_study: data.field_of_study || "",
+            graduation_year: data.graduation_year || "",
+            gpa: data.gpa || "",
             employment_status: data.employment_status || "",
-            preffered_method: data.profile?.preffered_method || "",
-            days_to_study: data.profile?.days_to_study || "",
-            timing_to_study: data.profile?.timing_to_study || "",
+            current_job_title: data.current_job_title || "",
+            company: data.company || "",
+            career_goals: data.career_goals || "",
+            linkedin_profile: data.linkedin_profile || "",
+            github_profile: data.github_profile || "",
+            portfolio_website: data.portfolio_website || "",
+            skills: [], // Change from {} to []
+            interests: [], // Change from {} to []
+            preferred_learning_time: data.preferred_learning_time || [],
+            notification_preferences: data.notification_preferences || [],
+            language_preferences: data.language_preferences || [],
+            social_links: data.social_links || [],
             profile_picture: null,
             cnic_or_form_b_picture: null,
             degree: null,
-            certificates: [], // Always initialize as array
+            certificates: data.certificates || [],
           })
 
           if (data.date_of_birth) {
             setDateOfBirth(new Date(data.date_of_birth))
           }
 
-          // Initialize certificates array if data exists
+          // Initialize skills and interests as arrays
+          if (data.skills) {
+            if (Array.isArray(data.skills)) {
+              setSkillsList(data.skills.map((skill, index) => ({ id: Date.now() + index, name: skill })))
+              setFormData((prev) => ({ ...prev, skills: data.skills }))
+            } else if (typeof data.skills === "object") {
+              const skillsArray = Object.keys(data.skills)
+              setSkillsList(skillsArray.map((skill, index) => ({ id: Date.now() + index, name: skill })))
+              setFormData((prev) => ({ ...prev, skills: skillsArray }))
+            }
+          }
+
+          if (data.interests) {
+            if (Array.isArray(data.interests)) {
+              setInterestsList(
+                data.interests.map((interest, index) => ({ id: Date.now() + index + 1000, name: interest })),
+              )
+              setFormData((prev) => ({ ...prev, interests: data.interests }))
+            } else if (typeof data.interests === "object") {
+              const interestsArray = Object.keys(data.interests)
+              setInterestsList(
+                interestsArray.map((interest, index) => ({ id: Date.now() + index + 1000, name: interest })),
+              )
+              setFormData((prev) => ({ ...prev, interests: interestsArray }))
+            }
+          }
+
+          // Initialize certificates
           if (data.certificates) {
             let certArray = []
             if (Array.isArray(data.certificates)) {
@@ -156,8 +206,50 @@ export default function StudentRegistrationForm() {
                 file: null,
                 uploaded_file_url: cert.file_url || null,
               }))
+            } else if (typeof data.certificates === "object") {
+              certArray = Object.keys(data.certificates).map((name, index) => ({
+                id: Date.now() + index,
+                name,
+                file: null,
+                uploaded_file_url: data.certificates[name],
+              }))
             }
             setCertificates(certArray)
+          }
+
+          // Initialize preferences as arrays
+          if (data.preferred_learning_time) {
+            if (Array.isArray(data.preferred_learning_time)) {
+              setPreferredLearningTimes(
+                data.preferred_learning_time.map((time, index) => ({ id: Date.now() + index + 2000, name: time })),
+              )
+              setFormData((prev) => ({ ...prev, preferred_learning_time: data.preferred_learning_time }))
+            }
+          }
+
+          if (data.notification_preferences) {
+            if (Array.isArray(data.notification_preferences)) {
+              setNotificationPrefs(
+                data.notification_preferences.map((pref, index) => ({ id: Date.now() + index + 3000, name: pref })),
+              )
+              setFormData((prev) => ({ ...prev, notification_preferences: data.notification_preferences }))
+            }
+          }
+
+          if (data.language_preferences) {
+            if (Array.isArray(data.language_preferences)) {
+              setLanguagePrefs(
+                data.language_preferences.map((lang, index) => ({ id: Date.now() + index + 4000, name: lang })),
+              )
+              setFormData((prev) => ({ ...prev, language_preferences: data.language_preferences }))
+            }
+          }
+
+          if (data.social_links) {
+            if (Array.isArray(data.social_links)) {
+              setSocialLinks(data.social_links.map((link, index) => ({ id: Date.now() + index + 5000, name: link })))
+              setFormData((prev) => ({ ...prev, social_links: data.social_links }))
+            }
           }
         } else {
           toast.error("Failed to load profile data.")
@@ -170,8 +262,8 @@ export default function StudentRegistrationForm() {
       }
     }
 
-    if (user?.id) {
-      fetchProfile()
+    if (user?.id && user.role === "student") {
+     fetchProfile()
     } else {
       setLoading(false)
     }
@@ -209,13 +301,166 @@ export default function StudentRegistrationForm() {
     }
   }
 
+  // Skills management - change to array format
+  const handleAddSkill = () => {
+    if (newSkill.trim()) {
+      const skill = { id: Date.now(), name: newSkill.trim() }
+      setSkillsList([...skillsList, skill])
+      setNewSkill("")
+
+      // Update formData skills as array
+      setFormData((prev) => ({
+        ...prev,
+        skills: [...prev.skills, skill.name],
+      }))
+    }
+  }
+
+  const handleRemoveSkill = (skillId) => {
+    const skillToRemove = skillsList.find((skill) => skill.id === skillId)
+    const updatedSkillsList = skillsList.filter((skill) => skill.id !== skillId)
+    setSkillsList(updatedSkillsList)
+
+    if (skillToRemove) {
+      setFormData((prev) => ({
+        ...prev,
+        skills: updatedSkillsList.map((s) => s.name),
+      }))
+    }
+  }
+
+  // Interests management - change to array format
+  const handleAddInterest = () => {
+    if (newInterest.trim()) {
+      const interest = { id: Date.now(), name: newInterest.trim() }
+      setInterestsList([...interestsList, interest])
+      setNewInterest("")
+
+      // Update formData interests as array
+      setFormData((prev) => ({
+        ...prev,
+        interests: [...prev.interests, interest.name],
+      }))
+    }
+  }
+
+  const handleRemoveInterest = (interestId) => {
+    const interestToRemove = interestsList.find((interest) => interest.id === interestId)
+    const updatedInterestsList = interestsList.filter((interest) => interest.id !== interestId)
+    setInterestsList(updatedInterestsList)
+
+    if (interestToRemove) {
+      setFormData((prev) => ({
+        ...prev,
+        interests: updatedInterestsList.map((i) => i.name),
+      }))
+    }
+  }
+
+  // Preferred Learning Time management
+  const handleAddPreferredTime = () => {
+    if (newPreferredTime.trim()) {
+      const time = { id: Date.now(), name: newPreferredTime.trim() }
+      setPreferredLearningTimes([...preferredLearningTimes, time])
+      setNewPreferredTime("")
+
+      setFormData((prev) => ({
+        ...prev,
+        preferred_learning_time: [...prev.preferred_learning_time, time.name],
+      }))
+    }
+  }
+
+  const handleRemovePreferredTime = (timeId) => {
+    const updatedTimes = preferredLearningTimes.filter((time) => time.id !== timeId)
+    setPreferredLearningTimes(updatedTimes)
+
+    setFormData((prev) => ({
+      ...prev,
+      preferred_learning_time: updatedTimes.map((t) => t.name),
+    }))
+  }
+
+  // Notification Preferences management
+  const handleAddNotificationPref = () => {
+    if (newNotificationPref.trim()) {
+      const pref = { id: Date.now(), name: newNotificationPref.trim() }
+      setNotificationPrefs([...notificationPrefs, pref])
+      setNewNotificationPref("")
+
+      setFormData((prev) => ({
+        ...prev,
+        notification_preferences: [...prev.notification_preferences, pref.name],
+      }))
+    }
+  }
+
+  const handleRemoveNotificationPref = (prefId) => {
+    const updatedPrefs = notificationPrefs.filter((pref) => pref.id !== prefId)
+    setNotificationPrefs(updatedPrefs)
+
+    setFormData((prev) => ({
+      ...prev,
+      notification_preferences: updatedPrefs.map((p) => p.name),
+    }))
+  }
+
+  // Language Preferences management
+  const handleAddLanguagePref = () => {
+    if (newLanguagePref.trim()) {
+      const lang = { id: Date.now(), name: newLanguagePref.trim() }
+      setLanguagePrefs([...languagePrefs, lang])
+      setNewLanguagePref("")
+
+      setFormData((prev) => ({
+        ...prev,
+        language_preferences: [...prev.language_preferences, lang.name],
+      }))
+    }
+  }
+
+  const handleRemoveLanguagePref = (langId) => {
+    const updatedLangs = languagePrefs.filter((lang) => lang.id !== langId)
+    setLanguagePrefs(updatedLangs)
+
+    setFormData((prev) => ({
+      ...prev,
+      language_preferences: updatedLangs.map((l) => l.name),
+    }))
+  }
+
+  // Social Links management
+  const handleAddSocialLink = () => {
+    if (newSocialLink.trim()) {
+      const link = { id: Date.now(), name: newSocialLink.trim() }
+      setSocialLinks([...socialLinks, link])
+      setNewSocialLink("")
+
+      setFormData((prev) => ({
+        ...prev,
+        social_links: [...prev.social_links, link.name],
+      }))
+    }
+  }
+
+  const handleRemoveSocialLink = (linkId) => {
+    const updatedLinks = socialLinks.filter((link) => link.id !== linkId)
+    setSocialLinks(updatedLinks)
+
+    setFormData((prev) => ({
+      ...prev,
+      social_links: updatedLinks.map((l) => l.name),
+    }))
+  }
+
+  // Certificate management
   const handleAddCertificate = () => {
     if (newCertificateName.trim()) {
       const newCertificate = {
         id: Date.now(),
         name: newCertificateName.trim(),
         file: null,
-        uploaded_file_url: null, // For storing the uploaded file URL
+        uploaded_file_url: null,
       }
       setCertificates([...certificates, newCertificate])
       setNewCertificateName("")
@@ -230,6 +475,63 @@ export default function StudentRegistrationForm() {
     setCertificates(certificates.filter((cert) => cert.id !== certificateId))
   }
 
+  const arrayToObjectTrue = (arr = []) => {
+    // convert ["Email","SMS"] => { Email: true, SMS: true }
+    if (!Array.isArray(arr)) return {}
+    return arr.reduce((acc, cur) => {
+      if (typeof cur === "string" && cur.trim()) acc[cur.trim()] = true
+      return acc
+    }, {})
+  }
+
+  const socialLinksArrayToObject = (arr = []) => {
+    // Accept entries like "twitter:https://..." or "Twitter|https://..." or just "Twitter"
+    // Output object { twitter: "https://...", Twitter2: "" }
+    if (!Array.isArray(arr)) return {}
+    const obj = {}
+    arr.forEach((entry, i) => {
+      if (!entry || typeof entry !== "string") return
+      const trimmed = entry.trim()
+      // try separators :, |, =>
+      let key, val
+      if (trimmed.includes("://")) {
+        // if URL present, try to split by first space or pipe/colon
+        const parts = trimmed.split(/\s+|\||:/)
+        if (parts.length >= 2) {
+          key = parts[0].replace(/[:\s|]+$/g, "")
+          val = parts.slice(1).join(":").trim()
+        } else {
+          // only a URL present -> use index-based key
+          key = `link_${i + 1}`
+          val = trimmed
+        }
+      } else if (trimmed.includes("|")) {
+        const parts = trimmed.split("|")
+        key = parts[0].trim()
+        val = parts[1] ? parts[1].trim() : ""
+      } else if (trimmed.includes(":")) {
+        const idx = trimmed.indexOf(":")
+        key = trimmed.slice(0, idx).trim()
+        val = trimmed.slice(idx + 1).trim()
+      } else if (trimmed.includes("=>")) {
+        const parts = trimmed.split("=>")
+        key = parts[0].trim()
+        val = parts[1] ? parts[1].trim() : ""
+      } else {
+        key = trimmed
+        val = ""
+      }
+
+      // normalize key (avoid duplicates)
+      let normalizedKey = key || `link_${i + 1}`
+      let suffix = 1
+      while (obj.hasOwnProperty(normalizedKey)) {
+        normalizedKey = `${key}_${suffix++}`
+      }
+      obj[normalizedKey] = val
+    })
+    return obj
+  }
   const handleSubmit = async (e) => {
     e.preventDefault()
     setIsSubmitting(true)
@@ -238,66 +540,197 @@ export default function StudentRegistrationForm() {
       const token = localStorage.getItem("access_token")
       const data = new FormData()
 
-      // Add all regular form fields
+      // Build payload fields (but handle notification_preferences & social_links specially)
+      // We'll iterate keys but skip these special fields
+      const skipKeys = ["certificates", "notification_preferences", "social_links"]
       Object.keys(formData).forEach((key) => {
-        if (key !== "certificates" && formData[key] !== null && formData[key] !== "") {
-          if (Array.isArray(formData[key])) {
-            // Handle arrays by appending each item
-            formData[key].forEach((item) => {
-              data.append(`${key}[]`, item)
-            })
-          } else {
-            data.append(key, formData[key])
+        if (skipKeys.includes(key)) return
+
+        const val = formData[key]
+        if (val === null || val === "") return
+
+        // Files
+        if (val instanceof File) {
+          data.append(key, val)
+          return
+        }
+
+        // Arrays -> send as JSON string
+        if (Array.isArray(val)) {
+          if (val.length > 0) {
+            data.append(key, JSON.stringify(val))
           }
+          return
         }
+
+        // Objects (non-file) -> stringify
+        if (typeof val === "object") {
+          data.append(key, JSON.stringify(val))
+          return
+        }
+
+        // otherwise primitive
+        data.append(key, val)
       })
 
-      // Prepare certificates metadata and files
+      // notification_preferences: backend expects a dict -> convert array -> object
+      const notifObj = arrayToObjectTrue(formData.notification_preferences || notificationPrefs || [])
+      // If user had local `notificationPrefs` state, prefer that fallback
+      data.append("notification_preferences", JSON.stringify(notifObj))
+
+      // social_links: convert array -> object
+      const socialObj = socialLinksArrayToObject(formData.social_links || socialLinks || [])
+      data.append("social_links", JSON.stringify(socialObj))
+
+      // Certificates: metadata + files
+      // We'll append each certificate file (if present) under the same field name `certificates_files`
+      // and send certificates metadata list as `certificates`
       const certificatesMetadata = []
+      let fileAppendIndex = 0
       certificates.forEach((cert, index) => {
-        // Add certificate file if exists
-        if (cert.file) {
-          data.append(`certificate_file_${index}`, cert.file)
+        const hasFile = cert.file instanceof File
+        if (hasFile) {
+          // append file(s) as repeated field name (certificates_files)
+          data.append("certificates_files", cert.file)
+          certificatesMetadata.push({
+            name: cert.name || `Certificate ${index + 1}`,
+            file_index: fileAppendIndex,
+            uploaded_at: new Date().toISOString(),
+          })
+          fileAppendIndex += 1
+        } else {
+          // if there's an already uploaded_file_url or just a name
+          certificatesMetadata.push({
+            name: cert.name || `Certificate ${index + 1}`,
+            file_index: null,
+            uploaded_at: cert.uploaded_file_url ? null : new Date().toISOString(),
+            uploaded_file_url: cert.uploaded_file_url || null,
+          })
         }
-
-        // Add certificate metadata
-        certificatesMetadata.push({
-          name: cert.name,
-          file_index: cert.file ? index : null,
-          uploaded_at: new Date().toISOString(),
-        })
       })
 
-      // Add certificates metadata as JSON
-      data.append("certificates", JSON.stringify(certificatesMetadata))
+      if (certificatesMetadata.length > 0) {
+        data.append("certificates", JSON.stringify(certificatesMetadata))
+      }
 
-      // Submit the form
-      const response = await fetch(`${API_BASE}/api/auth/profile/update/`, {
-        method: "PUT",
-        headers: { Authorization: `Bearer ${token}` },
-        body: data,
-      })
+      // Debug log (optional) — remove in production
+      // for (const [k, v] of data.entries()) console.log(k, v)
 
-      if (response.ok) {
+      // POST to student profile endpoint (get_or_create in your backend will create or update)
+      const response = await axios.post(
+        `${API_BASE}/api/auth/student-profile/create/`,
+        data,
+        {
+          headers: {
+            Authorization: token ? `Bearer ${token}` : "",
+            // DO NOT set Content-Type — browser sets boundary for FormData
+          },
+        }
+      )
+
+      if (response.status === 201 || response.status === 200) {
         toast.success("Profile updated successfully!")
       } else {
-        const errorData = await response.json()
-        toast.error(`Failed to update profile: ${JSON.stringify(errorData)}`)
+        toast.error("Unexpected response while updating profile.")
+        console.error("Unexpected response", response)
       }
     } catch (error) {
-      toast.error("An error occurred while updating your profile.")
-      console.error(error)
+      // DRF commonly responds with { errors: { field: [..] } } or plain data
+      if (error.response && error.response.data) {
+        console.error("Backend error:", error.response.data)
+        toast.error("Failed to update profile: " + (error.response.data.message || JSON.stringify(error.response.data)))
+      } else {
+        console.error(error)
+        toast.error("An error occurred while updating your profile.")
+      }
     } finally {
       setIsSubmitting(false)
     }
   }
+
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault()
+  //   setIsSubmitting(true)
+
+  //   try {
+  //     const token = localStorage.getItem("access_token")
+  //     const data = new FormData()
+
+  //     // Add all regular form fields
+  //     Object.keys(formData).forEach((key) => {
+  //       if (key !== "certificates" && formData[key] !== null && formData[key] !== "") {
+  //         if (Array.isArray(formData[key])) {
+  //           // Handle arrays - send as JSON string for Django
+  //           if (formData[key].length > 0) {
+  //             data.append(key, JSON.stringify(formData[key]))
+  //           }
+  //         } else if (typeof formData[key] === "object" && formData[key] !== null && !(formData[key] instanceof File)) {
+  //           // Handle object fields (if any remain)
+  //           data.append(key, JSON.stringify(formData[key]))
+  //         } else if (formData[key] instanceof File) {
+  //           // Handle file uploads
+  //           data.append(key, formData[key])
+  //         } else {
+  //           // Handle regular fields
+  //           data.append(key, formData[key])
+  //         }
+  //       }
+  //     })
+
+  //     // Prepare certificates metadata and files
+  //     const certificatesMetadata = []
+  //     certificates.forEach((cert, index) => {
+  //       if (cert.file) {
+  //         data.append(`certificate_file_${index}`, cert.file)
+  //       }
+
+  //       certificatesMetadata.push({
+  //         name: cert.name,
+  //         file_index: cert.file ? index : null,
+  //         uploaded_at: new Date().toISOString(),
+  //       })
+  //     })
+
+  //     // Add certificates metadata as JSON
+  //     if (certificatesMetadata.length > 0) {
+  //       data.append("certificates", JSON.stringify(certificatesMetadata))
+  //     }
+
+  //     // Debug: Log what we're sending
+  //     console.log("Form data being sent:")
+  //     for (const [key, value] of data.entries()) {
+  //       console.log(key, value)
+  //     }
+
+  //     // Submit the form
+  //     const response = await axios.post(`${API_BASE}/api/auth/teacher-profile/create/`, data, {
+  //       headers: {
+  //         Authorization: `Bearer ${token}`,
+  //         // Don't set Content-Type header - let browser set it for FormData
+  //       },
+  //     })
+
+  //     if (response.status === 201) {
+  //       toast.success("Profile updated successfully!")
+  //     } else {
+  //       const errorData = await response.data
+  //       console.error("Error response:", errorData)
+  //       toast.error(`Failed to update profile: ${JSON.stringify(errorData)}`)
+  //     }
+  //   } catch (error) {
+  //     toast.error("An error occurred while updating your profile.")
+  //     console.error(error)
+  //   } finally {
+  //     setIsSubmitting(false)
+  //   }
+  // }
 
   if (loading) {
     return <Loader text="Loading Profile..." />
   }
 
   return (
-    <Card className="max-w-4xl mx-auto">
+    <Card className="max-w-6xl mx-auto">
       <CardHeader>
         <CardTitle className="text-2xl">Student Profile</CardTitle>
       </CardHeader>
@@ -376,6 +809,20 @@ export default function StudentRegistrationForm() {
                 />
               </div>
               <div className="space-y-2">
+                <Label htmlFor="age">Age</Label>
+                <Input
+                  id="age"
+                  name="age"
+                  type="number"
+                  value={formData.age}
+                  onChange={handleInputChange}
+                  placeholder="Age"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
                 <Label className="flex items-center gap-2">
                   <CalendarIcon className="h-4 w-4" />
                   Date of Birth
@@ -398,23 +845,6 @@ export default function StudentRegistrationForm() {
                   </PopoverContent>
                 </Popover>
               </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="cnic" className="flex items-center gap-2">
-                  <CreditCard className="h-4 w-4" />
-                  CNIC
-                </Label>
-                <Input
-                  id="cnic"
-                  name="cnic"
-                  value={formData.cnic}
-                  onChange={handleInputChange}
-                  placeholder="CNIC Number"
-                  required
-                />
-              </div>
               <div className="space-y-2">
                 <Label htmlFor="gender">Gender</Label>
                 <Select onValueChange={(value) => handleSelectChange("gender", value)} value={formData.gender}>
@@ -429,6 +859,18 @@ export default function StudentRegistrationForm() {
                 </Select>
               </div>
             </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="bio">Bio</Label>
+              <Textarea
+                id="bio"
+                name="bio"
+                value={formData.bio}
+                onChange={handleInputChange}
+                placeholder="Tell us about yourself..."
+                rows={3}
+              />
+            </div>
           </div>
 
           {/* Location */}
@@ -437,7 +879,21 @@ export default function StudentRegistrationForm() {
               <MapPin className="h-5 w-5" />
               Location
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="address">Address</Label>
+                <Input
+                  id="address"
+                  name="address"
+                  value={formData.address}
+                  onChange={handleInputChange}
+                  placeholder="Full Address"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="city">City</Label>
+                <Input id="city" name="city" value={formData.city} onChange={handleInputChange} placeholder="City" />
+              </div>
               <div className="space-y-2">
                 <Label htmlFor="country">Country</Label>
                 <Input
@@ -447,56 +903,6 @@ export default function StudentRegistrationForm() {
                   onChange={handleInputChange}
                   placeholder="Country"
                 />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="city">City</Label>
-                <Input id="city" name="city" value={formData.city} onChange={handleInputChange} placeholder="City" />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="area">Area</Label>
-                <Input
-                  id="area"
-                  name="area"
-                  value={formData.area}
-                  onChange={handleInputChange}
-                  placeholder="Area/Locality"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="timezone">Timezone</Label>
-                <Select onValueChange={(value) => handleSelectChange("timezone", value)} value={formData.timezone}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select Timezone" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="GMT-12:00">GMT-12:00</SelectItem>
-                    <SelectItem value="GMT-11:00">GMT-11:00</SelectItem>
-                    <SelectItem value="GMT-10:00">GMT-10:00</SelectItem>
-                    <SelectItem value="GMT-09:00">GMT-09:00</SelectItem>
-                    <SelectItem value="GMT-08:00">GMT-08:00</SelectItem>
-                    <SelectItem value="GMT-07:00">GMT-07:00</SelectItem>
-                    <SelectItem value="GMT-06:00">GMT-06:00</SelectItem>
-                    <SelectItem value="GMT-05:00">GMT-05:00</SelectItem>
-                    <SelectItem value="GMT-04:00">GMT-04:00</SelectItem>
-                    <SelectItem value="GMT-03:00">GMT-03:00</SelectItem>
-                    <SelectItem value="GMT-02:00">GMT-02:00</SelectItem>
-                    <SelectItem value="GMT-01:00">GMT-01:00</SelectItem>
-                    <SelectItem value="GMT+00:00">GMT+00:00</SelectItem>
-                    <SelectItem value="GMT+01:00">GMT+01:00</SelectItem>
-                    <SelectItem value="GMT+02:00">GMT+02:00</SelectItem>
-                    <SelectItem value="GMT+03:00">GMT+03:00</SelectItem>
-                    <SelectItem value="GMT+04:00">GMT+04:00</SelectItem>
-                    <SelectItem value="GMT+05:00">GMT+05:00</SelectItem>
-                    <SelectItem value="GMT+05:30">GMT+05:30</SelectItem>
-                    <SelectItem value="GMT+06:00">GMT+06:00</SelectItem>
-                    <SelectItem value="GMT+07:00">GMT+07:00</SelectItem>
-                    <SelectItem value="GMT+08:00">GMT+08:00</SelectItem>
-                    <SelectItem value="GMT+09:00">GMT+09:00</SelectItem>
-                    <SelectItem value="GMT+10:00">GMT+10:00</SelectItem>
-                    <SelectItem value="GMT+11:00">GMT+11:00</SelectItem>
-                    <SelectItem value="GMT+12:00">GMT+12:00</SelectItem>
-                  </SelectContent>
-                </Select>
               </div>
             </div>
           </div>
@@ -508,16 +914,6 @@ export default function StudentRegistrationForm() {
               Academic Information
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="highest_qualification">Highest Qualification</Label>
-                <Input
-                  id="highest_qualification"
-                  name="highest_qualification"
-                  value={formData.highest_qualification}
-                  onChange={handleInputChange}
-                  placeholder="Highest Qualification"
-                />
-              </div>
               <div className="space-y-2">
                 <Label htmlFor="education_level">Education Level</Label>
                 <Select
@@ -537,17 +933,60 @@ export default function StudentRegistrationForm() {
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="institute">Institute/University</Label>
+                <Label htmlFor="institution">Institution</Label>
                 <Input
-                  id="institute"
-                  name="institute"
-                  value={formData.institute}
+                  id="institution"
+                  name="institution"
+                  value={formData.institution}
                   onChange={handleInputChange}
-                  placeholder="Institute/University"
+                  placeholder="Institution/University"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="field_of_study">Field of Study</Label>
+                <Input
+                  id="field_of_study"
+                  name="field_of_study"
+                  value={formData.field_of_study}
+                  onChange={handleInputChange}
+                  placeholder="Field of Study"
                 />
               </div>
             </div>
 
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="graduation_year">Graduation Year</Label>
+                <Input
+                  id="graduation_year"
+                  name="graduation_year"
+                  type="number"
+                  value={formData.graduation_year}
+                  onChange={handleInputChange}
+                  placeholder="Graduation Year"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="gpa">GPA</Label>
+                <Input
+                  id="gpa"
+                  name="gpa"
+                  type="number"
+                  step="0.01"
+                  value={formData.gpa}
+                  onChange={handleInputChange}
+                  placeholder="GPA"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Employment Information */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold flex items-center gap-2">
+              <Briefcase className="h-5 w-5" />
+              Employment Information
+            </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="employment_status">Employment Status</Label>
@@ -567,89 +1006,322 @@ export default function StudentRegistrationForm() {
                   </SelectContent>
                 </Select>
               </div>
+              <div className="space-y-2">
+                <Label htmlFor="current_job_title">Current Job Title</Label>
+                <Input
+                  id="current_job_title"
+                  name="current_job_title"
+                  value={formData.current_job_title}
+                  onChange={handleInputChange}
+                  placeholder="Current Job Title"
+                />
+              </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-3">
-                <Label>Qualifications</Label>
-                <div className="space-y-2 max-h-40 overflow-y-auto border rounded-md p-3">
-                  {QUALIFICATIONS.map((qual) => (
-                    <div key={qual.id} className="flex items-center space-x-2">
-                      <Checkbox
-                        id={`qual-${qual.id}`}
-                        checked={formData.qualifications.includes(qual.id)}
-                        onCheckedChange={(checked) => handleArrayChange("qualifications", qual.id, checked)}
-                      />
-                      <Label htmlFor={`qual-${qual.id}`} className="text-sm font-normal">
-                        {qual.name}
-                      </Label>
-                    </div>
-                  ))}
-                </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="company">Company</Label>
+                <Input
+                  id="company"
+                  name="company"
+                  value={formData.company}
+                  onChange={handleInputChange}
+                  placeholder="Company Name"
+                />
               </div>
+            </div>
 
-              <div className="space-y-3">
-                <Label>Subjects</Label>
-                <div className="space-y-2 max-h-40 overflow-y-auto border rounded-md p-3">
-                  {SUBJECTS.map((subject) => (
-                    <div key={subject.id} className="flex items-center space-x-2">
-                      <Checkbox
-                        id={`subject-${subject.id}`}
-                        checked={formData.subjects.includes(subject.id)}
-                        onCheckedChange={(checked) => handleArrayChange("subjects", subject.id, checked)}
-                      />
-                      <Label htmlFor={`subject-${subject.id}`} className="text-sm font-normal">
-                        {subject.name}
-                      </Label>
-                    </div>
-                  ))}
-                </div>
+            <div className="space-y-2">
+              <Label htmlFor="career_goals">Career Goals</Label>
+              <Textarea
+                id="career_goals"
+                name="career_goals"
+                value={formData.career_goals}
+                onChange={handleInputChange}
+                placeholder="Describe your career goals..."
+                rows={3}
+              />
+            </div>
+          </div>
+
+          {/* Social Profiles */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold flex items-center gap-2">
+              <Globe className="h-5 w-5" />
+              Social Profiles
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="linkedin_profile">LinkedIn Profile</Label>
+                <Input
+                  id="linkedin_profile"
+                  name="linkedin_profile"
+                  value={formData.linkedin_profile}
+                  onChange={handleInputChange}
+                  placeholder="LinkedIn URL"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="github_profile">GitHub Profile</Label>
+                <Input
+                  id="github_profile"
+                  name="github_profile"
+                  value={formData.github_profile}
+                  onChange={handleInputChange}
+                  placeholder="GitHub URL"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="portfolio_website">Portfolio Website</Label>
+                <Input
+                  id="portfolio_website"
+                  name="portfolio_website"
+                  value={formData.portfolio_website}
+                  onChange={handleInputChange}
+                  placeholder="Portfolio URL"
+                />
               </div>
             </div>
           </div>
 
-          {/* Study Preferences */}
+          {/* Skills & Interests */}
           <div className="space-y-4">
             <h3 className="text-lg font-semibold flex items-center gap-2">
-              <Clock className="h-5 w-5" />
-              Study Preferences
+              <Star className="h-5 w-5" />
+              Skills & Interests
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="preffered_method">Preferred Method</Label>
-                <Select
-                  onValueChange={(value) => handleSelectChange("preffered_method", value)}
-                  value={formData.preffered_method}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select Method" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="online">Online</SelectItem>
-                    <SelectItem value="offline">Offline</SelectItem>
-                    <SelectItem value="hybrid">Hybrid</SelectItem>
-                  </SelectContent>
-                </Select>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Skills */}
+              <div className="space-y-3">
+                <Label>Skills</Label>
+                <div className="flex gap-2">
+                  <Input
+                    value={newSkill}
+                    onChange={(e) => setNewSkill(e.target.value)}
+                    placeholder="Add a skill"
+                    className="flex-1"
+                  />
+                  <Button type="button" onClick={handleAddSkill} variant="outline">
+                    Add
+                  </Button>
+                </div>
+                {skillsList.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {skillsList.map((skill) => (
+                      <div
+                        key={skill.id}
+                        className="flex items-center gap-1 bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-sm"
+                      >
+                        {skill.name}
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleRemoveSkill(skill.id)}
+                          className="h-4 w-4 p-0 hover:bg-blue-200"
+                        >
+                          ×
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="days_to_study">Days to Study</Label>
-                <Input
-                  id="days_to_study"
-                  name="days_to_study"
-                  value={formData.days_to_study}
-                  onChange={handleInputChange}
-                  placeholder="e.g., Monday, Wednesday, Friday"
-                />
+
+              {/* Interests */}
+              <div className="space-y-3">
+                <Label>Interests</Label>
+                <div className="flex gap-2">
+                  <Input
+                    value={newInterest}
+                    onChange={(e) => setNewInterest(e.target.value)}
+                    placeholder="Add an interest"
+                    className="flex-1"
+                  />
+                  <Button type="button" onClick={handleAddInterest} variant="outline">
+                    Add
+                  </Button>
+                </div>
+                {interestsList.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {interestsList.map((interest) => (
+                      <div
+                        key={interest.id}
+                        className="flex items-center gap-1 bg-green-100 text-green-800 px-2 py-1 rounded-md text-sm"
+                      >
+                        {interest.name}
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleRemoveInterest(interest.id)}
+                          className="h-4 w-4 p-0 hover:bg-green-200"
+                        >
+                          ×
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="timing_to_study">Timing to Study</Label>
-                <Input
-                  id="timing_to_study"
-                  name="timing_to_study"
-                  value={formData.timing_to_study}
-                  onChange={handleInputChange}
-                  placeholder="e.g., 9:00 AM - 11:00 AM"
-                />
+            </div>
+          </div>
+
+          {/* Preferences */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold flex items-center gap-2">
+              <Star className="h-5 w-5" />
+              Preferences
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Preferred Learning Time */}
+              <div className="space-y-3">
+                <Label>Preferred Learning Time</Label>
+                <div className="flex gap-2">
+                  <Input
+                    value={newPreferredTime}
+                    onChange={(e) => setNewPreferredTime(e.target.value)}
+                    placeholder="e.g., Morning, Evening"
+                    className="flex-1"
+                  />
+                  <Button type="button" onClick={handleAddPreferredTime} variant="outline">
+                    Add
+                  </Button>
+                </div>
+                {preferredLearningTimes.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {preferredLearningTimes.map((time) => (
+                      <div
+                        key={time.id}
+                        className="flex items-center gap-1 bg-purple-100 text-purple-800 px-2 py-1 rounded-md text-sm"
+                      >
+                        {time.name}
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleRemovePreferredTime(time.id)}
+                          className="h-4 w-4 p-0 hover:bg-purple-200"
+                        >
+                          ×
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Language Preferences */}
+              <div className="space-y-3">
+                <Label>Language Preferences</Label>
+                <div className="flex gap-2">
+                  <Input
+                    value={newLanguagePref}
+                    onChange={(e) => setNewLanguagePref(e.target.value)}
+                    placeholder="e.g., English, Spanish"
+                    className="flex-1"
+                  />
+                  <Button type="button" onClick={handleAddLanguagePref} variant="outline">
+                    Add
+                  </Button>
+                </div>
+                {languagePrefs.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {languagePrefs.map((lang) => (
+                      <div
+                        key={lang.id}
+                        className="flex items-center gap-1 bg-orange-100 text-orange-800 px-2 py-1 rounded-md text-sm"
+                      >
+                        {lang.name}
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleRemoveLanguagePref(lang.id)}
+                          className="h-4 w-4 p-0 hover:bg-orange-200"
+                        >
+                          ×
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Notification Preferences */}
+              <div className="space-y-3">
+                <Label>Notification Preferences</Label>
+                <div className="flex gap-2">
+                  <Input
+                    value={newNotificationPref}
+                    onChange={(e) => setNewNotificationPref(e.target.value)}
+                    placeholder="e.g., Email, SMS"
+                    className="flex-1"
+                  />
+                  <Button type="button" onClick={handleAddNotificationPref} variant="outline">
+                    Add
+                  </Button>
+                </div>
+                {notificationPrefs.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {notificationPrefs.map((pref) => (
+                      <div
+                        key={pref.id}
+                        className="flex items-center gap-1 bg-yellow-100 text-yellow-800 px-2 py-1 rounded-md text-sm"
+                      >
+                        {pref.name}
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleRemoveNotificationPref(pref.id)}
+                          className="h-4 w-4 p-0 hover:bg-yellow-200"
+                        >
+                          ×
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Social Links */}
+              <div className="space-y-3">
+                <Label>Additional Social Links</Label>
+                <div className="flex gap-2">
+                  <Input
+                    value={newSocialLink}
+                    onChange={(e) => setNewSocialLink(e.target.value)}
+                    placeholder="e.g., Twitter, Instagram"
+                    className="flex-1"
+                  />
+                  <Button type="button" onClick={handleAddSocialLink} variant="outline">
+                    Add
+                  </Button>
+                </div>
+                {socialLinks.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {socialLinks.map((link) => (
+                      <div
+                        key={link.id}
+                        className="flex items-center gap-1 bg-indigo-100 text-indigo-800 px-2 py-1 rounded-md text-sm"
+                      >
+                        {link.name}
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleRemoveSocialLink(link.id)}
+                          className="h-4 w-4 p-0 hover:bg-indigo-200"
+                        >
+                          ×
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -778,7 +1450,7 @@ export default function StudentRegistrationForm() {
           </div>
 
           <Button type="submit" disabled={isSubmitting} className="w-full">
-            {isSubmitting ? <Loader text="Saving..." /> : "Save Changes"}
+            {isSubmitting ? "Saving..." : "Save Changes"}
           </Button>
         </form>
       </CardContent>

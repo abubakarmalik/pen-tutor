@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent } from "@/components/ui/card"
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Loader2, Eye, EyeOff, AlertCircle } from "lucide-react"
 import { toast } from "sonner"
@@ -17,14 +16,13 @@ import LoginImage from "@/assets/images/auth/loginImage.png"
 export default function AuthLayout() {
   const router = useRouter()
 
-  // Form states - maintaining existing structure
+  // Form states
   const [isSignUp, setIsSignUp] = useState(false)
-  const [userType, setUserType] = useState("student")
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [loading, setLoading] = useState(false)
 
-  // Form data - updated to match API requirements
+  // Form data - removed role since we're not sending user type
   const [formData, setFormData] = useState({
     email: "",
     username: "",
@@ -32,7 +30,6 @@ export default function AuthLayout() {
     last_name: "",
     password: "",
     password_confirm: "",
-    role: "student",
   })
 
   // Form validation errors
@@ -128,9 +125,6 @@ export default function AuthLayout() {
     return isValid
   }
 
-  /**
-   * Enhanced input change handler with logging
-   */
   const handleInputChange = (field, value) => {
     console.log(
       `📝 AuthLayout: Input changed - ${field}:`,
@@ -152,14 +146,10 @@ export default function AuthLayout() {
     }
   }
 
-  /**
-   * Enhanced form submission handler with comprehensive logging
-   */
   const handleSubmit = async (e) => {
     e.preventDefault()
     console.log("🚀 AuthLayout: Form submission started")
     console.log("📋 AuthLayout: Submission type:", isSignUp ? "SIGN_UP" : "SIGN_IN")
-    console.log("👤 AuthLayout: User type:", userType)
 
     if (!validateForm()) {
       console.log("❌ AuthLayout: Form validation failed, aborting submission")
@@ -175,13 +165,7 @@ export default function AuthLayout() {
       const endpoint = isSignUp ? `${API_BASE}/api/auth/register/` : `${API_BASE}/api/auth/login/`
       console.log("📡 AuthLayout: API endpoint:", endpoint)
 
-      // Prepare request body with user type included
-      const requestBody = {
-        ...formData,
-        role: userType, // Ensure user type is included in the request
-      }
-
-      // For login, we only need email and password
+      // Request body: send formData (no role/userType included)
       if (!isSignUp) {
         const loginBody = {
           email: formData.email,
@@ -215,7 +199,7 @@ export default function AuthLayout() {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(requestBody),
+          body: JSON.stringify(formData),
         })
 
         console.log("📥 AuthLayout: Sign up response status:", response.status)
@@ -246,9 +230,6 @@ export default function AuthLayout() {
     }
   }
 
-  /**
-   * Helper function to handle successful authentication
-   */
   const handleSuccessfulAuth = (data, isRegistration) => {
     console.log("🎉 AuthLayout: Processing successful authentication")
 
@@ -275,20 +256,14 @@ export default function AuthLayout() {
 
     toast.success("Welcome back!")
 
-    // Redirect based on user role
-    // const redirectPath = userData.role === "teacher" ? "/tutor/dashboard" : "/student/dashboard"
     const redirectPath = "/profile"
     console.log("🚀 AuthLayout: Redirecting to:", redirectPath)
     router.push(redirectPath)
   }
 
-  /**
-   * Helper function to handle authentication errors
-   */
   const handleAuthError = (data) => {
     console.log("🔍 AuthLayout: Processing authentication error")
 
-    // Handle specific error messages
     const errorMessage =
       data.message ||
       data.error ||
@@ -298,14 +273,12 @@ export default function AuthLayout() {
 
     console.log("📢 AuthLayout: Error message to display:", errorMessage)
 
-    // Handle field-specific errors
     if (data.errors || data.field_errors) {
       const fieldErrors = data.errors || data.field_errors
       console.log("📋 AuthLayout: Field-specific errors:", fieldErrors)
       setErrors(fieldErrors)
     }
 
-    // Check for email verification error
     if (errorMessage.toLowerCase().includes("verify") || errorMessage.toLowerCase().includes("verification")) {
       toast.error("Email not verified", {
         description: "Please check your email and verify your account before logging in.",
@@ -313,18 +286,6 @@ export default function AuthLayout() {
     } else {
       toast.error(errorMessage)
     }
-  }
-
-  /**
-   * Enhanced user type change handler
-   */
-  const handleUserTypeChange = (newUserType) => {
-    console.log("🔄 AuthLayout: User type changed from", userType, "to", newUserType)
-    setUserType(newUserType)
-    setFormData((prev) => ({
-      ...prev,
-      role: newUserType,
-    }))
   }
 
   return (
@@ -347,26 +308,6 @@ export default function AuthLayout() {
                 </h2>
                 <p className="text-gray-600">{isSignUp ? "Join our learning community" : "Sign in to your account"}</p>
               </div>
-
-              {/* User Type Selection - Only show during signup */}
-              {isSignUp && (
-                <Tabs value={userType} onValueChange={handleUserTypeChange} className="w-full mb-6">
-                  <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger
-                      value="student"
-                      className="data-[state=active]:bg-secondary data-[state=active]:text-white"
-                    >
-                      Student
-                    </TabsTrigger>
-                    <TabsTrigger
-                      value="teacher"
-                      className="data-[state=active]:bg-primary data-[state=active]:text-white"
-                    >
-                      Teacher
-                    </TabsTrigger>
-                  </TabsList>
-                </Tabs>
-              )}
 
               {/* Error Display */}
               {errors.general && (
@@ -496,9 +437,7 @@ export default function AuthLayout() {
                 <Button
                   type="submit"
                   disabled={loading}
-                  className={`w-full ${
-                    userType === "student" ? "bg-secondary hover:bg-secondary" : "bg-primary hover:bg-primary"
-                  }`}
+                  className="w-full bg-primary hover:bg-primary"
                 >
                   {loading ? (
                     <>
@@ -515,7 +454,7 @@ export default function AuthLayout() {
 
               <div className="text-center mt-6">
                 <p className="text-gray-600">
-                  {isSignUp ? "Already have an account?" : "Don't have an account?"}{" "}
+                  {isSignUp ? "Already have an account?" : "Don't have an account?"} {" "}
                   <Button
                     variant="link"
                     onClick={() => {
@@ -528,7 +467,7 @@ export default function AuthLayout() {
                       setIsSignUp(!isSignUp)
                       setErrors({}) // Clear errors when switching modes
                     }}
-                    className={`p-0 ${userType === "student" ? "text-secondary" : "text-primary"}`}
+                    className="p-0 text-primary"
                     disabled={loading}
                   >
                     {isSignUp ? "Sign In" : "Sign Up"}
@@ -538,13 +477,7 @@ export default function AuthLayout() {
             </div>
 
             {/* Right Side - Image */}
-            <div
-              className={`relative overflow-hidden rounded-r-2xl ${
-                userType === "student"
-                  ? "bg-gradient-to-br from-secondary/90 to-secondary"
-                  : "bg-gradient-to-br from-primary/90 to-primary"
-              }`}
-            >
+            <div className={`relative overflow-hidden rounded-r-2xl bg-gradient-to-br from-primary/90 to-primary`}>
               <div className="absolute inset-0 flex items-center justify-center">
                 <Image
                   src={LoginImage}

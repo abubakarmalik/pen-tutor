@@ -34,7 +34,12 @@ function TutorDashboard() {
       try {
         setLoading(true)
 
-        const teacherResponse = await axios.get(`${API_BASE}/api/teacher/`)
+        const teacherResponse = await axios.get(`${API_BASE}/api/teacher/`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+            },
+          })
         console.log("Teacher Response:", teacherResponse.data.data)
 
         if (teacherResponse.status === 200) {
@@ -78,11 +83,11 @@ function TutorDashboard() {
   }, [])
 
   const handleVideoClick = (videoId) => {
-    router.push(`${API_BASE}/videos/${videoId}`)
+    router.push(`/tutor/videos/${videoId}`)
   }
 
   const handleCourseClick = (courseId) => {
-    router.push(`${API_BASE}/courses/${courseId}`)
+    router.push(`/courses/details/${courseId}`)
   }
 
   if (loading) {
@@ -96,18 +101,18 @@ function TutorDashboard() {
     )
   }
 
-  // if (!teacherData?.teacher) {
-  //   return (
-  //     <div className="flex items-center justify-center min-h-screen">
-  //       <div className="text-center">
-  //         <p className="text-red-600">Failed to load dashboard data</p>
-  //         <Button onClick={() => window.location.reload()} className="mt-4">
-  //           Retry
-  //         </Button>
-  //       </div>
-  //     </div>
-  //   )
-  // }
+  if (!teacherData?.teacher) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <p className="text-red-600">Failed to load dashboard data</p>
+          <Button onClick={() => window.location.reload()} className="mt-4">
+            Retry
+          </Button>
+        </div>
+      </div>
+    )
+  }
 
   const { teacher, statistics, videos, courses } = teacherData
   console.log("Teacher Data:", teacher)
@@ -406,7 +411,7 @@ function TutorDashboard() {
                 <CardContent className="space-y-4">
                   <div className="text-center">
                     <Avatar className="h-20 w-20 mx-auto mb-4">
-                      <AvatarImage src={teacherData?.avatar || "/placeholder.svg"} alt={teacherData?.teacher_name} />
+                      <AvatarImage src={teacherData?.profile_picture || "/placeholder.svg"} alt={teacherData?.teacher_name} />
                       <AvatarFallback className="bg-[#313D6A] text-white text-lg">
                         {teacherData?.teacher_name
                           .split(" ")

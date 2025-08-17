@@ -43,7 +43,7 @@ export default function CreateCoursePage() {
       const response = await axios.post(`${API_BASE}/api/teacher/courses/`, {
         title: formData.title,
         description: formData.description,
-        price: formData.price,
+        price: formData.courseType === "free" ? 0 : formData.price,
         course_type: formData.courseType,
         is_active: formData.isActive,
         has_live_classes: formData.hasLiveClasses,

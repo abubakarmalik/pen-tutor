@@ -10,6 +10,7 @@ import stdBags from "@/assets/images/student_with_bags.png"
 import lady from "@/assets/images/lady.png"
 import classroom from "@/assets/images/classroom.jpg"
 import studentSmiling from "@/assets/images/std.png"
+import Link from "next/link"
 
 export default function HomePage() {
   return (
@@ -21,7 +22,7 @@ export default function HomePage() {
             <div className="space-y-6">
               <h1 className="text-4xl lg:text-5xl font-bold text-gray-900">Welcome To Pen Tutor</h1>
               <div className="bg-yellow-500 text-white px-4 py-2 rounded-lg inline-block">
-                <span className="font-semibold">Student Query Form</span>
+                <Link href="/profile" className="font-semibold">Become our part</Link>
               </div>
             </div>
             <div className="relative flex justify-center items-center">
@@ -39,7 +40,7 @@ export default function HomePage() {
       </section>
 
       {/* Query Form Section */}
-      <section className="bg-slate-800 py-12">
+      {/* <section className="bg-slate-800 py-12">
         <div className="container mx-auto px-4">
           <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
             <div className="space-y-4">
@@ -58,6 +59,7 @@ export default function HomePage() {
               <Input placeholder="Verify information" className="bg-white" />
             </div>
           </div>
+          <div></div>
           <div className="text-center mt-8">
             <div className="bg-yellow-500 w-12 h-12 rounded-full flex items-center justify-center mx-auto">
               <span className="text-gray-900 font-bold">
@@ -66,12 +68,37 @@ export default function HomePage() {
             </div>
           </div>
         </div>
+      </section> */}
+      <section className="bg-slate-800 py-12">
+        <div className="container mx-auto px-4">
+          <div className="max-w-3xl mx-auto text-center text-white">
+            <h2 className="text-2xl lg:text-3xl font-extrabold">Need help with studies? Get a trusted tutor in 24 hours.</h2>
+            <p className="mt-4 text-gray-200 text-lg">Browse verified tutors, compare reviews, and book a session that fits your schedule — online or in-person.</p>
+
+            <div className="mt-6 flex items-center justify-center space-x-4">
+              <Link href="/our-tutors">
+                <Button className="bg-yellow-500 hover:bg-yellow-600 text-white px-6 py-3 rounded-lg inline-flex items-center">
+                  <span>Search Tutors</span>
+                  <FaArrowRightLong className="ml-2" />
+                </Button>
+              </Link>
+
+              <Link href="/" className="inline-flex items-center text-sm text-gray-300 hover:text-white">
+              {/* <Link href="/how-it-works" className="inline-flex items-center text-sm text-gray-300 hover:text-white"> */}
+                <span>How it works</span>
+                <FaArrowRightLong className="ml-2" />
+              </Link>
+            </div>
+
+            <div className="mt-6 text-sm text-gray-400">No sign-up required to browse. Safe, vetted, and local tutors.</div>
+          </div>
+        </div>
       </section>
 
       {/* For Students Section */}
       <section className="py-16 bg-gray-50">
         <div className="container mx-auto px-4">
-          <div className="grid lg:grid-cols-2 gap-12 items-end">
+          <div className="grid lg:grid-cols-2 gap-12 items-end justify-items-center">
             <div className="relative flex justify-center items-end min-h-[300px] order-2 lg:order-1">
               <div className="absolute h-[200px] w-[200px] lg:h-[250px] lg:w-[250px] bg-yellow-400 rounded-2xl transform rotate-3"></div>
               <div className="absolute h-[200px] w-[200px] lg:h-[250px] lg:w-[250px] bg-yellow-500 rounded-2xl transform -rotate-3"></div>
@@ -105,7 +132,7 @@ export default function HomePage() {
       {/* For Tutors Section */}
       <section className="py-16">
         <div className="container mx-auto px-4">
-          <div className="grid lg:grid-cols-2 gap-12 items-end">
+          <div className="grid lg:grid-cols-2 gap-12 items-end justify-items-center">
             <div className="space-y-6">
               <h2 className="text-3xl lg:text-4xl font-bold text-slate-800">For Tutors</h2>
               <p className="text-gray-600 text-lg">Search Thousands Of Tutors</p>

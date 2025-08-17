@@ -99,11 +99,11 @@ export default function TutorCoursesPage() {
   }
 
   const handleEdit = (courseId) => {
-    router.push(`/course/edit/${courseId}`)
+    router.push(`/courses/edit/${courseId}`)
   }
 
   const handleCreateNew = () => {
-    router.push("/course/create")
+    router.push("/courses/create")
   }
 
   if (loading) {

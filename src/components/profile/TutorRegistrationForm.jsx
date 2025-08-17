@@ -222,116 +222,109 @@ export default function TutorRegistrationForm() {
     const fetchProfile = async () => {
       try {
         const token = localStorage.getItem("access_token")
-        if (!token || !user.id) {
-          toast.error("Authentication required.")
+        if (!token || !user?.id) {
+          // Don't spam toast on page load for unauthenticated users — just stop loading
+          setLoading(false)
           return
         }
-        const response = await axios.get(`${API_BASE}/api/auth/profile/`, {
+        const response = await axios.get(`${API_BASE}/api/auth/profile/update/`, {
           headers: { Authorization: `Bearer ${token}` },
         })
-        if (response.status === 200) {
-          const { data } = response.data
-          setFormData({
-            // Base Information
-            full_name: data.full_name || "",
-            email: data.email || "",
-            age: data.age || "",
-            date_of_birth: data.date_of_birth || "",
-            gender: data.gender || "",
-            phone: data.phone || data.mobile_number_1 || "",
-            address: data.address || "",
-            city: data.city || "",
-            country: data.country || "",
-            bio: data.bio || "",
-            profile_picture: null,
 
-            // Professional Information
-            headline: data.headline || "",
-            expertise_areas: data.expertise_areas || [],
-            expertise_level: data.expertise_level || "expert",
-            years_of_experience: data.years_of_experience || 0,
-            employment_type: data.employment_type || "part_time",
-            department: data.department || "",
-            hourly_rate: data.hourly_rate || "",
+        // be defensive about response shape
+        const payload = response.data
+        const data = payload?.data ?? payload
 
-            // Documents
-            resume: null,
-            degree_certificates: null,
-            id_proof: null,
+        const normalizeArray = (v) => (Array.isArray(v) ? v : [])
+        const normalizeObject = (v) => (v && typeof v === "object" && !Array.isArray(v) ? v : {})
 
-            // Qualifications
-            education: data.education || [],
-            certifications: data.certifications || [],
-            awards: data.awards || [],
-            publications: data.publications || [],
+        setFormData((prev) => ({
+          ...prev,
+          full_name: data.full_name ?? "",
+          email: data.email ?? "",
+          age: data.age ?? "",
+          date_of_birth: data.date_of_birth ?? "",
+          gender: data.gender ?? "",
+          phone: data.phone ?? data.mobile_number_1 ?? "",
+          address: data.address ?? "",
+          city: data.city ?? "",
+          country: data.country ?? "",
+          bio: data.bio ?? "",
+          profile_picture: null,
 
-            // Course-Related
-            teaching_style: data.teaching_style || "",
-            languages_spoken: data.languages_spoken || [],
+          headline: data.headline ?? "",
+          expertise_areas: normalizeArray(data.expertise_areas),
+          expertise_level: data.expertise_level ?? "expert",
+          years_of_experience: data.years_of_experience ?? 0,
+          employment_type: data.employment_type ?? "part_time",
+          department: data.department ?? "",
+          hourly_rate: data.hourly_rate ?? "",
 
-            // Professional Links
-            linkedin_profile: data.linkedin_profile || "",
-            github_profile: data.github_profile || "",
-            personal_website: data.personal_website || "",
-            youtube_channel: data.youtube_channel || "",
-            social_links: data.social_links || {},
+          resume: null,
+          degree_certificates: null,
+          id_proof: null,
 
-            // Availability & Preferences
-            availability_schedule: data.availability_schedule || {},
-            preferred_teaching_methods: data.preferred_teaching_methods || [],
-            course_categories: data.course_categories || [],
-            notification_preferences: data.notification_preferences || { email: true, sms: false },
+          education: normalizeArray(data.education),
+          certifications: normalizeArray(data.certifications),
+          awards: normalizeArray(data.awards),
+          publications: normalizeArray(data.publications),
 
-            // Legacy fields
-            mobile_number_1: data.mobile_number_1 || "",
-            mobile_number_2: data.mobile_number_2 || "",
-            area: data.area || "",
-            location: data.location || "",
-            organization_name: data.organization_name || "",
-            designation: data.designation || "",
-            level: data.level || "",
-            member_since: data.member_since || "",
-            salary_package: data.salary_package || "",
-            timings_required: data.timings_required || "",
-            experience: data.experience || "",
-            areas_to_teach: data.areas_to_teach || "",
-            can_teach_online: data.can_teach_online || false,
-            minimum_qualification_required: data.minimum_qualification_required || "",
-            experience_required: data.experience_required || "",
-            subjects: data.subjects || [],
-            qualifications: data.qualifications || [],
-            cnic: data.cnic || "",
-            cnic_front: null,
-            cnic_back: null,
-            degree_image: null,
-          })
+          teaching_style: data.teaching_style ?? "",
+          languages_spoken: normalizeArray(data.languages_spoken),
 
-          if (data.education && data.education.length > 0) {
-            setEducationEntries(data.education)
-          }
-          if (data.certifications && data.certifications.length > 0) {
-            setCertificationEntries(data.certifications)
-          }
-          if (data.awards && data.awards.length > 0) {
-            setAwardEntries(data.awards)
-          }
-          if (data.publications && data.publications.length > 0) {
-            setPublicationEntries(data.publications)
-          }
-          if (data.social_links) {
-            setSocialLinksEntries(data.social_links)
-          }
-        } else {
-          toast.error("Failed to load profile data.")
-        }
+          linkedin_profile: data.linkedin_profile ?? "",
+          github_profile: data.github_profile ?? "",
+          personal_website: data.personal_website ?? "",
+          youtube_channel: data.youtube_channel ?? "",
+          social_links: normalizeObject(data.social_links),
+
+          availability_schedule: normalizeObject(data.availability_schedule),
+          preferred_teaching_methods: normalizeArray(data.preferred_teaching_methods),
+          course_categories: normalizeArray(data.course_categories),
+          notification_preferences: normalizeObject(data.notification_preferences) || { email: true, sms: false },
+
+          mobile_number_1: data.mobile_number_1 ?? "",
+          mobile_number_2: data.mobile_number_2 ?? "",
+          area: data.area ?? "",
+          location: data.location ?? "",
+          organization_name: data.organization_name ?? "",
+          designation: data.designation ?? "",
+          level: data.level ?? "",
+          member_since: data.member_since ?? "",
+          salary_package: data.salary_package ?? "",
+          timings_required: data.timings_required ?? "",
+          experience: data.experience ?? "",
+          areas_to_teach: data.areas_to_teach ?? "",
+          can_teach_online: data.can_teach_online ?? false,
+          minimum_qualification_required: data.minimum_qualification_required ?? "",
+          experience_required: data.experience_required ?? "",
+          subjects: normalizeArray(data.subjects),
+          qualifications: normalizeArray(data.qualifications),
+          cnic: data.cnic ?? "",
+          cnic_front: null,
+          cnic_back: null,
+          degree_image: null,
+        }))
+
+        // Set dynamic arrays defensively
+        if (data.education && Array.isArray(data.education) && data.education.length > 0) setEducationEntries(data.education)
+        if (data.certifications && Array.isArray(data.certifications) && data.certifications.length > 0)
+          setCertificationEntries(data.certifications)
+        if (data.awards && Array.isArray(data.awards) && data.awards.length > 0) setAwardEntries(data.awards)
+        if (data.publications && Array.isArray(data.publications) && data.publications.length > 0)
+          setPublicationEntries(data.publications)
+        if (data.social_links && typeof data.social_links === "object") setSocialLinksEntries(data.social_links)
       } catch (error) {
-        toast.error("Something went wrong while loading profile data.")
         console.error(error)
+        toast.error("Something went wrong while loading profile data.")
       } finally {
         setLoading(false)
       }
     }
+
+    //  user?.role === "teacher" && fetchProfile()
     fetchProfile()
+
   }, [user?.id])
 
   const validateCNIC = (cnic) => {
@@ -339,15 +332,16 @@ export default function TutorRegistrationForm() {
     return cnicPattern.test(cnic)
   }
 
+  // validate on blur instead of every keystroke
+  const handleCNICBlur = (e) => {
+    const { value } = e.target
+    if (value && !validateCNIC(value)) {
+      toast.error("CNIC format should be xxxxx-xxxxxxx-x")
+    }
+  }
+
   const handleInputChange = (e) => {
     const { name, value } = e.target
-
-    if (name === "cnic") {
-      if (!validateCNIC(value) && value !== "") {
-        toast.error("CNIC format should be xxxxx-xxxxxxx-x")
-      }
-    }
-
     setFormData((prev) => ({ ...prev, [name]: value }))
   }
 
@@ -360,7 +354,7 @@ export default function TutorRegistrationForm() {
   }
 
   const handleFileChange = (e, fieldName) => {
-    const file = e.target.files[0]
+    const file = e.target.files?.[0]
     if (file) {
       setFormData((prev) => ({ ...prev, [fieldName]: file }))
       setFileNames((prev) => ({ ...prev, [fieldName]: file.name }))
@@ -370,9 +364,9 @@ export default function TutorRegistrationForm() {
   const handleArrayFieldToggle = (fieldName, value) => {
     setFormData((prev) => ({
       ...prev,
-      [fieldName]: prev[fieldName].includes(value)
-        ? prev[fieldName].filter((item) => item !== value)
-        : [...prev[fieldName], value],
+      [fieldName]: prev[fieldName] && Array.isArray(prev[fieldName]) ?
+        (prev[fieldName].includes(value) ? prev[fieldName].filter((item) => item !== value) : [...prev[fieldName], value])
+        : [value],
     }))
   }
 
@@ -389,59 +383,69 @@ export default function TutorRegistrationForm() {
     }))
   }
 
-  const handleDynamicArrayChange = (entries, setEntries, index, field, value) => {
+  // more robust dynamic handlers (explicit field name)
+  const handleDynamicArrayChange = (fieldName, entries, setEntries, index, field, value) => {
     const newEntries = [...entries]
     newEntries[index] = { ...newEntries[index], [field]: value }
     setEntries(newEntries)
 
-    // Update formData
-    const fieldName =
-      entries === educationEntries
-        ? "education"
-        : entries === certificationEntries
-          ? "certifications"
-          : entries === awardEntries
-            ? "awards"
-            : "publications"
     setFormData((prev) => ({ ...prev, [fieldName]: newEntries }))
   }
 
-  const addDynamicEntry = (entries, setEntries, template) => {
-    setEntries([...entries, template])
+  const addDynamicEntry = (fieldName, entries, setEntries, template) => {
+    const newEntries = [...entries, template]
+    setEntries(newEntries)
+    setFormData((prev) => ({ ...prev, [fieldName]: newEntries }))
   }
 
-  const removeDynamicEntry = (entries, setEntries, index) => {
+  const removeDynamicEntry = (fieldName, entries, setEntries, index) => {
     const newEntries = entries.filter((_, i) => i !== index)
     setEntries(newEntries)
-
-    // Update formData
-    const fieldName =
-      entries === educationEntries
-        ? "education"
-        : entries === certificationEntries
-          ? "certifications"
-          : entries === awardEntries
-            ? "awards"
-            : "publications"
     setFormData((prev) => ({ ...prev, [fieldName]: newEntries }))
   }
 
   const handleSubjectToggle = (subjectId) => {
     setFormData((prev) => ({
       ...prev,
-      subjects: prev.subjects.includes(subjectId)
-        ? prev.subjects.filter((id) => id !== subjectId)
-        : [...prev.subjects, subjectId],
+      subjects: prev.subjects && Array.isArray(prev.subjects)
+        ? (prev.subjects.includes(subjectId) ? prev.subjects.filter((id) => id !== subjectId) : [...prev.subjects, subjectId])
+        : [subjectId],
     }))
   }
 
   const handleQualificationToggle = (qualificationId) => {
     setFormData((prev) => ({
       ...prev,
-      qualifications: prev.qualifications.includes(qualificationId)
-        ? prev.qualifications.filter((id) => id !== qualificationId)
-        : [...prev.qualifications, qualificationId],
+      qualifications: prev.qualifications && Array.isArray(prev.qualifications)
+        ? (prev.qualifications.includes(qualificationId) ? prev.qualifications.filter((id) => id !== qualificationId) : [...prev.qualifications, qualificationId])
+        : [qualificationId],
     }))
+  }
+
+  const appendIf = (form, key, value) => {
+    if (value === null || value === undefined) return
+    // Files
+    if (typeof File !== "undefined" && value instanceof File) {
+      form.append(key, value)
+      return
+    }
+    // FileList
+    if (typeof FileList !== "undefined" && value instanceof FileList) {
+      Array.from(value).forEach((f) => form.append(key, f))
+      return
+    }
+    // Arrays
+    if (Array.isArray(value)) {
+      if (value.length) form.append(key, JSON.stringify(value))
+      return
+    }
+    // Objects -> stringify if not empty
+    if (typeof value === "object") {
+      if (Object.keys(value).length) form.append(key, JSON.stringify(value))
+      return
+    }
+    // booleans & primitives
+    form.append(key, String(value))
   }
 
   const handleSubmit = async (e) => {
@@ -462,42 +466,125 @@ export default function TutorRegistrationForm() {
 
     const data = new FormData()
 
+    // required JSON fields we MUST send (force presence)
+    const requiredJsonKeys = [
+      "expertise_areas",
+      "education",
+      "languages_spoken",
+      "availability_schedule",
+      "preferred_teaching_methods",
+      "course_categories",
+    ]
+
+    const ensureJson = {
+      expertise_areas: Array.isArray(formData.expertise_areas) ? formData.expertise_areas : [],
+      education:
+        Array.isArray(formData.education) && formData.education.length > 0
+          ? formData.education
+          : Array.isArray(educationEntries) && educationEntries.length > 0
+            ? educationEntries
+            : [],
+      languages_spoken: Array.isArray(formData.languages_spoken) ? formData.languages_spoken : [],
+      availability_schedule:
+        formData.availability_schedule && typeof formData.availability_schedule === "object"
+          ? formData.availability_schedule
+          : {},
+      preferred_teaching_methods: Array.isArray(formData.preferred_teaching_methods)
+        ? formData.preferred_teaching_methods
+        : [],
+      course_categories: Array.isArray(formData.course_categories) ? formData.course_categories : [],
+    }
+
+    // Append everything except the required JSON keys and notification/social (we'll set them explicitly)
     Object.keys(formData).forEach((key) => {
-      if (formData[key] !== null && formData[key] !== "" && formData[key] !== undefined) {
-        if (Array.isArray(formData[key]) || typeof formData[key] === "object") {
-          if (formData[key] instanceof File) {
-            data.append(key, formData[key])
+      if (requiredJsonKeys.includes(key)) return
+      if (key === "notification_preferences" || key === "social_links") return
+      appendIf(data, key, formData[key])
+    })
+
+    // Now explicitly set the required JSON fields (stringified)
+    // Object.entries(ensureJson).forEach(([k, v]) => {
+    //   data.set(k, JSON.stringify(v))
+    // })
+    // --- set required JSON fields in two formats (JSON string + repeated [] entries) ---
+    Object.entries(ensureJson).forEach(([k, v]) => {
+      // Always include a JSON string (safe for JSONField parsing)
+      data.set(k, JSON.stringify(v))
+
+      // Also append repeated keys for array parsing on some backends
+      if (Array.isArray(v)) {
+        v.forEach((item) => {
+          // For primitives append item directly, for objects stringify each item
+          if (item === null || item === undefined) return
+          if (typeof item === "object") {
+            data.append(`${k}[]`, JSON.stringify(item))
           } else {
-            data.append(key, JSON.stringify(formData[key]))
+            data.append(`${k}[]`, String(item))
           }
-        } else if (typeof formData[key] === "boolean") {
-          data.append(key, formData[key].toString())
-        } else {
-          data.append(key, formData[key])
-        }
+        })
+      } else if (typeof v === "object" && v !== null) {
+        // For availability_schedule (object), some servers accept flattened keys like:
+        // availability_schedule[Monday] = JSON.stringify([...])
+        // We'll also add keys for each day to help parsers that expect nested form syntax.
+        Object.entries(v).forEach(([subKey, subVal]) => {
+          if (subVal === null || subVal === undefined) return
+          // subVal may be an array of timeslots -> append as JSON string and as repeated items
+          data.append(`${k}[${subKey}]`, JSON.stringify(subVal))
+          if (Array.isArray(subVal)) {
+            subVal.forEach((slot) => {
+              data.append(`${k}[${subKey}][]`, String(slot))
+            })
+          }
+        })
       }
     })
 
+
+    // Ensure notification_preferences & social_links are JSON strings
+    if (formData.notification_preferences && typeof formData.notification_preferences === "object") {
+      data.set("notification_preferences", JSON.stringify(formData.notification_preferences))
+    } else {
+      data.set("notification_preferences", JSON.stringify({ email: true, sms: false }))
+    }
+    if (formData.social_links && typeof formData.social_links === "object") {
+      data.set("social_links", JSON.stringify(formData.social_links))
+    } else {
+      data.set("social_links", JSON.stringify({}))
+    }
+
+    // Debug: inspect what is sent (open console -> Network to verify)
+    for (const pair of data.entries()) {
+      console.log(pair[0], ":", pair[1])
+    }
+
     try {
       const token = localStorage.getItem("access_token")
-      const response = await axios.put(`${API_BASE}/api/auth/profile/update/`, data, {
+      const response = await axios.post(`${API_BASE}/api/auth/teacher-profile/create/`, data, {
         headers: { Authorization: `Bearer ${token}` },
+        
       })
 
-      if (response.status === 200) {
+      if (response.status === 201 || response.status === 200) {
         toast.success("Profile updated successfully!")
         router.push("/tutor/dashboard")
       } else {
-        const errorData = await response.data
+        const errorData = response.data
         toast.error(`Failed to update profile: ${JSON.stringify(errorData)}`)
       }
     } catch (error) {
-      toast.error("An error occurred while updating your profile.")
-      console.error(error)
+      if (error.response && error.response.data) {
+        console.error("Backend error:", error.response.data)
+        const errs = error.response.data.errors ?? error.response.data
+        toast.error(`Failed: ${typeof errs === "string" ? errs : JSON.stringify(errs)}`)
+      } else {
+        console.error(error)
+        toast.error("An error occurred while updating your profile.")
+      }
     } finally {
       setIsSubmitting(false)
     }
   }
+
 
   if (loading) {
     return <Loader text="Loading Profile..." />
@@ -560,6 +647,7 @@ export default function TutorRegistrationForm() {
                 name="cnic"
                 value={formData.cnic}
                 onChange={handleInputChange}
+                onBlur={handleCNICBlur}
                 placeholder="CNIC (xxxxx-xxxxxxx-x)"
               />
             </div>
@@ -707,7 +795,7 @@ export default function TutorRegistrationForm() {
                       type="button"
                       variant="outline"
                       size="sm"
-                      onClick={() => removeDynamicEntry(educationEntries, setEducationEntries, index)}
+                      onClick={() => removeDynamicEntry("education", educationEntries, setEducationEntries, index)}
                     >
                       Remove
                     </Button>
@@ -718,20 +806,14 @@ export default function TutorRegistrationForm() {
                     placeholder="Institution"
                     value={entry.institution || ""}
                     onChange={(e) =>
-                      handleDynamicArrayChange(
-                        educationEntries,
-                        setEducationEntries,
-                        index,
-                        "institution",
-                        e.target.value,
-                      )
+                      handleDynamicArrayChange("education", educationEntries, setEducationEntries, index, "institution", e.target.value)
                     }
                   />
                   <Input
                     placeholder="Degree"
                     value={entry.degree || ""}
                     onChange={(e) =>
-                      handleDynamicArrayChange(educationEntries, setEducationEntries, index, "degree", e.target.value)
+                      handleDynamicArrayChange("education", educationEntries, setEducationEntries, index, "degree", e.target.value)
                     }
                   />
                   <Input
@@ -739,7 +821,7 @@ export default function TutorRegistrationForm() {
                     type="number"
                     value={entry.year || ""}
                     onChange={(e) =>
-                      handleDynamicArrayChange(educationEntries, setEducationEntries, index, "year", e.target.value)
+                      handleDynamicArrayChange("education", educationEntries, setEducationEntries, index, "year", e.target.value)
                     }
                   />
                 </div>
@@ -748,9 +830,7 @@ export default function TutorRegistrationForm() {
             <Button
               type="button"
               variant="outline"
-              onClick={() =>
-                addDynamicEntry(educationEntries, setEducationEntries, { institution: "", degree: "", year: "" })
-              }
+              onClick={() => addDynamicEntry("education", educationEntries, setEducationEntries, { institution: "", degree: "", year: "" })}
             >
               Add Education
             </Button>
@@ -770,7 +850,7 @@ export default function TutorRegistrationForm() {
                       type="button"
                       variant="outline"
                       size="sm"
-                      onClick={() => removeDynamicEntry(certificationEntries, setCertificationEntries, index)}
+                      onClick={() => removeDynamicEntry("certifications", certificationEntries, setCertificationEntries, index)}
                     >
                       Remove
                     </Button>
@@ -781,13 +861,7 @@ export default function TutorRegistrationForm() {
                     placeholder="Certification Name"
                     value={entry.name || ""}
                     onChange={(e) =>
-                      handleDynamicArrayChange(
-                        certificationEntries,
-                        setCertificationEntries,
-                        index,
-                        "name",
-                        e.target.value,
-                      )
+                      handleDynamicArrayChange("certifications", certificationEntries, setCertificationEntries, index, "name", e.target.value)
                     }
                   />
                   <Input
@@ -795,13 +869,7 @@ export default function TutorRegistrationForm() {
                     type="number"
                     value={entry.year || ""}
                     onChange={(e) =>
-                      handleDynamicArrayChange(
-                        certificationEntries,
-                        setCertificationEntries,
-                        index,
-                        "year",
-                        e.target.value,
-                      )
+                      handleDynamicArrayChange("certifications", certificationEntries, setCertificationEntries, index, "year", e.target.value)
                     }
                   />
                 </div>
@@ -810,7 +878,7 @@ export default function TutorRegistrationForm() {
             <Button
               type="button"
               variant="outline"
-              onClick={() => addDynamicEntry(certificationEntries, setCertificationEntries, { name: "", year: "" })}
+              onClick={() => addDynamicEntry("certifications", certificationEntries, setCertificationEntries, { name: "", year: "" })}
             >
               Add Certification
             </Button>
@@ -1024,9 +1092,7 @@ export default function TutorRegistrationForm() {
                   className="hidden"
                 />
                 <label htmlFor="degree_certificates" className="cursor-pointer">
-                  <p className="text-gray-500">
-                    {fileNames.degree_certificates || "Click to upload degree certificates"}
-                  </p>
+                  <p className="text-gray-500">{fileNames.degree_certificates || "Click to upload degree certificates"}</p>
                 </label>
               </div>
             </div>

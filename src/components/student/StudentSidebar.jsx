@@ -30,6 +30,16 @@ const navigationItems = [
 export default function StudentSidebar() {
   const pathname = usePathname()
 
+//   now can you create a "/student/dashboard/"...... 
+// keep the design pattern same... and divide page in different  components..
+// this is Response from "/api/students/" in pasted-text.txt...
+// and response from "/api/students/courses/" is pasted-text-2.txt..
+
+// the dashboard should also have a modal functionality to fetch and display all the available notifications from "/notifications/"
+// other routes for notifications are ["/notifications/delete-all-read/", "/notifications/mark-all-as-read/", "/notifications/mark-as-read/", "/notifications/recent/", "/notifications/stats/", /notifications/unread-count/" , "/notifications/{notification_id}/delete/", "/notifications/{id}/"]
+
+// example response for  "/notifications/{id}/" is pasted-text-3.txt..
+
   return (
     <div className="w-64 bg-white shadow-lg h-screen flex flex-col">
       {/* User Profile Section */}

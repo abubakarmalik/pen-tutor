@@ -269,7 +269,7 @@ export default function CourseDetailPage() {
                       <div className="flex flex-col sm:flex-row gap-6">
                         <Avatar className="h-24 w-24">
                           <AvatarImage
-                            src={course.teacher?.avatar || "/placeholder.svg"}
+                            src={course.teacher?.profile_picture || "/placeholder.svg"}
                             alt={course.teacher?.first_name}
                           />
                           <AvatarFallback>
@@ -318,10 +318,11 @@ export default function CourseDetailPage() {
                               <Avatar>
                                 <AvatarImage src={review?.avatar || "/placeholder.svg"} alt={review?.studentName} />
                                 <AvatarFallback>
-                                  {review?.studentName
+                                  {review?.studentName}
+                                  {/* {review?.studentName
                                     .split(" ")
                                     .map((n) => n[0])
-                                    .join("")}
+                                    .join("")} */}
                                 </AvatarFallback>
                               </Avatar>
 
@@ -342,7 +343,7 @@ export default function CourseDetailPage() {
                                   ))}
                                 </div>
 
-                                <p className="text-gray-600">{review.comment}</p>
+                                <p className="text-gray-600">{review.feedback_text}</p>
                               </div>
                             </div>
                           </div>
@@ -360,9 +361,9 @@ export default function CourseDetailPage() {
                 <CardContent className="p-6">
                   <div className="text-center mb-6">
                     <div className="text-3xl font-bold text-[#313D6A] mb-2">
-                      {course.courseType === "free" ? "Free" : course.price}
+                      {course.course_type === "free" ? "Free" : course.price}
                     </div>
-                    {course.courseType === "paid" && <p className="text-sm text-gray-600">One-time payment</p>}
+                    {course.course_type === "paid" && <p className="text-sm text-gray-600">One-time payment</p>}
                   </div>
 
                   <Button
