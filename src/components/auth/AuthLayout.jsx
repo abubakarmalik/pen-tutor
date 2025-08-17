@@ -95,11 +95,11 @@ export default function AuthLayout() {
     }
 
     // Password validation
-    if (!formData.password) {
-      newErrors.password = "Password is required"
-    } else if (formData.password.length < 6) {
-      newErrors.password = "Password must be at least 6 characters"
-    }
+    // if (!formData.password) {
+    //   newErrors.password = "Password is required"
+    // } else if (formData.password.length < 6) {
+    //   newErrors.password = "Password must be at least 6 characters"
+    // }
 
     // Confirm password validation (only for sign up)
     if (isSignUp) {
