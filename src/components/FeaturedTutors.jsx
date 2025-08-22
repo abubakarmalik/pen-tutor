@@ -15,210 +15,300 @@ import TutE from "@/assets/images/tutors/tut-e.webp"
 const tutors = [
   {
     id: 1,
+    name: "Dr. Alice",
     teacherId: "TUT001",
     subject: "Mathematics",
-    education: "PhD in Mathematics, MIT",
+    degree: "PhD",
+    specialization: "Algebra",
     experience: "8 years",
+    rating: 4.8,
+    students: 120,
     image: TutA,
   },
   {
     id: 2,
+    name: "Dr. Brian",
     teacherId: "TUT002",
     subject: "Physics",
-    education: "PhD in Physics, Stanford",
+    degree: "PhD",
+    specialization: "Quantum Mechanics",
     experience: "12 years",
+    rating: 4.9,
+    students: 200,
     image: TutB,
   },
   {
     id: 3,
+    name: "Prof. Clara",
     teacherId: "TUT003",
     subject: "English Literature",
-    education: "MA in English, Harvard",
+    degree: "MA",
+    specialization: "Poetry",
     experience: "6 years",
+    rating: 4.7,
+    students: 95,
     image: TutC,
   },
   {
     id: 4,
+    name: "Dr. Daniel",
     teacherId: "TUT004",
     subject: "Chemistry",
-    education: "PhD in Chemistry, Oxford",
+    degree: "PhD",
+    specialization: "Organic Chemistry",
     experience: "10 years",
+    rating: 4.8,
+    students: 160,
     image: TutD,
   },
   {
     id: 5,
+    name: "Dr. Emma",
     teacherId: "TUT005",
     subject: "Biology",
-    education: "PhD in Biology, Cambridge",
+    degree: "PhD",
+    specialization: "Genetics",
     experience: "9 years",
+    rating: 4.9,
+    students: 180,
     image: TutE,
   },
 ]
 
-export default function EnhancedCarousel() {
+export default function FeaturedTutors() {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isPaused, setIsPaused] = useState(false)
-
-  const getCardsPerView = () => {
-    if (typeof window !== "undefined") {
-      if (window.innerWidth < 640) return 1 // mobile: 1 card
-      if (window.innerWidth < 1024) return 2 // tablet: 2 cards
-      return 3 // desktop: 3 cards
-    }
-    return 3
-  }
-
-  const [cardsPerView, setCardsPerView] = useState(3)
-
-  useEffect(() => {
-    const handleResize = () => {
-      setCardsPerView(getCardsPerView())
-    }
-
-    handleResize() // Set initial value
-    window.addEventListener("resize", handleResize)
-    return () => window.removeEventListener("resize", handleResize)
-  }, [])
+  const [isTransitioning, setIsTransitioning] = useState(false)
+  const [progressKey, setProgressKey] = useState(0)
 
   const nextSlide = useCallback(() => {
-    setCurrentIndex((prevIndex) => {
-      const maxIndex = tutors.length - cardsPerView
-      return prevIndex >= maxIndex ? 0 : prevIndex + 1
-    })
-  }, [cardsPerView])
+    if (isTransitioning) return
+    setIsTransitioning(true)
+    setCurrentIndex((prev) => (prev + 1) % tutors.length)
+    setProgressKey((k) => k + 1)
+    setTimeout(() => setIsTransitioning(false), 600)
+  }, [isTransitioning])
 
   const prevSlide = useCallback(() => {
-    setCurrentIndex((prevIndex) => {
-      const maxIndex = tutors.length - cardsPerView
-      return prevIndex === 0 ? maxIndex : prevIndex - 1
-    })
-  }, [cardsPerView])
+    if (isTransitioning) return
+    setIsTransitioning(true)
+    setCurrentIndex((prev) => (prev - 1 + tutors.length) % tutors.length)
+    setProgressKey((k) => k + 1)
+    setTimeout(() => setIsTransitioning(false), 600)
+  }, [isTransitioning])
 
-  useEffect(() => {
-    if (isPaused) return
-
-    const interval = setInterval(() => {
-      nextSlide()
-    }, 4000) // 4 second intervals
-
-    return () => clearInterval(interval)
-  }, [isPaused, nextSlide])
-
-  const getVisibleTutors = () => {
-    const visible = []
-    for (let i = 0; i < cardsPerView; i++) {
-      const index = (currentIndex + i) % tutors.length
-      visible.push(tutors[index])
-    }
-    return visible
+  const goToSlide = (index) => {
+    if (isTransitioning) return
+    setIsTransitioning(true)
+    setCurrentIndex(index)
+    setProgressKey((k) => k + 1)
+    setTimeout(() => setIsTransitioning(false), 600)
   }
 
-  const handleMouseEnter = () => setIsPaused(true)
-  const handleMouseLeave = () => setIsPaused(false)
+  useEffect(() => {
+    if (isPaused || isTransitioning) return
+    const interval = setInterval(() => {
+      nextSlide()
+    }, 5000)
+    return () => clearInterval(interval)
+  }, [isPaused, isTransitioning, nextSlide])
+
+  const getVisibleTutors = () => {
+    return [-1, 0, 1].map((pos) => {
+      const index = (currentIndex + pos + tutors.length) % tutors.length
+      return { ...tutors[index], position: pos }
+    })
+  }
 
   return (
-    <section className="py-16 bg-gradient-to-br from-slate-50 to-white">
-      <div className="container mx-auto px-4">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl lg:text-4xl font-bold text-slate-800 mb-4">Featured Tutors</h2>
-          <p className="text-gray-600 text-lg">Meet our top-rated tutors</p>
+    <section className="py-20 bg-gradient-to-br from-slate-50 via-blue-50/30 to-white relative overflow-hidden">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(49,61,106,0.05),transparent_50%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(245,187,7,0.05),transparent_50%)]" />
+
+      <div className="container mx-auto px-4 relative">
+        {/* Section Heading */}
+        <div className="text-center mb-16">
+          <div className="inline-block">
+            <h2 className="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-[#313D6A] to-slate-800 bg-clip-text text-transparent mb-4">
+              Featured Tutors
+            </h2>
+            <div className="h-1 w-24 bg-[#F5BB07] mx-auto rounded-full" />
+          </div>
+          <p className="text-gray-600 text-lg mt-6 max-w-2xl mx-auto">
+            Meet our exceptional educators who are passionate about helping students achieve their academic goals
+          </p>
         </div>
 
-        <div className="relative max-w-7xl mx-auto">
-          <div
-            className="flex items-center justify-center gap-2 sm:gap-4 md:gap-8"
-            onMouseEnter={handleMouseEnter}
-            onMouseLeave={handleMouseLeave}
-          >
+        {/* Carousel */}
+        <div
+          className="relative max-w-6xl mx-auto"
+          onMouseEnter={() => setIsPaused(true)}
+          onMouseLeave={() => setIsPaused(false)}
+        >
+          <div className="relative w-full h-[600px] flex items-center justify-center overflow-hidden">
+            {/* Prev Button */}
             <Button
               variant="outline"
               size="icon"
               onClick={prevSlide}
-              className="shrink-0 rounded-full border-2 border-yellow-500 text-yellow-500 hover:bg-yellow-500 hover:text-white bg-transparent transition-all duration-200"
+              disabled={isTransitioning}
+              aria-label="Previous slide"
+              className="absolute left-2 sm:left-4 z-20 w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 border-[#F5BB07] text-[#F5BB07] hover:bg-[#F5BB07] hover:text-white bg-white/90 backdrop-blur-sm shadow-lg transition-all duration-300 hover:scale-110 disabled:opacity-50"
             >
-              <ChevronLeft className="h-4 w-4" />
+              <ChevronLeft className="h-5 w-5" />
             </Button>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 flex-1 max-w-5xl">
-              {getVisibleTutors().map((tutor, index) => (
-                <Card
-                  key={`${tutor.id}-${currentIndex}`}
-                  className={`transition-all duration-500 hover:shadow-xl ${
-                    cardsPerView === 1 || (cardsPerView === 3 && index === 1)
-                      ? "scale-105 shadow-xl border-2 border-yellow-500"
-                      : "hover:scale-105 shadow-md"
-                  }`}
+            {/* Tutor Cards */}
+            {getVisibleTutors().map((tutor) => {
+              const isCenter = tutor.position === 0
+              return (
+                <div
+                  key={tutor.id}
+                  className="absolute transition-all duration-700 ease-out"
+                  style={{
+                    transform: `translateX(${tutor.position * 320}px) scale(${isCenter ? 1 : 0.85})`,
+                    zIndex: isCenter ? 20 : 10,
+                    opacity: isCenter ? 1 : 0.7,
+                  }}
                 >
-                  <CardContent className="p-4 sm:p-6 text-center space-y-4">
-                    <div className="relative mx-auto">
-                      <Image
-                        src={tutor.image || "/placeholder.svg"}
-                        alt={tutor.teacherId}
-                        width={120}
-                        height={120}
-                        className="rounded-full mx-auto border-4 border-yellow-200 transition-transform duration-300 hover:scale-110"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <h3 className="font-bold text-lg text-slate-800">{tutor.teacherId}</h3>
-                      <p className="font-semibold text-yellow-600">{tutor.subject}</p>
-                      <p className="text-sm text-gray-600 line-clamp-2">{tutor.education}</p>
-                      <p className="text-sm text-gray-600">Experience: {tutor.experience}</p>
-                    </div>
-                    <Button
-                      className="w-full bg-yellow-500 hover:bg-yellow-600 text-white transition-colors duration-200"
-                      size="sm"
-                    >
-                      View Profile
-                    </Button>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                  <Card
+                    className={`w-80 h-[480px] transition-all duration-700 ${isCenter
+                        ? "shadow-2xl border-2 border-[#F5BB07] bg-gradient-to-br from-white to-[#F5BB07]/10"
+                        : "shadow-lg bg-white/80 backdrop-blur-sm"
+                      }`}
+                  >
+                    <CardContent className="p-8 text-center space-y-6">
+                      {/* Tutor Image */}
+                      <div className="relative mx-auto -mt-12">
+                        <div className={`relative ${isCenter ? "w-32 h-32" : "w-28 h-28"} mx-auto`}>
+                          <div
+                            className={`absolute inset-0 rounded-full bg-gradient-to-br from-[#F5BB07] to-[#F5BB07] ${isCenter ? "p-1" : "p-0.5"
+                              }`}
+                          >
+                            <Image
+                              src={tutor.image || "/placeholder.svg"}
+                              alt={`${tutor.subject} Tutor`}
+                              width={isCenter ? 120 : 105}
+                              height={isCenter ? 120 : 105}
+                              className="rounded-full w-full h-full object-cover bg-white transition-transform duration-300 hover:scale-105"
+                            />
+                          </div>
+                          {isCenter && (
+                            <div className="absolute -top-2 -right-2 bg-[#F5BB07] text-white text-xs font-bold px-2 py-1 rounded-full shadow-lg">
+                              ID: {tutor.teacherId}
+                            </div>
+                          )}
+                        </div>
+                      </div>
 
+                      {/* Tutor Info */}
+                      <div className="space-y-3 pt-4">
+                        <h3 className={`font-bold text-[#313D6A] ${isCenter ? "text-xl" : "text-lg"}`}>
+                          {isCenter ? tutor.name : tutor.teacherId}
+                        </h3>
+
+                        {isCenter ? (
+                          <>
+                            <div className="space-y-2">
+                              <p className="font-semibold text-[#F5BB07] text-lg">
+                                {tutor.degree} in {tutor.subject}
+                              </p>
+                              <p className="text-sm text-[#313D6A] font-medium">
+                                Specialization: {tutor.specialization}
+                              </p>
+                              <p className="text-sm text-gray-600">
+                                <span className="font-semibold">Experience:</span> {tutor.experience}
+                              </p>
+                            </div>
+
+                            <div className="flex items-center justify-center space-x-4 text-sm text-gray-600">
+                              <div className="flex items-center space-x-1">
+                                <span className="text-[#F5BB07]">★</span>
+                                <span>{tutor.rating}</span>
+                              </div>
+                              <div>
+                                <span className="font-medium">{tutor.students}+</span> students
+                              </div>
+                            </div>
+                          </>
+                        ) : (
+                          <div className="space-y-2">
+                            <p className="font-semibold text-[#F5BB07]">{tutor.subject}</p>
+                            <p className="text-xs text-gray-600">{tutor.experience}</p>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Button */}
+                      <Button
+                        className={`transition-all duration-300 ${isCenter
+                            ? "w-full bg-gradient-to-r from-[#313D6A] to-[#313D6A] text-white shadow-lg hover:scale-105"
+                            : "w-full bg-[#313D6A] text-white"
+                          }`}
+                        size={isCenter ? "default" : "sm"}
+                      >
+                        View Profile
+                      </Button>
+                    </CardContent>
+                  </Card>
+                </div>
+              )
+            })}
+
+            {/* Next Button */}
             <Button
               variant="outline"
               size="icon"
               onClick={nextSlide}
-              className="shrink-0 rounded-full border-2 border-yellow-500 text-yellow-500 hover:bg-yellow-500 hover:text-white bg-transparent transition-all duration-200"
+              disabled={isTransitioning}
+              aria-label="Next slide"
+              className="absolute right-2 sm:right-4 z-20 w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 border-[#F5BB07] text-[#F5BB07] hover:bg-[#F5BB07] hover:text-white bg-white/90 backdrop-blur-sm shadow-lg transition-all duration-300 hover:scale-110 disabled:opacity-50"
             >
-              <ChevronRight className="h-4 w-4" />
+              <ChevronRight className="h-5 w-5" />
             </Button>
           </div>
 
-          <div className="flex justify-center mt-8 space-x-2">
-            {Array.from({ length: Math.ceil(tutors.length / cardsPerView) }).map((_, index) => (
+          {/* Dots */}
+          <div className="flex justify-center mt-12 space-x-3">
+            {tutors.map((_, index) => (
               <button
                 key={index}
-                onClick={() => setCurrentIndex(index * cardsPerView)}
-                className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                  Math.floor(currentIndex / cardsPerView) === index
-                    ? "bg-yellow-500 scale-125"
-                    : "bg-gray-300 hover:bg-gray-400"
-                }`}
+                onClick={() => goToSlide(index)}
+                disabled={isTransitioning}
+                aria-label={`Go to slide ${index + 1}`}
+                className={`transition-all duration-300 rounded-full ${currentIndex === index
+                    ? "w-8 h-3 bg-[#F5BB07] shadow-lg"
+                    : "w-3 h-3 bg-gray-300 hover:bg-gray-400 hover:scale-125"
+                  }`}
               />
             ))}
           </div>
 
-          {!isPaused && (
-            <div className="mt-4 max-w-xs mx-auto">
-              <div className="w-full bg-gray-200 rounded-full h-1">
+          {/* Progress Bar */}
+          {/* {!isPaused && !isTransitioning && (
+            <div className="mt-8 max-w-md mx-auto">
+              <div className="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
                 <div
-                  className="bg-yellow-500 h-1 rounded-full transition-all duration-100 animate-pulse"
+                  key={progressKey}
+                  className="bg-[#F5BB07] h-full rounded-full shadow-sm"
                   style={{
-                    animation: "progress 4s linear infinite",
+                    animation: "progress 5s linear forwards",
                   }}
                 />
               </div>
             </div>
-          )}
+          )} */}
         </div>
       </div>
 
       <style jsx>{`
         @keyframes progress {
-          from { width: 0%; }
-          to { width: 100%; }
+          from {
+            width: 0%;
+          }
+          to {
+            width: 100%;
+          }
         }
       `}</style>
     </section>

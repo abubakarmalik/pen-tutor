@@ -2,55 +2,144 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import axios from "axios"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Progress } from "@/components/ui/progress"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { ScrollArea } from "@/components/ui/scroll-area"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
-  BookOpen,
-  GraduationCap,
-  TrendingUp,
   DollarSign,
   Bell,
-  Star,
-  Clock,
   User,
+  Trash2,
+  Eye,
+  Search,
+  Home,
+  Calendar,
+  BookMarked,
+  Users,
+  LogOut,
+  Flag as Flask,
+  Book,
   Play,
   CheckCircle,
-  Trash2,
-  BookMarkedIcon as MarkAsRead,
-  Eye,
+  Clock,
+  Menu,
+  X,
+  CheckCircle2,
+  AlertCircle,
+  Info,
+  BookOpen,
 } from "lucide-react"
-import { Sidebar } from "@/components/ui/sidebar"
+import axios from "axios"
 
 export default function StudentDashboard() {
+  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [notificationOpen, setNotificationOpen] = useState(false)
   const [studentData, setStudentData] = useState(null)
   const [enrolledCourses, setEnrolledCourses] = useState([])
   const [notifications, setNotifications] = useState([])
   const [notificationStats, setNotificationStats] = useState({ unread_count: 0, total_count: 0 })
   const [loading, setLoading] = useState(true)
   const [notificationsLoading, setNotificationsLoading] = useState(false)
-  const [sidebarOpen, setSidebarOpen] = useState(false)
   const router = useRouter()
 
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000"
-  useEffect(() => {
-    fetchStudentData()
-    fetchEnrolledCourses()
-    fetchNotificationStats()
-  }, [])
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
+
+  const mockStudentData = {
+    student_name: "MaryamAli",
+    student_email: "maryam.ali@example.com",
+    profile_picture: null,
+    created_at: "2021-07-05T00:00:00Z",
+    statistics: {
+      total_enrollments: 4,
+      completed_courses: 2,
+      in_progress_courses: 2,
+      total_spent: 450,
+    },
+  }
+
+  const mockEnrolledCourses = [
+    {
+      enrollment_id: 1,
+      course: {
+        id: 1,
+        title: "Chemistry",
+        description: "O Level Chemistry Course",
+        price: 150,
+        teacher: {
+          id: 2156,
+          first_name: "John",
+          last_name: "Smith",
+          profile_picture: null,
+          expertise_areas: ["Chemistry", "Physics"],
+        },
+        total_videos: 25,
+        total_enrollments: 45,
+        reviews: [{ rating: 4.5 }],
+        course_type: "paid",
+      },
+      progress_percentage: 65,
+      completed_items: 16,
+      total_items: 25,
+      is_completed: false,
+      payment_status: "paid",
+      enrolled_at: "2024-01-15T00:00:00Z",
+    },
+    {
+      enrollment_id: 2,
+      course: {
+        id: 2,
+        title: "Physics",
+        description: "O Level Physics Course",
+        price: 175,
+        teacher: {
+          id: 2194,
+          first_name: "Sarah",
+          last_name: "Johnson",
+          profile_picture: null,
+          expertise_areas: ["Physics", "Mathematics"],
+        },
+        total_videos: 30,
+        total_enrollments: 38,
+        reviews: [{ rating: 4.8 }],
+        course_type: "paid",
+      },
+      progress_percentage: 40,
+      completed_items: 12,
+      total_items: 30,
+      is_completed: false,
+      payment_status: "paid",
+      enrolled_at: "2024-02-01T00:00:00Z",
+    },
+  ]
+
+  const navItems = [
+    { id: "dashboard", label: "Dashboard", href: "/student/dashboard", icon: <Home className="h-4 w-4" /> },
+    { id: "profile", label: "Profile", href: "/student/profile", icon: <User className="h-4 w-4" /> },
+    { id: "courses", label: "Courses", href: "/courses", icon: <BookOpen className="h-4 w-4" /> },
+    // { id: "payment", label: "Payment", href: "/student/payments", icon: <DollarSign className="h-4 w-4" /> },
+    { id: "schedule", label: "Class Schedule", href: "#", icon: <Calendar className="h-4 w-4" /> },
+    { id: "courses", label: "Courses & Material", href: "/courses", icon: <BookMarked className="h-4 w-4" /> },
+    { id: "post_job", label: "Post Tuition Job", href: "#", icon: <Users className="h-4 w-4" /> },
+    // { id: "post_job", label: "Post Tuition Job", href: "/job-board/post-job", icon: <Users className="h-4 w-4" /> },
+    { id: "find_tutor", label: "Find Tutor", href: "/our-tutors", icon: <Search className="h-4 w-4" /> },
+  ]
 
   const fetchStudentData = async () => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/api/students/`)
-      if (response.data.success) {
+      const response = await axios.get(`${API_BASE_URL}/api/students/`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+        },
+      })
+      console.log("Student Data Response:", response)
+      if (response.status === 200) {
         setStudentData(response.data.data)
+        console.log("Student Data in cond:", studentData)
       }
+      console.log("Student Data out cond:", studentData)
     } catch (error) {
       console.error("Error fetching student data:", error)
     }
@@ -58,8 +147,13 @@ export default function StudentDashboard() {
 
   const fetchEnrolledCourses = async () => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/api/students/courses/`)
-      if (response.data.success) {
+      const response = await axios.get(`${API_BASE_URL}/api/students/courses/`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+        },
+      })
+      if (response.status === 200) {
+        console.log("Enrolled Courses Response:", response)
         setEnrolledCourses(response.data.data.courses)
       }
     } catch (error) {
@@ -72,7 +166,11 @@ export default function StudentDashboard() {
   const fetchNotifications = async () => {
     setNotificationsLoading(true)
     try {
-      const response = await axios.get(`${API_BASE_URL}/notifications/`)
+      const response = await axios.get(`${API_BASE_URL}/api/notifications/`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+        },
+      })
       setNotifications(response.data.results || response.data)
     } catch (error) {
       console.error("Error fetching notifications:", error)
@@ -83,7 +181,11 @@ export default function StudentDashboard() {
 
   const fetchNotificationStats = async () => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/notifications/stats/`)  
+      const response = await axios.get(`${API_BASE_URL}/api/notifications/stats/`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+        },
+      })
       setNotificationStats(response.data)
     } catch (error) {
       console.error("Error fetching notification stats:", error)
@@ -92,7 +194,7 @@ export default function StudentDashboard() {
 
   const markAsRead = async (notificationId) => {
     try {
-      await axios.post(`${API_BASE_URL}/notifications/mark-as-read/`, { notification_id: notificationId })
+      await axios.post(`${API_BASE_URL}/api/notifications/mark-as-read/`, { notification_id: notificationId })
       setNotifications((prev) =>
         prev.map((notif) => (notif.id === notificationId ? { ...notif, is_read: true } : notif)),
       )
@@ -104,7 +206,11 @@ export default function StudentDashboard() {
 
   const markAllAsRead = async () => {
     try {
-      await axios.post(`${API_BASE_URL}/notifications/mark-all-as-read/`)
+      await axios.post(`${API_BASE_URL}/api/notifications/mark-all-as-read/`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+        },
+      })
       setNotifications((prev) => prev.map((notif) => ({ ...notif, is_read: true })))
       fetchNotificationStats()
     } catch (error) {
@@ -114,7 +220,11 @@ export default function StudentDashboard() {
 
   const deleteNotification = async (notificationId) => {
     try {
-      await axios.delete(`${API_BASE_URL}/notifications/${notificationId}/delete/`)
+      await axios.delete(`${API_BASE_URL}/api/notifications/${notificationId}/delete/`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+        },
+      })
       setNotifications((prev) => prev.filter((notif) => notif.id !== notificationId))
       fetchNotificationStats()
     } catch (error) {
@@ -124,7 +234,11 @@ export default function StudentDashboard() {
 
   const deleteAllRead = async () => {
     try {
-      await axios.delete(`${API_BASE_URL}/notifications/delete-all-read/`)
+      await axios.delete(`${API_BASE_URL}/api/notifications/delete-all-read/`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+        },
+      })
       setNotifications((prev) => prev.filter((notif) => !notif.is_read))
       fetchNotificationStats()
     } catch (error) {
@@ -134,6 +248,10 @@ export default function StudentDashboard() {
 
   const getNotificationIcon = (type) => {
     switch (type) {
+      case "success":
+        return <CheckCircle2 className="text-green-500 h-5 w-5" />
+      case "warning":
+        return <AlertCircle className="text-yellow-500 h-5 w-5" />
       case "video_upload":
         return <Play className="h-4 w-4" />
       case "quiz":
@@ -141,494 +259,642 @@ export default function StudentDashboard() {
       case "meeting":
         return <Clock className="h-4 w-4" />
       default:
-        return <Bell className="h-4 w-4" />
+        return <Info className="text-blue-500 h-5 w-5" />
     }
   }
 
+  useEffect(() => {
+    fetchStudentData()
+    fetchEnrolledCourses()
+    fetchNotificationStats()
+  }, [])
+
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-        <div className="lg:ml-64">
-          <div className="p-6">
-            <div className="animate-pulse space-y-6">
-              <div className="h-8 bg-gray-200 rounded w-1/4"></div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {[...Array(4)].map((_, i) => (
-                  <div key={i} className="h-32 bg-gray-200 rounded-lg"></div>
-                ))}
-              </div>
-            </div>
-          </div>
+      <div className="flex items-center justify-center min-h-screen bg-white">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#313D6A] mx-auto mb-4"></div>
+          <p className="text-[#313D6A]">Loading Dashboard...</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+    <div className="min-h-screen bg-white max-w-full overflow-x-hidden">
+      {sidebarOpen && (
+        <div className="fixed inset-0 bg-[#313D6A]/20 backdrop-blur-xs z-40 lg:hidden" onClick={() => setSidebarOpen(false)} />
+      )}
 
-      <div className="lg:ml-64">
-        {/* Header */}
-        <header className="bg-white shadow-sm border-b">
-          <div className="flex items-center justify-between px-6 py-4">
-            <div className="flex items-center space-x-4">
-              <Button variant="ghost" size="sm" className="lg:hidden" onClick={() => setSidebarOpen(true)}>
-                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
-              </Button>
-              <h1 className="text-2xl font-bold text-[#313D6A]">Student Dashboard</h1>
+      <div
+        className={`fixed left-0 top-0 h-full w-64 bg-white text-white transform transition-transform duration-300 ease-in-out z-50 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"
+          } lg:translate-x-0`}
+        style={{ position: "fixed", overflowY: "auto", maxHeight: "100vh" }}
+      >
+        <div className="flex flex-col h-full">
+          <div className="p-6 flex-shrink-0">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="lg:hidden text-white hover:bg-white/10 mb-4"
+              onClick={() => setSidebarOpen(false)}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+
+            <div className="bg-[#313D6A] w-full shadow-2xl rounded-lg p-4 mb-6 border border-white/20">
+              <div className="flex items-center space-x-3">
+                <Avatar className="h-16 w-16 border-2 border-white/20">
+                  <AvatarImage
+                    src={`${API_BASE_URL}${studentData?.profile_picture}` || "/placeholder.svg"}
+                    alt={studentData?.student_name}
+                  />
+                  <AvatarFallback className="bg-white text-[#313D6A] text-lg font-bold">
+                    {studentData?.student_name?.charAt(0) || "M"}
+                  </AvatarFallback>
+                </Avatar>
+                <div>
+                  <h3 className="font-semibold text-white text-lg">{studentData?.student_name || ""}</h3>
+                  <p className="text-white/80 text-sm font-medium">student</p>
+                </div>
+              </div>
             </div>
+          </div>
 
-            <div className="flex items-center space-x-4">
-              {/* Notifications Modal */}
-              <Dialog>
+          <div className="flex-1 w-full px-6 pb-6 overflow-y-auto">
+            <nav className="space-y-1">
+              {navItems.map((item) => (
+                <Button
+                  key={item.id}
+                  variant="ghost"
+                  className="w-full justify-start text-[#313D6A] hover:bg-[#313D6A]/10 hover:text-[#313D6A] transition-colors data-[active=true]:bg-[#313D6A]/20 data-[active=true]:text-[#313D6A] rounded-lg py-3"
+                  data-active={item.id === "dashboard"}
+                  onClick={() => router.push(item.href)}
+                >
+                  {item.icon}
+                  <span className="ml-3 font-medium">{item.label}</span>
+                </Button>
+              ))}
+            </nav>
+          </div>
+          <div className="p-6 border-t border-white/20 flex-shrink-0">
+            <Button
+              variant="ghost"
+              className="w-full justify-start text-white bg-red-600/80 hover:bg-red-500 transition-colors rounded-lg py-3"
+            >
+              <LogOut className="h-4 w-4 mr-3" />
+              <span className="font-medium">Logout</span>
+            </Button>
+          </div>
+
+        </div>
+      </div>
+
+      <div className="lg:ml-64 min-h-screen">
+        <header className="bg-white border-b border-gray-200 px-4 sm:px-6 lg:px-8 py-4 sticky top-0 z-30">
+          <div className="flex items-center justify-between max-w-full">
+            <div className="flex items-center space-x-4 min-w-0 flex-1">
+              <Button
+                variant="outline"
+                size="sm"
+                className="lg:hidden border-[#313D6A] text-[#313D6A] bg-transparent flex-shrink-0"
+                onClick={() => setSidebarOpen(true)}
+              >
+                <Menu className="h-4 w-4" />
+              </Button>
+              <div className="min-w-0">
+                <h1 className="text-xl sm:text-2xl font-bold text-[#313D6A] truncate">Welcome To Student Dashboard</h1>
+                <p className="text-sm text-gray-600 truncate">
+                  Member Since{" "}
+                  {studentData?.created_at
+                    ? new Date(studentData.created_at).toLocaleDateString("en-GB", {
+                      day: "numeric",
+                      month: "long",
+                      year: "numeric",
+                    })
+                    : "5 July 2021"}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-4 flex-shrink-0">
+              <Dialog open={notificationOpen} onOpenChange={setNotificationOpen}>
                 <DialogTrigger asChild>
-                  <Button variant="outline" size="sm" className="relative bg-transparent" onClick={fetchNotifications}>
-                    <Bell className="h-4 w-4" />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="relative border-[#313D6A] text-[#313D6A] bg-transparent"
+                    onClick={fetchNotifications}
+                  >
+                    <Bell className="h-4 w-4 mr-2" />
+                    <span className="hidden sm:inline">Notifications</span>
                     {notificationStats.unread_count > 0 && (
-                      <Badge className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 flex items-center justify-center bg-red-500 text-white text-xs">
-                        {notificationStats.unread_count}
-                      </Badge>
+                      <span className="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full" />
                     )}
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="max-w-2xl max-h-[80vh]">
+                <DialogContent className="max-w-lg">
                   <DialogHeader>
-                    <DialogTitle className="flex items-center justify-between">
-                      <span>Notifications</span>
-                      <div className="flex space-x-2">
-                        <Button variant="outline" size="sm" onClick={markAllAsRead}>
-                          <MarkAsRead className="h-4 w-4 mr-2" />
-                          Mark All Read
-                        </Button>
-                        <Button variant="outline" size="sm" onClick={deleteAllRead}>
-                          <Trash2 className="h-4 w-4 mr-2" />
-                          Delete Read
-                        </Button>
-                      </div>
-                    </DialogTitle>
+                    <DialogTitle className="text-[#313D6A]">Notifications</DialogTitle>
                   </DialogHeader>
-
-                  <Tabs defaultValue="all" className="w-full">
+                  <Tabs defaultValue="all" className="mt-4">
                     <TabsList className="grid w-full grid-cols-3">
                       <TabsTrigger value="all">All</TabsTrigger>
                       <TabsTrigger value="unread">Unread</TabsTrigger>
                       <TabsTrigger value="recent">Recent</TabsTrigger>
                     </TabsList>
 
-                    <TabsContent value="all">
-                      <ScrollArea className="h-96">
-                        {notificationsLoading ? (
-                          <div className="space-y-4">
-                            {[...Array(3)].map((_, i) => (
-                              <div key={i} className="animate-pulse p-4 border rounded-lg">
-                                <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-                                <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-                              </div>
-                            ))}
-                          </div>
-                        ) : (
-                          <div className="space-y-2">
-                            {notifications.map((notification) => (
-                              <div
-                                key={notification.id}
-                                className={`p-4 border rounded-lg ${
-                                  notification.is_read ? "bg-gray-50" : "bg-blue-50 border-blue-200"
-                                }`}
-                              >
-                                <div className="flex items-start justify-between">
-                                  <div className="flex items-start space-x-3">
-                                    <div
-                                      className={`p-2 rounded-full ${
-                                        notification.is_read ? "bg-gray-200" : "bg-blue-100"
-                                      }`}
-                                    >
-                                      {getNotificationIcon(notification.notification_type)}
-                                    </div>
-                                    <div className="flex-1">
-                                      <h4 className="font-medium text-sm">{notification.title}</h4>
-                                      <p className="text-sm text-gray-600 mt-1">{notification.message}</p>
-                                      <div className="flex items-center space-x-4 mt-2 text-xs text-gray-500">
-                                        <span>{notification.time_since_created}</span>
-                                        {notification.course && (
-                                          <Badge variant="outline" className="text-xs">
-                                            {notification.course.title}
-                                          </Badge>
-                                        )}
-                                      </div>
-                                    </div>
-                                  </div>
-                                  <div className="flex space-x-1">
-                                    {!notification.is_read && (
-                                      <Button variant="ghost" size="sm" onClick={() => markAsRead(notification.id)}>
-                                        <Eye className="h-3 w-3" />
-                                      </Button>
-                                    )}
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      onClick={() => deleteNotification(notification.id)}
-                                    >
-                                      <Trash2 className="h-3 w-3" />
-                                    </Button>
-                                  </div>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </ScrollArea>
-                    </TabsContent>
-
-                    <TabsContent value="unread">
-                      <ScrollArea className="h-96">
-                        <div className="space-y-2">
-                          {notifications
-                            .filter((n) => !n.is_read)
-                            .map((notification) => (
-                              <div key={notification.id} className="p-4 border rounded-lg bg-blue-50 border-blue-200">
-                                <div className="flex items-start justify-between">
-                                  <div className="flex items-start space-x-3">
-                                    <div className="p-2 rounded-full bg-blue-100">
-                                      {getNotificationIcon(notification.notification_type)}
-                                    </div>
-                                    <div className="flex-1">
-                                      <h4 className="font-medium text-sm">{notification.title}</h4>
-                                      <p className="text-sm text-gray-600 mt-1">{notification.message}</p>
-                                      <span className="text-xs text-gray-500">{notification.time_since_created}</span>
-                                    </div>
-                                  </div>
-                                  <Button variant="ghost" size="sm" onClick={() => markAsRead(notification.id)}>
-                                    <Eye className="h-3 w-3" />
-                                  </Button>
-                                </div>
-                              </div>
-                            ))}
-                        </div>
-                      </ScrollArea>
-                    </TabsContent>
-
-                    <TabsContent value="recent">
-                      <ScrollArea className="h-96">
-                        <div className="space-y-2">
-                          {notifications.slice(0, 10).map((notification) => (
-                            <div
-                              key={notification.id}
-                              className={`p-4 border rounded-lg ${
-                                notification.is_read ? "bg-gray-50" : "bg-blue-50 border-blue-200"
+                    <TabsContent value="all" className="mt-4">
+                      {notifications?.length === 0 ? (
+                        <p className="text-sm text-gray-500 text-center">No notifications</p>
+                      ) : (
+                        notifications?.map((n) => (
+                          <div
+                            key={n.id}
+                            className={`p-3 rounded-lg border mb-2 ${!n.is_read ? "bg-yellow-50 border-yellow-200" : "bg-gray-50 border-gray-200"
                               }`}
-                            >
+                          >
+                            <div className="flex items-start space-x-3">
+                              {getNotificationIcon(n.notification_type)}
+                              <div className="flex-1">
+                                <p className="text-sm font-medium text-[#313D6A]">{n.title}</p>
+                                <p className="text-xs text-gray-600">{n.message}</p>
+                                <span className="text-xs text-gray-400">{n.time_since_created}</span>
+                              </div>
+                              {!n.is_read && (
+                                <Button size="sm" variant="ghost" onClick={() => markAsRead(n.id)}>
+                                  <Eye className="h-3 w-3" />
+                                </Button>
+                              )}
+                              <Button size="sm" variant="ghost" onClick={() => deleteNotification(n.id)}>
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                      <div className="flex justify-between pt-4 border-t">
+                        <Button variant="link" onClick={markAllAsRead}>
+                          Mark all as read
+                        </Button>
+                        <Button variant="link" onClick={deleteAllRead}>
+                          Clear read
+                        </Button>
+                      </div>
+                    </TabsContent>
+
+                    <TabsContent value="unread" className="mt-4">
+                      {notifications?.filter((n) => !n.is_read).length === 0 ? (
+                        <p className="text-sm text-gray-500 text-center">No unread notifications</p>
+                      ) : (
+                        notifications
+                          ?.filter((n) => !n.is_read)
+                          .map((n) => (
+                            <div key={n.id} className="p-3 rounded-lg border bg-yellow-50 border-yellow-200 mb-2">
                               <div className="flex items-start space-x-3">
-                                <div
-                                  className={`p-2 rounded-full ${notification.is_read ? "bg-gray-200" : "bg-blue-100"}`}
-                                >
-                                  {getNotificationIcon(notification.notification_type)}
-                                </div>
+                                {getNotificationIcon(n.notification_type)}
                                 <div className="flex-1">
-                                  <h4 className="font-medium text-sm">{notification.title}</h4>
-                                  <p className="text-sm text-gray-600 mt-1">{notification.message}</p>
-                                  <span className="text-xs text-gray-500">{notification.time_since_created}</span>
+                                  <p className="text-sm font-medium text-[#313D6A]">{n.title}</p>
+                                  <p className="text-xs text-gray-600">{n.message}</p>
                                 </div>
+                                <Button size="sm" variant="ghost" onClick={() => markAsRead(n.id)}>
+                                  <Eye className="h-3 w-3" />
+                                </Button>
                               </div>
                             </div>
-                          ))}
+                          ))
+                      )}
+                    </TabsContent>
+
+                    <TabsContent value="recent" className="mt-4">
+                      {notifications?.slice(0, 5).map((n) => (
+                        <div key={n.id} className="p-3 rounded-lg border bg-gray-50 border-gray-200 mb-2">
+                          <div className="flex items-start space-x-3">
+                            {getNotificationIcon(n.notification_type)}
+                            <div className="flex-1">
+                              <p className="text-sm font-medium text-[#313D6A]">{n.title}</p>
+                              <p className="text-xs text-gray-600">{n.message}</p>
+                              <span className="text-xs text-gray-400">{n.time_since_created}</span>
+                            </div>
+                          </div>
                         </div>
-                      </ScrollArea>
+                      ))}
                     </TabsContent>
                   </Tabs>
                 </DialogContent>
               </Dialog>
-
-              {/* User Profile */}
-              <div className="flex items-center space-x-3">
-                <Avatar>
-                  <AvatarImage
-                    src={studentData?.profile_picture || "/placeholder.svg"}
-                    alt={studentData?.student_name}
-                  />
-                  <AvatarFallback>
-                    <User className="h-4 w-4" />
-                  </AvatarFallback>
-                </Avatar>
-                <div className="hidden md:block">
-                  <p className="text-sm font-medium text-gray-900">{studentData?.student_name}</p>
-                  <p className="text-xs text-gray-500">{studentData?.student_email}</p>
-                </div>
-              </div>
             </div>
           </div>
         </header>
 
-        {/* Main Content */}
-        <main className="p-6">
-          {/* Statistics Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <Card className="border-l-4 border-l-[#313D6A]">
-              <CardContent className="">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Total Enrollments</p>
-                    <p className="text-3xl font-bold text-[#313D6A]">
-                      {studentData?.statistics.total_enrollments || 0}
-                    </p>
-                  </div>
-                  <BookOpen className="h-8 w-8 text-[#313D6A]" />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border-l-4 border-l-green-500">
-              <CardContent className="">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Completed Courses</p>
-                    <p className="text-3xl font-bold text-green-600">
-                      {studentData?.statistics.completed_courses || 0}
-                    </p>
-                  </div>
-                  <GraduationCap className="h-8 w-8 text-green-600" />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border-l-4 border-l-[#F5BB07]">
-              <CardContent className="">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">In Progress</p>
-                    <p className="text-3xl font-bold text-[#F5BB07]">
-                      {studentData?.statistics.in_progress_courses || 0}
-                    </p>
-                  </div>
-                  <TrendingUp className="h-8 w-8 text-[#F5BB07]" />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border-l-4 border-l-blue-500">
-              <CardContent className="">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Total Spent</p>
-                    <p className="text-3xl font-bold text-blue-600">${studentData?.statistics.total_spent || 0}</p>
-                  </div>
-                  <DollarSign className="h-8 w-8 text-blue-600" />
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Enrolled Courses Section */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-[#313D6A]">My Enrolled Courses</CardTitle>
-                  <CardDescription>Continue your learning journey with your enrolled courses</CardDescription>
+        <main className="p-4 sm:p-6 lg:p-8 max-w-full overflow-x-hidden">
+          <div className="grid grid-cols-1 xl:grid-cols-4 gap-6 max-w-full">
+            <div className="xl:col-span-3 space-y-6 min-w-0">
+              <Card className="border-[#313D6A]/20 shadow-lg">
+                <CardHeader className="bg-[#313D6A] text-white rounded-t-lg">
+                  <CardTitle className="text-white text-lg font-bold">Upcoming Sessions</CardTitle>
                 </CardHeader>
-                <CardContent>
-                  {enrolledCourses.length === 0 ? (
-                    <div className="text-center py-12">
-                      <BookOpen className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                      <h3 className="text-lg font-medium text-gray-900 mb-2">No courses enrolled</h3>
-                      <p className="text-gray-500 mb-4">Start your learning journey by enrolling in a course</p>
-                      <Button onClick={() => router.push("/courses")} className="bg-[#313D6A] hover:bg-[#313D6A]/90">
-                        Browse Courses
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="space-y-6">
-                      {enrolledCourses.map((enrollment) => (
-                        <div
-                          key={enrollment.enrollment_id}
-                          className="border rounded-lg p-6 hover:shadow-md transition-shadow cursor-pointer"
-                          onClick={() => router.push(`/courses/detail/${enrollment.course.id}`)}
-                        >
-                          <div className="flex items-start justify-between mb-4">
-                            <div className="flex-1">
-                              <h3 className="text-lg font-semibold text-[#313D6A] mb-2">{enrollment.course.title}</h3>
-                              <p className="text-gray-600 text-sm mb-3">{enrollment.course.description}</p>
-
-                              {/* Teacher Info */}
-                              <div className="flex items-center space-x-3 mb-3">
-                                <Avatar className="h-8 w-8">
-                                  <AvatarImage
-                                    src={enrollment.course.teacher.profile_picture || "/placeholder.svg"}
-                                    alt={`${enrollment.course.teacher.first_name} ${enrollment.course.teacher.last_name}`}
-                                  />
-                                  <AvatarFallback>
-                                    {enrollment.course.teacher.first_name[0]}
-                                    {enrollment.course.teacher.last_name[0]}
-                                  </AvatarFallback>
-                                </Avatar>
-                                <div>
-                                  <p className="text-sm font-medium">
-                                    {enrollment.course.teacher.first_name} {enrollment.course.teacher.last_name}
-                                  </p>
-                                  <p className="text-xs text-gray-500">
-                                    {enrollment.course.teacher.expertise_areas.join(", ")}
-                                  </p>
-                                </div>
-                              </div>
-
-                              {/* Course Stats */}
-                              <div className="flex items-center space-x-4 text-sm text-gray-500 mb-3">
-                                <span className="flex items-center">
-                                  <Play className="h-4 w-4 mr-1" />
-                                  {enrollment.course.total_videos} videos
-                                </span>
-                                <span className="flex items-center">
-                                  <User className="h-4 w-4 mr-1" />
-                                  {enrollment.course.total_enrollments} students
-                                </span>
-                                {enrollment.course.reviews.length > 0 && (
-                                  <span className="flex items-center">
-                                    <Star className="h-4 w-4 mr-1 fill-yellow-400 text-yellow-400" />
-                                    {(
-                                      enrollment.course.reviews.reduce((acc, review) => acc + review.rating, 0) /
-                                      enrollment.course.reviews.length
-                                    ).toFixed(1)}
-                                  </span>
-                                )}
-                              </div>
-
-                              {/* Progress Bar */}
-                              <div className="mb-3">
-                                <div className="flex items-center justify-between text-sm mb-1">
-                                  <span className="text-gray-600">Progress</span>
-                                  <span className="font-medium">{enrollment.progress_percentage}%</span>
-                                </div>
-                                <Progress value={enrollment.progress_percentage} className="h-2" />
-                                <p className="text-xs text-gray-500 mt-1">
-                                  {enrollment.completed_items} of {enrollment.total_items} items completed
-                                </p>
-                              </div>
-
-                              {/* Badges */}
-                              <div className="flex items-center space-x-2">
-                                <Badge
-                                  variant={enrollment.course.course_type === "free" ? "secondary" : "default"}
-                                  className={
-                                    enrollment.course.course_type === "free" ? "bg-green-100 text-green-800" : ""
-                                  }
-                                >
-                                  {enrollment.course.course_type}
-                                </Badge>
-                                <Badge
-                                  variant={enrollment.is_completed ? "default" : "outline"}
-                                  className={
-                                    enrollment.is_completed ? "bg-green-500" : "border-[#F5BB07] text-[#F5BB07]"
-                                  }
-                                >
-                                  {enrollment.is_completed ? "Completed" : "In Progress"}
-                                </Badge>
-                                <Badge variant="outline">{enrollment.payment_status}</Badge>
-                              </div>
-                            </div>
-
-                            <div className="text-right">
-                              <p className="text-2xl font-bold text-[#313D6A]">${enrollment.course.price}</p>
-                              <p className="text-xs text-gray-500">
-                                Enrolled {new Date(enrollment.enrolled_at).toLocaleDateString()}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Sidebar */}
-            <div className="space-y-6">
-              {/* Student Profile Card */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-[#313D6A]">My Profile</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-center">
-                    <Avatar className="h-20 w-20 mx-auto mb-4">
-                      <AvatarImage
-                        src={studentData?.profile_picture || "/placeholder.svg"}
-                        alt={studentData?.student_name}
-                      />
-                      <AvatarFallback className="text-lg">{studentData?.student_name?.charAt(0)}</AvatarFallback>
-                    </Avatar>
-                    <h3 className="font-semibold text-lg text-[#313D6A]">{studentData?.student_name}</h3>
-                    <p className="text-gray-600 text-sm mb-4">{studentData?.student_email}</p>
-
-                    <div className="space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Courses Enrolled:</span>
-                        <span className="font-medium">{studentData?.statistics.total_enrollments}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Completed:</span>
-                        <span className="font-medium text-green-600">{studentData?.statistics.completed_courses}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">In Progress:</span>
-                        <span className="font-medium text-[#F5BB07]">
-                          {studentData?.statistics.in_progress_courses}
-                        </span>
-                      </div>
-                    </div>
+                <CardContent className="p-0">
+                  <div className="overflow-x-auto">
+                    <table className="w-full min-w-[800px]">
+                      <thead className="bg-[#313D6A] text-white text-sm font-semibold">
+                        <tr>
+                          <th className="px-4 py-3 text-left border-r border-white/20 whitespace-nowrap">Student ID</th>
+                          <th className="px-4 py-3 text-left border-r border-white/20 whitespace-nowrap">
+                            Class/Level
+                          </th>
+                          <th className="px-4 py-3 text-left border-r border-white/20 whitespace-nowrap">Subject</th>
+                          <th className="px-4 py-3 text-left border-r border-white/20 whitespace-nowrap">Date/Day</th>
+                          <th className="px-4 py-3 text-left border-r border-white/20 whitespace-nowrap">Timings</th>
+                          <th className="px-4 py-3 text-left border-r border-white/20 whitespace-nowrap">Mode</th>
+                          <th className="px-4 py-3 text-left whitespace-nowrap">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {enrolledCourses?.slice(0, 2).map((enrollment, index) => (
+                          <tr
+                            key={enrollment.enrollment_id}
+                            className={index % 2 === 0 ? "bg-[#313D6A]/5" : "bg-white"}
+                          >
+                            <td className="px-4 py-3 text-sm border-r border-gray-200 whitespace-nowrap">
+                              <div className="font-medium text-[#313D6A]">ST{enrollment.course.teacher.id}</div>
+                              <div className="text-xs text-gray-500">Muhammad Ahmad</div>
+                            </td>
+                            <td className="px-4 py-3 text-sm border-r border-gray-200 text-[#313D6A] font-medium whitespace-nowrap">
+                              O Level 1
+                            </td>
+                            <td className="px-4 py-3 text-sm border-r border-gray-200 text-[#313D6A] font-medium whitespace-nowrap">
+                              {enrollment.course.title}
+                            </td>
+                            <td className="px-4 py-3 text-sm border-r border-gray-200 text-gray-700 whitespace-nowrap">
+                              Mon/Wed/Fri
+                            </td>
+                            <td className="px-4 py-3 text-sm border-r border-gray-200 text-gray-700 whitespace-nowrap">
+                              7:00 PM GMT +5
+                            </td>
+                            <td className="px-4 py-3 text-sm border-r border-gray-200 text-[#313D6A] font-medium whitespace-nowrap">
+                              Online
+                            </td>
+                            <td className="px-4 py-3 text-sm whitespace-nowrap">
+                              <Badge className="bg-[#F5BB07] text-[#313D6A] font-medium">Active</Badge>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
                 </CardContent>
               </Card>
 
-              {/* Quick Actions */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-[#313D6A]">Quick Actions</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <Button className="w-full bg-[#313D6A] hover:bg-[#313D6A]/90" onClick={() => router.push("/courses")}>
-                    <BookOpen className="h-4 w-4 mr-2" />
-                    Browse All Courses
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="w-full border-[#F5BB07] text-[#F5BB07] hover:bg-[#F5BB07] hover:text-white bg-transparent"
-                    onClick={() => router.push("/student/profile")}
-                  >
-                    <User className="h-4 w-4 mr-2" />
-                    Edit Profile
-                  </Button>
-                </CardContent>
-              </Card>
+              <div className="space-y-6">
+                <h2 className="text-2xl font-bold text-[#313D6A]">My Scheduled Classes</h2>
 
-              {/* Recent Activity */}
-              {studentData?.recent_enrollments && studentData.recent_enrollments.length > 0 && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-[#313D6A]">Recent Activity</CardTitle>
+                <Card className="border-[#313D6A]/20 shadow-lg">
+                  <CardHeader className="bg-white border-b border-gray-200">
+                    <CardTitle className="text-[#313D6A] font-bold">My Scheduled Home Tuitions</CardTitle>
                   </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
-                      {studentData.recent_enrollments.slice(0, 3).map((enrollment) => (
-                        <div key={enrollment.id} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-                          <div className="p-2 bg-[#313D6A] rounded-full">
-                            <BookOpen className="h-4 w-4 text-white" />
-                          </div>
-                          <div className="flex-1">
-                            <p className="text-sm font-medium">{enrollment.course.title}</p>
-                            <p className="text-xs text-gray-500">
-                              Enrolled {new Date(enrollment.enrolled_at).toLocaleDateString()}
-                            </p>
-                          </div>
-                        </div>
-                      ))}
+                  <CardContent className="p-0">
+                    <div className="overflow-x-auto">
+                      <table className="w-full min-w-[700px]">
+                        <thead className="bg-[#F5BB07] text-[#313D6A] text-sm font-bold">
+                          <tr>
+                            <th className="px-4 py-3 text-left border-r border-[#313D6A]/20 whitespace-nowrap">
+                              Student ID
+                            </th>
+                            <th className="px-4 py-3 text-left border-r border-[#313D6A]/20 whitespace-nowrap">
+                              Class/Level
+                            </th>
+                            <th className="px-4 py-3 text-left border-r border-[#313D6A]/20 whitespace-nowrap">
+                              Subject
+                            </th>
+                            <th className="px-4 py-3 text-left border-r border-[#313D6A]/20 whitespace-nowrap">
+                              Days & Timing
+                            </th>
+                            <th className="px-4 py-3 text-left whitespace-nowrap">Location</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {enrolledCourses?.slice(0, 2).map((enrollment, index) => (
+                            <tr key={enrollment.enrolled_at} className="bg-[#F5BB07]/10">
+                              <td className="px-4 py-3 text-sm border-r border-gray-200 whitespace-nowrap">
+                                <div className="font-medium text-[#313D6A]">ST{enrollment.course.teacher.id}</div>
+                                <div className="text-xs text-gray-600">Muhammad Ahmad</div>
+                              </td>
+                              <td className="px-4 py-3 text-sm border-r border-gray-200 text-[#313D6A] font-medium whitespace-nowrap">
+                                O Level 1
+                              </td>
+                              <td className="px-4 py-3 text-sm border-r border-gray-200 text-[#313D6A] font-medium whitespace-nowrap">
+                                {enrollment.course.title}
+                              </td>
+                              <td className="px-4 py-3 text-sm border-r border-gray-200 text-gray-700">
+                                Monday 17:00 PM-18:00 PM, Tuesday 17:00 PM-18:00 PM
+                              </td>
+                              <td className="px-4 py-3 text-sm text-gray-700">Street No 6, DHA Phase 5, Lahore</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
                     </div>
                   </CardContent>
                 </Card>
-              )}
+
+                <Card className="border-[#313D6A]/20 shadow-lg">
+                  <CardHeader className="bg-white border-b border-gray-200">
+                    <CardTitle className="text-[#313D6A] font-bold">My Scheduled Online Tuitions</CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-0">
+                    <div className="overflow-x-auto">
+                      <table className="w-full">
+                        <thead className="bg-cyan-400 text-white text-sm font-bold">
+                          <tr>
+                            <th className="px-4 py-3 text-left border-r border-white/20">Tutor ID</th>
+                            <th className="px-4 py-3 text-left border-r border-white/20">Class/Level</th>
+                            <th className="px-4 py-3 text-left border-r border-white/20">Subject</th>
+                            <th className="px-4 py-3 text-left">Days & Time</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {enrolledCourses?.slice(0, 2).map((enrollment, index) => (
+                            <tr key={enrollment.enrollment_id} className="bg-cyan-50">
+                              <td className="px-4 py-3 text-sm border-r border-gray-200">
+                                <div className="font-medium text-[#313D6A]">PT{enrollment.course.teacher.id}</div>
+                                <div className="text-xs text-gray-600">
+                                  {enrollment.course.teacher.first_name} {enrollment.course.teacher.last_name}
+                                </div>
+                              </td>
+                              <td className="px-4 py-3 text-sm border-r border-gray-200 text-[#313D6A] font-medium">
+                                O Level 1
+                              </td>
+                              <td className="px-4 py-3 text-sm border-r border-gray-200 text-[#313D6A] font-medium">
+                                {enrollment.course.title}
+                              </td>
+                              <td className="px-4 py-3 text-sm text-gray-700">
+                                Monday 17:00 PM-18:00 PM, Tuesday 17:00 PM-18:00 PM
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="border-[#313D6A]/20 shadow-lg">
+                  <CardHeader className="bg-white border-b border-gray-200">
+                    <CardTitle className="text-[#313D6A] font-bold">My Scheduled Online Group Sessions</CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-0">
+                    <div className="overflow-x-auto">
+                      <table className="w-full min-w-[600px]">
+                        <thead className="bg-pink-500 text-white text-sm font-bold">
+                          <tr>
+                            <th className="px-4 py-3 text-left border-r border-white/20 whitespace-nowrap">
+                              Student ID
+                            </th>
+                            <th className="px-4 py-3 text-left border-r border-white/20 whitespace-nowrap">
+                              Class/Level
+                            </th>
+                            <th className="px-4 py-3 text-left border-r border-white/20 whitespace-nowrap">Subject</th>
+                            <th className="px-4 py-3 text-left whitespace-nowrap">Days & Time</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {enrolledCourses?.length > 0 ? (
+                            enrolledCourses?.slice(0, 2).map((enrollment, index) => (
+                              <tr key={enrollment.enrollment_id} className="bg-pink-50">
+                                <td className="px-4 py-3 text-sm border-r border-gray-200 whitespace-nowrap">
+                                  <div className="font-medium text-[#313D6A]">ST{enrollment.course.teacher.id}</div>
+                                  <div className="text-xs text-gray-600">Muhammad Ahmad</div>
+                                </td>
+                                <td className="px-4 py-3 text-sm border-r border-gray-200 text-[#313D6A] font-medium whitespace-nowrap">
+                                  O Level 1
+                                </td>
+                                <td className="px-4 py-3 text-sm border-r border-gray-200 text-[#313D6A] font-medium whitespace-nowrap">
+                                  {enrollment.course.title}
+                                </td>
+                                <td className="px-4 py-3 text-sm text-gray-700">
+                                  Monday 17:00 PM-18:00 PM, Tuesday 17:00 PM-18:00 PM
+                                </td>
+                              </tr>
+                            ))
+                          ) : (
+                            <tr>
+                              <td colSpan={4} className="text-center py-6">
+                                No scheduled online group sessions found.
+                              </td>
+                            </tr>
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              <div className="space-y-4">
+                <h2 className="text-2xl font-bold text-[#313D6A]">My Video Courses</h2>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <Card className="bg-[#F5BB07] text-white cursor-pointer hover:shadow-lg transition-all duration-300 hover:scale-105 shadow-lg">
+                    <CardContent className="p-6 text-center">
+                      <div className="mb-4">
+                        <div className="w-16 h-16 mx-auto bg-white/20 rounded-full flex items-center justify-center">
+                          <Flask className="h-8 w-8" />
+                        </div>
+                      </div>
+                      <h3 className="font-bold text-lg">O Level Chemistry</h3>
+                    </CardContent>
+                  </Card>
+                  <Card className="bg-cyan-400 text-white cursor-pointer hover:shadow-lg transition-all duration-300 hover:scale-105 shadow-lg">
+                    <CardContent className="p-6 text-center">
+                      <div className="mb-4">
+                        <div className="w-16 h-16 mx-auto bg-white/20 rounded-full flex items-center justify-center">
+                          <Flask className="h-8 w-8" />
+                        </div>
+                      </div>
+                      <h3 className="font-bold text-lg">O Level Physics</h3>
+                    </CardContent>
+                  </Card>
+                  <Card className="bg-pink-500 text-white cursor-pointer hover:shadow-lg transition-all duration-300 hover:scale-105 shadow-lg">
+                    <CardContent className="p-6 text-center">
+                      <div className="mb-4">
+                        <div className="w-16 h-16 mx-auto bg-white/20 rounded-full flex items-center justify-center">
+                          <Flask className="h-8 w-8" />
+                        </div>
+                      </div>
+                      <h3 className="font-bold text-lg">O Level Computer</h3>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <h2 className="text-2xl font-bold text-[#313D6A]">My Online Resources</h2>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <Card className="bg-[#F5BB07] text-white cursor-pointer hover:shadow-lg transition-all duration-300 hover:scale-105 shadow-lg">
+                    <CardContent className="p-6 text-center">
+                      <div className="mb-4">
+                        <div className="w-16 h-16 mx-auto bg-white/20 rounded-full flex items-center justify-center">
+                          <Book className="h-8 w-8" />
+                        </div>
+                      </div>
+                      <h3 className="font-bold text-lg">Key Book</h3>
+                    </CardContent>
+                  </Card>
+                  <Card className="bg-cyan-400 text-white cursor-pointer hover:shadow-lg transition-all duration-300 hover:scale-105 shadow-lg">
+                    <CardContent className="p-6 text-center">
+                      <div className="mb-4">
+                        <div className="w-16 h-16 mx-auto bg-white/20 rounded-full flex items-center justify-center">
+                          <Book className="h-8 w-8" />
+                        </div>
+                      </div>
+                      <h3 className="font-bold text-lg">Past Papers</h3>
+                    </CardContent>
+                  </Card>
+                  <Card className="bg-pink-500 text-white cursor-pointer hover:shadow-lg transition-all duration-300 hover:scale-105 shadow-lg">
+                    <CardContent className="p-6 text-center">
+                      <div className="mb-4">
+                        <div className="w-16 h-16 mx-auto bg-white/20 rounded-full flex items-center justify-center">
+                          <Book className="h-8 w-8" />
+                        </div>
+                      </div>
+                      <h3 className="font-bold text-lg">Important Notes</h3>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-6 min-w-0">
+              <Card className="border-[#313D6A]/20 shadow-lg">
+                <CardHeader className="pb-3 bg-gradient-to-r from-[#313D6A]/10 to-[#313D6A]/5">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-[#313D6A] text-lg font-bold">Recent Jobs</CardTitle>
+                    <Button variant="ghost" size="sm" className="text-[#313D6A] hover:text-[#F5BB07]">
+                      →
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {[
+                    "O/A Levels Tutors Required",
+                    "O/A Levels Tutors Required",
+                    "O/A Levels Tutors Required",
+                    "O/A Levels Tutors Required",
+                  ].map((job, index) => (
+                    <div
+                      key={index}
+                      className="text-sm text-gray-700 py-2 px-3 bg-gray-50 rounded-lg hover:bg-[#313D6A]/10 transition-colors cursor-pointer"
+                    >
+                      - {job}
+                    </div>
+                  ))}
+                  <Button variant="link" className="text-[#F5BB07] text-sm p-0 h-auto font-medium">
+                    View All Jobs
+                  </Button>
+                </CardContent>
+              </Card>
+
+              {/* <Card className="border-[#313D6A]/20 shadow-lg">
+                <CardHeader className="pb-3 bg-gradient-to-r from-[#313D6A]/10 to-[#313D6A]/5">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-[#313D6A] text-lg font-bold">Promotions</CardTitle>
+                    <Button variant="ghost" size="sm" className="text-[#313D6A] hover:text-[#F5BB07]">
+                      →
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {["Special Discount 50%", "Free Trial Week", "Premium Upgrade", "Bonus Materials"].map(
+                    (promo, index) => (
+                      <div
+                        key={index}
+                        className="text-sm text-gray-700 py-2 px-3 bg-gray-50 rounded-lg hover:bg-[#313D6A]/10 transition-colors cursor-pointer"
+                      >
+                        - {promo}
+                      </div>
+                    ),
+                  )}
+                  <Button variant="link" className="text-[#F5BB07] text-sm p-0 h-auto font-medium">
+                    View All Promotions
+                  </Button>
+                </CardContent>
+              </Card> */}
+
+              <Card className="border-[#313D6A]/20 shadow-lg">
+                <CardHeader className="pb-3 bg-gradient-to-r from-[#313D6A]/10 to-[#313D6A]/5">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-[#313D6A] text-lg font-bold">Notice Board</CardTitle>
+                    <Button variant="ghost" size="sm" className="text-[#313D6A] hover:text-[#F5BB07]">
+                      →
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {["Important Exam Updates", "Holiday Schedule", "New Course Launch", "System Maintenance"].map(
+                    (notice, index) => (
+                      <div
+                        key={index}
+                        className="text-sm text-gray-700 py-2 px-3 bg-gray-50 rounded-lg hover:bg-[#313D6A]/10 transition-colors cursor-pointer"
+                      >
+                        - {notice}
+                      </div>
+                    ),
+                  )}
+                  <Button variant="link" className="text-[#F5BB07] text-sm p-0 h-auto font-medium">
+                    View All Notices
+                  </Button>
+                </CardContent>
+              </Card>
+
+              {/* <Card className="border-[#313D6A]/20 shadow-lg">
+                <CardHeader className="pb-3 bg-gradient-to-r from-[#313D6A]/10 to-[#313D6A]/5">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-[#313D6A] text-lg font-bold">Payments</CardTitle>
+                    <Button variant="ghost" size="sm" className="text-[#313D6A] hover:text-[#F5BB07]">
+                      →
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="bg-gray-600 text-white px-4 py-3 rounded-lg shadow-sm">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm">Total Paid:</span>
+                      <span className="font-bold text-lg">$450</span>
+                    </div>
+                  </div>
+                  <div className="bg-pink-500 text-white px-4 py-3 rounded-lg shadow-sm">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm">Pending Payment:</span>
+                      <span className="font-bold text-lg">$150</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="border-[#313D6A]/20 shadow-lg">
+                <CardHeader className="pb-3 bg-gradient-to-r from-[#313D6A]/10 to-[#313D6A]/5">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-[#313D6A] text-lg font-bold">Attendance</CardTitle>
+                    <Button variant="ghost" size="sm" className="text-[#313D6A] hover:text-[#F5BB07]">
+                      →
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {[
+                    { code: "PT-1234", classes: "1 Class" },
+                    { code: "PT-2456", classes: "2 Classes" },
+                    { code: "PT-7894", classes: "3 Classes" },
+                  ].map((item, index) => (
+                    <div
+                      key={index}
+                      className="flex justify-between items-center text-sm py-2 px-3 bg-gray-50 rounded-lg"
+                    >
+                      <span className="text-gray-700 font-medium">{item.code}</span>
+                      <span className="text-[#313D6A] font-bold">{item.classes}</span>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card> */}
             </div>
           </div>
         </main>

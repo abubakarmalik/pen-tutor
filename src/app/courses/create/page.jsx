@@ -17,7 +17,7 @@ export default function CreateCoursePage() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
 
-  const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000"
+  const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -28,11 +28,26 @@ export default function CreateCoursePage() {
     subject: "",
   })
 
-  const handleInputChange = (field , value) => {
+  const [thumbnailFile, setThumbnailFile] = useState(null)
+  const [thumbnailPreview, setThumbnailPreview] = useState(null)
+
+  const handleInputChange = (field, value) => {
     setFormData((prev) => ({
       ...prev,
       [field]: value,
     }))
+  }
+
+  const handleThumbnailChange = (e) => {
+    const file = e.target.files?.[0] ?? null
+    if (file) {
+      setThumbnailFile(file)
+      const url = URL.createObjectURL(file)
+      setThumbnailPreview(url)
+    } else {
+      setThumbnailFile(null)
+      setThumbnailPreview(null)
+    }
   }
 
   const handleSubmit = async (e) => {
@@ -40,30 +55,45 @@ export default function CreateCoursePage() {
     setIsLoading(true)
 
     try {
-      const response = await axios.post(`${API_BASE}/api/teacher/courses/`, {
-        title: formData.title,
-        description: formData.description,
-        price: formData.courseType === "free" ? 0 : formData.price,
-        course_type: formData.courseType,
-        is_active: formData.isActive,
-        has_live_classes: formData.hasLiveClasses,
-        subject: formData.subject,
+      const token = localStorage.getItem("access_token")
+      if (!token) {
+        toast({ title: "Error", description: "You must be logged in to create a course.", variant: "destructive" })
+        setIsLoading(false)
+        return
+      }
+
+      // Use FormData to send file + fields
+      const payload = new FormData()
+      payload.append("title", formData.title)
+      payload.append("description", formData.description)
+      // if free, ensure price is 0
+      const priceValue = formData.courseType === "free" ? 0 : (formData.price || 0)
+      payload.append("price", priceValue)
+      payload.append("course_type", formData.courseType)
+      payload.append("is_active", formData.isActive)
+      payload.append("has_live_classes", formData.hasLiveClasses)
+      payload.append("subject", formData.subject)
+
+      if (thumbnailFile) {
+        // "thumbnail" must match the field name expected by your DRF Course model
+        payload.append("thumbnail", thumbnailFile)
+      }
+
+      const response = await axios.post(`${API_BASE}/api/teacher/courses/`, payload, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          // DO NOT set Content-Type here; letting the browser set the multipart boundary is safer
+        },
       })
+
       console.log("course created response", response)
       if (response.status === 201) {
-        toast({
-          title: "Success",
-          description: "Course created successfully!",
-        })
+        toast({ title: "Success", description: "Course created successfully!" })
         router.push(`/courses/details/${response.data.data.id}`)
       }
     } catch (error) {
       console.log("course created error", error)
-      toast({
-        title: "Error",
-        description: "Failed to create course. Please try again.",
-        variant: "destructive",
-      })
+      toast({ title: "Error", description: "Failed to create course. Please try again.", variant: "destructive" })
     } finally {
       setIsLoading(false)
     }
@@ -105,9 +135,7 @@ export default function CreateCoursePage() {
                   <BookOpen className="h-5 w-5" />
                   <span>Course Information</span>
                 </CardTitle>
-                <CardDescription className="text-gray-200">
-                  Fill in the details to create your new course
-                </CardDescription>
+                <CardDescription className="text-gray-200">Fill in the details to create your new course</CardDescription>
               </CardHeader>
               <CardContent className="p-6">
                 <form onSubmit={handleSubmit} className="space-y-6">
@@ -129,9 +157,7 @@ export default function CreateCoursePage() {
 
                   {/* Subject */}
                   <div className="space-y-2">
-                    <Label htmlFor="subject" className="text-[#313D6A] font-medium">
-                      Subject *
-                    </Label>
+                    <Label htmlFor="subject" className="text-[#313D6A] font-medium">Subject *</Label>
                     <Input
                       id="subject"
                       type="text"
@@ -143,11 +169,24 @@ export default function CreateCoursePage() {
                     />
                   </div>
 
+                  {/* Thumbnail */}
+                  <div className="space-y-2">
+                    <Label htmlFor="thumbnail" className="text-[#313D6A] font-medium">Thumbnail</Label>
+                    <input
+                      id="thumbnail"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleThumbnailChange}
+                      className="block w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-[#F5BB07]/20 file:text-[#313D6A]"
+                    />
+                    {thumbnailPreview && (
+                      <img src={thumbnailPreview} alt="Thumbnail preview" className="mt-2 w-48 h-28 object-cover rounded" />
+                    )}
+                  </div>
+
                   {/* Description */}
                   <div className="space-y-2">
-                    <Label htmlFor="description" className="text-[#313D6A] font-medium">
-                      Course Description *
-                    </Label>
+                    <Label htmlFor="description" className="text-[#313D6A] font-medium">Course Description *</Label>
                     <Textarea
                       id="description"
                       placeholder="Describe what students will learn in this course"
@@ -162,9 +201,7 @@ export default function CreateCoursePage() {
                   {/* Course Type and Price */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="courseType" className="text-[#313D6A] font-medium">
-                        Course Type *
-                      </Label>
+                      <Label htmlFor="courseType" className="text-[#313D6A] font-medium">Course Type *</Label>
                       <Select
                         value={formData.courseType}
                         onValueChange={(value) => handleInputChange("courseType", value)}
@@ -181,14 +218,14 @@ export default function CreateCoursePage() {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="price" className="text-[#313D6A] font-medium">
-                        Price {formData.courseType === "paid" && "*"}
-                      </Label>
+                      <Label htmlFor="price" className="text-[#313D6A] font-medium">Price {formData.courseType === "paid" && "*"}</Label>
                       <div className="relative">
                         <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                         <Input
                           id="price"
-                          type="text"
+                          type="number"
+                          step="0.01"
+                          min="0"
                           placeholder="0.00"
                           value={formData.price || ""}
                           onChange={(e) => handleInputChange("price", e.target.value)}
@@ -206,9 +243,7 @@ export default function CreateCoursePage() {
                       <div className="flex items-center space-x-3">
                         <Users className="h-5 w-5 text-[#313D6A]" />
                         <div>
-                          <Label htmlFor="isActive" className="text-[#313D6A] font-medium">
-                            Course Active
-                          </Label>
+                          <Label htmlFor="isActive" className="text-[#313D6A] font-medium">Course Active</Label>
                           <p className="text-sm text-gray-600">Make this course available to students</p>
                         </div>
                       </div>
@@ -224,9 +259,7 @@ export default function CreateCoursePage() {
                       <div className="flex items-center space-x-3">
                         <Video className="h-5 w-5 text-[#313D6A]" />
                         <div>
-                          <Label htmlFor="hasLiveClasses" className="text-[#313D6A] font-medium">
-                            Live Classes
-                          </Label>
+                          <Label htmlFor="hasLiveClasses" className="text-[#313D6A] font-medium">Live Classes</Label>
                           <p className="text-sm text-gray-600">Include live interactive sessions</p>
                         </div>
                       </div>
@@ -263,8 +296,12 @@ export default function CreateCoursePage() {
               </CardHeader>
               <CardContent className="p-6">
                 <div className="space-y-4">
-                  <div className="aspect-video bg-gray-200 rounded-lg flex items-center justify-center">
-                    <BookOpen className="h-12 w-12 text-gray-400" />
+                  <div className="aspect-video bg-gray-200 rounded-lg flex items-center justify-center overflow-hidden">
+                    {thumbnailPreview ? (
+                      <img src={thumbnailPreview} alt="preview" className="w-full h-full object-cover" />
+                    ) : (
+                      <BookOpen className="h-12 w-12 text-gray-400" />
+                    )}
                   </div>
 
                   <div>
@@ -272,17 +309,13 @@ export default function CreateCoursePage() {
                     <p className="text-sm text-gray-600 mt-1">{formData.subject || "Subject"}</p>
                   </div>
 
-                  <p className="text-sm text-gray-700 line-clamp-3">
-                    {formData.description || "Course description will appear here..."}
-                  </p>
+                  <p className="text-sm text-gray-700 line-clamp-3">{formData.description || "Course description will appear here..."}</p>
 
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-2">
                       <span
                         className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          formData.courseType === "free"
-                            ? "bg-green-100 text-green-800"
-                            : "bg-[#F5BB07]/20 text-[#313D6A]"
+                          formData.courseType === "free" ? "bg-green-100 text-green-800" : "bg-[#F5BB07]/20 text-[#313D6A]"
                         }`}
                       >
                         {formData.courseType || "Type"}
@@ -291,16 +324,12 @@ export default function CreateCoursePage() {
                         <span className="px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">Live</span>
                       )}
                     </div>
-                    <div className="text-lg font-bold text-[#313D6A]">
-                      {formData.courseType === "free" ? "Free" : `$${formData.price || "0.00"}`}
-                    </div>
+                    <div className="text-lg font-bold text-[#313D6A]">{formData.courseType === "free" ? "Free" : `$${formData.price || "0.00"}`}</div>
                   </div>
 
                   <div className="flex items-center justify-between text-sm text-gray-600">
                     <span>Status:</span>
-                    <span className={`font-medium ${formData.isActive ? "text-green-600" : "text-gray-500"}`}>
-                      {formData.isActive ? "Active" : "Inactive"}
-                    </span>
+                    <span className={`font-medium ${formData.isActive ? "text-green-600" : "text-gray-500"}`}>{formData.isActive ? "Active" : "Inactive"}</span>
                   </div>
                 </div>
               </CardContent>
