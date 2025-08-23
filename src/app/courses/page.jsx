@@ -353,7 +353,8 @@ export default function CoursesPage() {
                             className="w-8 h-8 rounded-full object-cover"
                           />
                           <span className="text-sm font-medium" style={{ color: "#313D6A" }}>
-                            {course.teacher?.first_name} {course.teacher?.last_name}
+                            {/* {course.teacher?.first_name} {course.teacher?.last_name} */}
+                            PT00{course.teacher?.id}
                           </span>
                         </div>
                         <span className="text-lg font-bold" style={{ color: "#F5BB07" }}>

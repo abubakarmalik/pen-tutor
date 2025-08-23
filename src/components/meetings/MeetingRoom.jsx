@@ -17,7 +17,7 @@ export function MeetingRoom({ meetingId, participantName, isHost = false }) {
   const [showChat, setShowChat] = useState(false)
   const [unreadMessages, setUnreadMessages] = useState(0)
 
-  const signalingUrl = process.env.NEXT_PUBLIC_SIGNALING_URL || "ws://localhost:8080"
+  const signalingUrl = process.env.NEXT_PUBLIC_SIGNALING_URL || "ws://localhost:8000"
 
   const {
     participants,

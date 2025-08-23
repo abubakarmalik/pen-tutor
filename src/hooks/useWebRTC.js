@@ -35,7 +35,7 @@ export const useWebRTC = ({ meetingId, participantName, signalingUrl, turnServer
   const buildWsUrl = (inputUrl) => {
     if (!inputUrl) {
       // default to same host + port 8080 root (useful for quick local dev)
-      return (location.protocol === "https:" ? "wss:" : "ws:") + "//" + location.host.replace(/:\d+$/, ":8080") + "/"
+      return (location.protocol === "https:" ? "wss:" : "ws:") + "//" + location.host.replace(/:\d+$/, ":8000") + "/"
     }
     // If already ws/wss, return as-is
     if (/^wss?:\/\//i.test(inputUrl)) return inputUrl
@@ -231,7 +231,7 @@ export const useWebRTC = ({ meetingId, participantName, signalingUrl, turnServer
           if (pc) {
             try {
               pc.close()
-            } catch (e) {}
+            } catch (e) { }
             peerConnectionsRef.current.delete(leavingId)
             dataChannelsRef.current.delete(leavingId)
           }
@@ -360,6 +360,7 @@ export const useWebRTC = ({ meetingId, participantName, signalingUrl, turnServer
         // Join meeting
         sendMessage({
           type: "join-meeting",
+          roomId: meetingId,            // ✅ fix: add this
           meetingId,
           participant: {
             id: participantName,
@@ -384,7 +385,7 @@ export const useWebRTC = ({ meetingId, participantName, signalingUrl, turnServer
         peerConnectionsRef.current.forEach((pc) => {
           try {
             pc.close()
-          } catch (e) {}
+          } catch (e) { }
         })
         // Attempt reconnection
         scheduleReconnect()
@@ -416,7 +417,7 @@ export const useWebRTC = ({ meetingId, participantName, signalingUrl, turnServer
     peerConnectionsRef.current.forEach((pc) => {
       try {
         pc.close()
-      } catch (e) {}
+      } catch (e) { }
     })
     peerConnectionsRef.current.clear()
     dataChannelsRef.current.clear()
@@ -431,7 +432,7 @@ export const useWebRTC = ({ meetingId, participantName, signalingUrl, turnServer
     if (wsRef.current) {
       try {
         wsRef.current.close()
-      } catch (e) {}
+      } catch (e) { }
       wsRef.current = null
     }
 

@@ -3,31 +3,30 @@
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Label } from "@/components/ui/label"
-import { Calendar } from "@/components/ui/calendar"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Textarea } from "@/components/ui/textarea"
+import { Card, CardContent, CardHeader } from "@/components/ui/card"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Calendar } from "@/components/ui/calendar"
+import { cn } from "@/lib/utils"
+import { format } from "date-fns"
 import {
-  Upload,
   User,
+  Mail,
+  Phone,
+  CalendarIcon,
   MapPin,
   GraduationCap,
-  Phone,
-  Mail,
-  CalendarIcon,
-  FileText,
   Briefcase,
   Globe,
   Star,
+  Upload,
+  FileText,
+  ChevronLeft,
+  ChevronRight,
+  Check,
 } from "lucide-react"
-import { toast } from "sonner"
-import Loader from "@/components/shared/Loader"
-import { useAuth } from "../auth/AuthContext"
-import axios from "axios"
-import { format } from "date-fns"
-import { cn } from "@/lib/utils"
 
 export default function StudentRegistrationForm() {
   const [formData, setFormData] = useState({
@@ -82,8 +81,22 @@ export default function StudentRegistrationForm() {
     certificates: [],
   })
 
-  const [certificates, setCertificates] = useState([])
-  const [newCertificateName, setNewCertificateName] = useState("")
+  const steps = [
+    { id: 1, title: "Personal Information", icon: User },
+    { id: 2, title: "Location", icon: MapPin },
+    { id: 3, title: "Academic Info", icon: GraduationCap },
+    { id: 4, title: "Employment Info", icon: Briefcase },
+    { id: 5, title: "Social Profiles", icon: Globe },
+    { id: 6, title: "Skills & Interests", icon: Star },
+    { id: 7, title: "Preferences", icon: Star },
+    { id: 8, title: "Document Uploads", icon: Upload },
+    { id: 9, title: "Certificates", icon: FileText },
+  ]
+
+  const [currentStep, setCurrentStep] = useState(1)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [dateOfBirth, setDateOfBirth] = useState()
+  const [fileNames, setFileNames] = useState({})
 
   // Skills and interests management
   const [skillsList, setSkillsList] = useState([])
@@ -101,173 +114,34 @@ export default function StudentRegistrationForm() {
   const [newLanguagePref, setNewLanguagePref] = useState("")
   const [newSocialLink, setNewSocialLink] = useState("")
 
-  const { user, refetchUser } = useAuth()
-  const [loading, setLoading] = useState(true)
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [dateOfBirth, setDateOfBirth] = useState(null)
-  const [fileNames, setFileNames] = useState({
-    profile_picture: "",
-    cnic_or_form_b_picture: "",
-    degree: "",
-  })
-
-  const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
+  // Certificates management
+  const [certificates, setCertificates] = useState([])
+  const [newCertificateName, setNewCertificateName] = useState("")
 
   useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const token = localStorage.getItem("access_token")
-        if (!token) {
-          toast.error("Authentication required.")
-          return
-        }
-
-        const response = await axios.get(`${API_BASE}/api/auth/profile/update/`, {
-          headers: { Authorization: `Bearer ${token}` },
-        })
-        console.log("Profile Response:", response.data)
-        if (response.status === 200) {
-          const { data } = response.data
-          setFormData({
-            full_name: data.full_name || "",
-            first_name: data.first_name || data.user?.first_name || "",
-            last_name: data.last_name || data.user?.last_name || "",
-            email: data.email || data.user?.email || "",
-            phone: data.phone || "",
-            date_of_birth: data.date_of_birth || "",
-            age: data.age || "",
-            gender: data.gender || data.user?.gender || "",
-            bio: data.bio || "",
-            address: data.address || "",
-            city: data.city || data.user?.city || "",
-            country: data.country || data.user?.country || "",
-            education_level: data.education_level || "",
-            institution: data.institution || "",
-            field_of_study: data.field_of_study || "",
-            graduation_year: data.graduation_year || "",
-            gpa: data.gpa || "",
-            employment_status: data.employment_status || "",
-            current_job_title: data.current_job_title || "",
-            company: data.company || "",
-            career_goals: data.career_goals || "",
-            linkedin_profile: data.linkedin_profile || "",
-            github_profile: data.github_profile || "",
-            portfolio_website: data.portfolio_website || "",
-            skills: [], // Change from {} to []
-            interests: [], // Change from {} to []
-            preferred_learning_time: data.preferred_learning_time || [],
-            notification_preferences: data.notification_preferences || [],
-            language_preferences: data.language_preferences || [],
-            social_links: data.social_links || [],
-            profile_picture: null,
-            cnic_or_form_b_picture: null,
-            degree: null,
-            certificates: data.certificates || [],
-          })
-
-          if (data.date_of_birth) {
-            setDateOfBirth(new Date(data.date_of_birth))
-          }
-
-          // Initialize skills and interests as arrays
-          if (data.skills) {
-            if (Array.isArray(data.skills)) {
-              setSkillsList(data.skills.map((skill, index) => ({ id: Date.now() + index, name: skill })))
-              setFormData((prev) => ({ ...prev, skills: data.skills }))
-            } else if (typeof data.skills === "object") {
-              const skillsArray = Object.keys(data.skills)
-              setSkillsList(skillsArray.map((skill, index) => ({ id: Date.now() + index, name: skill })))
-              setFormData((prev) => ({ ...prev, skills: skillsArray }))
-            }
-          }
-
-          if (data.interests) {
-            if (Array.isArray(data.interests)) {
-              setInterestsList(
-                data.interests.map((interest, index) => ({ id: Date.now() + index + 1000, name: interest })),
-              )
-              setFormData((prev) => ({ ...prev, interests: data.interests }))
-            } else if (typeof data.interests === "object") {
-              const interestsArray = Object.keys(data.interests)
-              setInterestsList(
-                interestsArray.map((interest, index) => ({ id: Date.now() + index + 1000, name: interest })),
-              )
-              setFormData((prev) => ({ ...prev, interests: interestsArray }))
-            }
-          }
-
-          // Initialize certificates
-          if (data.certificates) {
-            let certArray = []
-            if (Array.isArray(data.certificates)) {
-              certArray = data.certificates.map((cert, index) => ({
-                id: Date.now() + index,
-                name: cert.name || `Certificate ${index + 1}`,
-                file: null,
-                uploaded_file_url: cert.file_url || null,
-              }))
-            } else if (typeof data.certificates === "object") {
-              certArray = Object.keys(data.certificates).map((name, index) => ({
-                id: Date.now() + index,
-                name,
-                file: null,
-                uploaded_file_url: data.certificates[name],
-              }))
-            }
-            setCertificates(certArray)
-          }
-
-          // Initialize preferences as arrays
-          if (data.preferred_learning_time) {
-            if (Array.isArray(data.preferred_learning_time)) {
-              setPreferredLearningTimes(
-                data.preferred_learning_time.map((time, index) => ({ id: Date.now() + index + 2000, name: time })),
-              )
-              setFormData((prev) => ({ ...prev, preferred_learning_time: data.preferred_learning_time }))
-            }
-          }
-
-          if (data.notification_preferences) {
-            if (Array.isArray(data.notification_preferences)) {
-              setNotificationPrefs(
-                data.notification_preferences.map((pref, index) => ({ id: Date.now() + index + 3000, name: pref })),
-              )
-              setFormData((prev) => ({ ...prev, notification_preferences: data.notification_preferences }))
-            }
-          }
-
-          if (data.language_preferences) {
-            if (Array.isArray(data.language_preferences)) {
-              setLanguagePrefs(
-                data.language_preferences.map((lang, index) => ({ id: Date.now() + index + 4000, name: lang })),
-              )
-              setFormData((prev) => ({ ...prev, language_preferences: data.language_preferences }))
-            }
-          }
-
-          if (data.social_links) {
-            if (Array.isArray(data.social_links)) {
-              setSocialLinks(data.social_links.map((link, index) => ({ id: Date.now() + index + 5000, name: link })))
-              setFormData((prev) => ({ ...prev, social_links: data.social_links }))
-            }
-          }
-        } else {
-          toast.error("Failed to load profile data.")
-        }
-      } catch (error) {
-        toast.error("An error occurred while fetching your profile.")
-        console.error(error)
-      } finally {
-        setLoading(false)
-      }
+    const saved = localStorage.getItem("formProgress")
+    if (saved) {
+      const parsed = JSON.parse(saved)
+      setCurrentStep(parsed.step || 1)
+      setFormData(parsed.formData || formData)
     }
+  }, [])
 
-    if (user?.id && user.role === "student") {
-     fetchProfile()
-    } else {
-      setLoading(false)
+  useEffect(() => {
+    localStorage.setItem("formProgress", JSON.stringify({ step: currentStep, formData }))
+  }, [currentStep, formData])
+
+  const handleNext = () => {
+    if (currentStep < steps.length) {
+      setCurrentStep((prev) => prev + 1)
     }
-  }, [user?.id])
+  }
+
+  const handleBack = () => {
+    if (currentStep > 1) {
+      setCurrentStep((prev) => prev - 1)
+    }
+  }
 
   const handleInputChange = (e) => {
     const { name, value } = e.target
@@ -278,19 +152,11 @@ export default function StudentRegistrationForm() {
     setFormData((prev) => ({ ...prev, [name]: value }))
   }
 
-  const handleArrayChange = (name, value, checked) => {
-    setFormData((prev) => ({
-      ...prev,
-      [name]: checked ? [...prev[name], value] : prev[name].filter((item) => item !== value),
-    }))
-  }
-
   const handleDateChange = (date) => {
     setDateOfBirth(date)
-    setFormData((prev) => ({
-      ...prev,
-      date_of_birth: date ? format(date, "yyyy-MM-dd") : "",
-    }))
+    if (date) {
+      setFormData((prev) => ({ ...prev, date_of_birth: format(date, "yyyy-MM-dd") }))
+    }
   }
 
   const handleFileChange = (e, fieldName) => {
@@ -301,178 +167,123 @@ export default function StudentRegistrationForm() {
     }
   }
 
-  // Skills management - change to array format
+  // Skills management functions
   const handleAddSkill = () => {
     if (newSkill.trim()) {
       const skill = { id: Date.now(), name: newSkill.trim() }
-      setSkillsList([...skillsList, skill])
+      setSkillsList((prev) => [...prev, skill])
+      setFormData((prev) => ({ ...prev, skills: [...prev.skills, skill] }))
       setNewSkill("")
-
-      // Update formData skills as array
-      setFormData((prev) => ({
-        ...prev,
-        skills: [...prev.skills, skill.name],
-      }))
     }
   }
 
-  const handleRemoveSkill = (skillId) => {
-    const skillToRemove = skillsList.find((skill) => skill.id === skillId)
-    const updatedSkillsList = skillsList.filter((skill) => skill.id !== skillId)
-    setSkillsList(updatedSkillsList)
-
-    if (skillToRemove) {
-      setFormData((prev) => ({
-        ...prev,
-        skills: updatedSkillsList.map((s) => s.name),
-      }))
-    }
+  const handleRemoveSkill = (id) => {
+    setSkillsList((prev) => prev.filter((skill) => skill.id !== id))
+    setFormData((prev) => ({ ...prev, skills: prev.skills.filter((skill) => skill.id !== id) }))
   }
 
-  // Interests management - change to array format
+  // Interests management functions
   const handleAddInterest = () => {
     if (newInterest.trim()) {
       const interest = { id: Date.now(), name: newInterest.trim() }
-      setInterestsList([...interestsList, interest])
+      setInterestsList((prev) => [...prev, interest])
+      setFormData((prev) => ({ ...prev, interests: [...prev.interests, interest] }))
       setNewInterest("")
-
-      // Update formData interests as array
-      setFormData((prev) => ({
-        ...prev,
-        interests: [...prev.interests, interest.name],
-      }))
     }
   }
 
-  const handleRemoveInterest = (interestId) => {
-    const interestToRemove = interestsList.find((interest) => interest.id === interestId)
-    const updatedInterestsList = interestsList.filter((interest) => interest.id !== interestId)
-    setInterestsList(updatedInterestsList)
-
-    if (interestToRemove) {
-      setFormData((prev) => ({
-        ...prev,
-        interests: updatedInterestsList.map((i) => i.name),
-      }))
-    }
+  const handleRemoveInterest = (id) => {
+    setInterestsList((prev) => prev.filter((interest) => interest.id !== id))
+    setFormData((prev) => ({ ...prev, interests: prev.interests.filter((interest) => interest.id !== id) }))
   }
 
-  // Preferred Learning Time management
+  // Preferences management functions
   const handleAddPreferredTime = () => {
     if (newPreferredTime.trim()) {
       const time = { id: Date.now(), name: newPreferredTime.trim() }
-      setPreferredLearningTimes([...preferredLearningTimes, time])
+      setPreferredLearningTimes((prev) => [...prev, time])
+      setFormData((prev) => ({ ...prev, preferred_learning_time: [...prev.preferred_learning_time, time] }))
       setNewPreferredTime("")
-
-      setFormData((prev) => ({
-        ...prev,
-        preferred_learning_time: [...prev.preferred_learning_time, time.name],
-      }))
     }
   }
 
-  const handleRemovePreferredTime = (timeId) => {
-    const updatedTimes = preferredLearningTimes.filter((time) => time.id !== timeId)
-    setPreferredLearningTimes(updatedTimes)
-
+  const handleRemovePreferredTime = (id) => {
+    setPreferredLearningTimes((prev) => prev.filter((time) => time.id !== id))
     setFormData((prev) => ({
       ...prev,
-      preferred_learning_time: updatedTimes.map((t) => t.name),
+      preferred_learning_time: prev.preferred_learning_time.filter((time) => time.id !== id),
     }))
   }
 
-  // Notification Preferences management
   const handleAddNotificationPref = () => {
     if (newNotificationPref.trim()) {
       const pref = { id: Date.now(), name: newNotificationPref.trim() }
-      setNotificationPrefs([...notificationPrefs, pref])
+      setNotificationPrefs((prev) => [...prev, pref])
+      setFormData((prev) => ({ ...prev, notification_preferences: [...prev.notification_preferences, pref] }))
       setNewNotificationPref("")
-
-      setFormData((prev) => ({
-        ...prev,
-        notification_preferences: [...prev.notification_preferences, pref.name],
-      }))
     }
   }
 
-  const handleRemoveNotificationPref = (prefId) => {
-    const updatedPrefs = notificationPrefs.filter((pref) => pref.id !== prefId)
-    setNotificationPrefs(updatedPrefs)
-
+  const handleRemoveNotificationPref = (id) => {
+    setNotificationPrefs((prev) => prev.filter((pref) => pref.id !== id))
     setFormData((prev) => ({
       ...prev,
-      notification_preferences: updatedPrefs.map((p) => p.name),
+      notification_preferences: prev.notification_preferences.filter((pref) => pref.id !== id),
     }))
   }
 
-  // Language Preferences management
   const handleAddLanguagePref = () => {
     if (newLanguagePref.trim()) {
       const lang = { id: Date.now(), name: newLanguagePref.trim() }
-      setLanguagePrefs([...languagePrefs, lang])
+      setLanguagePrefs((prev) => [...prev, lang])
+      setFormData((prev) => ({ ...prev, language_preferences: [...prev.language_preferences, lang] }))
       setNewLanguagePref("")
-
-      setFormData((prev) => ({
-        ...prev,
-        language_preferences: [...prev.language_preferences, lang.name],
-      }))
     }
   }
 
-  const handleRemoveLanguagePref = (langId) => {
-    const updatedLangs = languagePrefs.filter((lang) => lang.id !== langId)
-    setLanguagePrefs(updatedLangs)
-
+  const handleRemoveLanguagePref = (id) => {
+    setLanguagePrefs((prev) => prev.filter((lang) => lang.id !== id))
     setFormData((prev) => ({
       ...prev,
-      language_preferences: updatedLangs.map((l) => l.name),
+      language_preferences: prev.language_preferences.filter((lang) => lang.id !== id),
     }))
   }
 
-  // Social Links management
   const handleAddSocialLink = () => {
     if (newSocialLink.trim()) {
       const link = { id: Date.now(), name: newSocialLink.trim() }
-      setSocialLinks([...socialLinks, link])
+      setSocialLinks((prev) => [...prev, link])
+      setFormData((prev) => ({ ...prev, social_links: [...prev.social_links, link] }))
       setNewSocialLink("")
-
-      setFormData((prev) => ({
-        ...prev,
-        social_links: [...prev.social_links, link.name],
-      }))
     }
   }
 
-  const handleRemoveSocialLink = (linkId) => {
-    const updatedLinks = socialLinks.filter((link) => link.id !== linkId)
-    setSocialLinks(updatedLinks)
-
-    setFormData((prev) => ({
-      ...prev,
-      social_links: updatedLinks.map((l) => l.name),
-    }))
+  const handleRemoveSocialLink = (id) => {
+    setSocialLinks((prev) => prev.filter((link) => link.id !== id))
+    setFormData((prev) => ({ ...prev, social_links: prev.social_links.filter((link) => link.id !== id) }))
   }
 
-  // Certificate management
+  // Certificates management functions
   const handleAddCertificate = () => {
     if (newCertificateName.trim()) {
-      const newCertificate = {
-        id: Date.now(),
-        name: newCertificateName.trim(),
-        file: null,
-        uploaded_file_url: null,
-      }
-      setCertificates([...certificates, newCertificate])
+      const certificate = { id: Date.now(), name: newCertificateName.trim(), file: null }
+      setCertificates((prev) => [...prev, certificate])
+      setFormData((prev) => ({ ...prev, certificates: [...prev.certificates, certificate] }))
       setNewCertificateName("")
     }
   }
 
-  const handleCertificateFileChange = (certificateId, file) => {
-    setCertificates(certificates.map((cert) => (cert.id === certificateId ? { ...cert, file } : cert)))
+  const handleRemoveCertificate = (id) => {
+    setCertificates((prev) => prev.filter((cert) => cert.id !== id))
+    setFormData((prev) => ({ ...prev, certificates: prev.certificates.filter((cert) => cert.id !== id) }))
   }
 
-  const handleRemoveCertificate = (certificateId) => {
-    setCertificates(certificates.filter((cert) => cert.id !== certificateId))
+  const handleCertificateFileChange = (certificateId, file) => {
+    setCertificates((prev) => prev.map((cert) => (cert.id === certificateId ? { ...cert, file } : cert)))
+    setFormData((prev) => ({
+      ...prev,
+      certificates: prev.certificates.map((cert) => (cert.id === certificateId ? { ...cert, file } : cert)),
+    }))
   }
 
   const arrayToObjectTrue = (arr = []) => {
@@ -532,6 +343,7 @@ export default function StudentRegistrationForm() {
     })
     return obj
   }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     setIsSubmitting(true)
@@ -648,104 +460,79 @@ export default function StudentRegistrationForm() {
       setIsSubmitting(false)
     }
   }
+  const ProgressIndicator = () => (
+    <div className="mb-6 md:mb-8">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-2">
+        <h2 className="text-lg sm:text-xl font-semibold text-white">Student Registration</h2>
+        <span className="text-xs sm:text-sm text-gray-200">
+          Step {currentStep} of {steps.length}
+        </span>
+      </div>
 
-  // const handleSubmit = async (e) => {
-  //   e.preventDefault()
-  //   setIsSubmitting(true)
+      {/* Mobile-first step indicators with horizontal scroll */}
+      <div className="overflow-x-auto pb-2 mb-4">
+        <div className="flex items-center space-x-1 sm:space-x-2 min-w-max px-1">
+          {steps.map((step, index) => {
+            const isCompleted = step.id < currentStep
+            const isCurrent = step.id === currentStep
+            const IconComponent = step.icon
 
-  //   try {
-  //     const token = localStorage.getItem("access_token")
-  //     const data = new FormData()
+            return (
+              <div key={step.id} className="flex items-center">
+                <div
+                  className={cn(
+                    "flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 transition-all duration-200 flex-shrink-0",
+                    isCompleted
+                      ? "bg-white border-white text-[#313D6A]"
+                      : isCurrent
+                        ? "bg-[#F5BB07] border-[#F5BB07] text-white"
+                        : "bg-transparent border-gray-300 text-gray-300",
+                  )}
+                >
+                  {isCompleted ? (
+                    <Check className="w-3 h-3 sm:w-5 sm:h-5" />
+                  ) : (
+                    <IconComponent className="w-3 h-3 sm:w-5 sm:h-5" />
+                  )}
+                </div>
+                {index < steps.length - 1 && (
+                  <div
+                    className={cn(
+                      "w-6 sm:w-12 h-0.5 mx-1 sm:mx-2 transition-all duration-200 flex-shrink-0",
+                      isCompleted ? "bg-white" : "bg-gray-400",
+                    )}
+                  />
+                )}
+              </div>
+            )
+          })}
+        </div>
+      </div>
 
-  //     // Add all regular form fields
-  //     Object.keys(formData).forEach((key) => {
-  //       if (key !== "certificates" && formData[key] !== null && formData[key] !== "") {
-  //         if (Array.isArray(formData[key])) {
-  //           // Handle arrays - send as JSON string for Django
-  //           if (formData[key].length > 0) {
-  //             data.append(key, JSON.stringify(formData[key]))
-  //           }
-  //         } else if (typeof formData[key] === "object" && formData[key] !== null && !(formData[key] instanceof File)) {
-  //           // Handle object fields (if any remain)
-  //           data.append(key, JSON.stringify(formData[key]))
-  //         } else if (formData[key] instanceof File) {
-  //           // Handle file uploads
-  //           data.append(key, formData[key])
-  //         } else {
-  //           // Handle regular fields
-  //           data.append(key, formData[key])
-  //         }
-  //       }
-  //     })
+      {/* Progress bar */}
+      <div className="w-full bg-gray-400 rounded-full h-1.5 sm:h-2">
+        <div
+          className="bg-white h-1.5 sm:h-2 rounded-full transition-all duration-300"
+          style={{ width: `${(currentStep / steps.length) * 100}%` }}
+        />
+      </div>
+    </div>
+  )
 
-  //     // Prepare certificates metadata and files
-  //     const certificatesMetadata = []
-  //     certificates.forEach((cert, index) => {
-  //       if (cert.file) {
-  //         data.append(`certificate_file_${index}`, cert.file)
-  //       }
+  const renderStepContent = () => {
+    switch (currentStep) {
+      case 1:
+        return (
+          <div className="space-y-6">
+            <div className="text-center mb-6">
+              <User className="w-12 h-12 text-[#313D6A] mx-auto mb-2" />
+              <h3 className="text-xl font-semibold text-[#313D6A]">Personal Information</h3>
+              <p className="text-gray-600">Tell us about yourself</p>
+            </div>
 
-  //       certificatesMetadata.push({
-  //         name: cert.name,
-  //         file_index: cert.file ? index : null,
-  //         uploaded_at: new Date().toISOString(),
-  //       })
-  //     })
-
-  //     // Add certificates metadata as JSON
-  //     if (certificatesMetadata.length > 0) {
-  //       data.append("certificates", JSON.stringify(certificatesMetadata))
-  //     }
-
-  //     // Debug: Log what we're sending
-  //     console.log("Form data being sent:")
-  //     for (const [key, value] of data.entries()) {
-  //       console.log(key, value)
-  //     }
-
-  //     // Submit the form
-  //     const response = await axios.post(`${API_BASE}/api/auth/teacher-profile/create/`, data, {
-  //       headers: {
-  //         Authorization: `Bearer ${token}`,
-  //         // Don't set Content-Type header - let browser set it for FormData
-  //       },
-  //     })
-
-  //     if (response.status === 201) {
-  //       toast.success("Profile updated successfully!")
-  //     } else {
-  //       const errorData = await response.data
-  //       console.error("Error response:", errorData)
-  //       toast.error(`Failed to update profile: ${JSON.stringify(errorData)}`)
-  //     }
-  //   } catch (error) {
-  //     toast.error("An error occurred while updating your profile.")
-  //     console.error(error)
-  //   } finally {
-  //     setIsSubmitting(false)
-  //   }
-  // }
-
-  if (loading) {
-    return <Loader text="Loading Profile..." />
-  }
-
-  return (
-    <Card className="max-w-6xl mx-auto">
-      <CardHeader>
-        <CardTitle className="text-2xl">Student Profile</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-8">
-          {/* Personal Information */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold flex items-center gap-2">
-              <User className="h-5 w-5" />
-              Personal Information
-            </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="full_name">Full Name</Label>
+                <Label htmlFor="full_name">Full Name *</Label>
                 <Input
                   id="full_name"
                   name="full_name"
@@ -756,7 +543,7 @@ export default function StudentRegistrationForm() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="first_name">First Name</Label>
+                <Label htmlFor="first_name">First Name *</Label>
                 <Input
                   id="first_name"
                   name="first_name"
@@ -767,7 +554,7 @@ export default function StudentRegistrationForm() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="last_name">Last Name</Label>
+                <Label htmlFor="last_name">Last Name *</Label>
                 <Input
                   id="last_name"
                   name="last_name"
@@ -783,7 +570,7 @@ export default function StudentRegistrationForm() {
               <div className="space-y-2">
                 <Label htmlFor="email" className="flex items-center gap-2">
                   <Mail className="h-4 w-4" />
-                  Email
+                  Email *
                 </Label>
                 <Input
                   id="email"
@@ -798,7 +585,7 @@ export default function StudentRegistrationForm() {
               <div className="space-y-2">
                 <Label htmlFor="phone" className="flex items-center gap-2">
                   <Phone className="h-4 w-4" />
-                  Phone
+                  Phone *
                 </Label>
                 <Input
                   id="phone"
@@ -831,7 +618,7 @@ export default function StudentRegistrationForm() {
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button
-                      variant="outline"
+                      variant="ghost"
                       className={cn(
                         "w-full justify-start text-left font-normal",
                         !dateOfBirth && "text-muted-foreground",
@@ -873,13 +660,17 @@ export default function StudentRegistrationForm() {
               />
             </div>
           </div>
+        )
 
-          {/* Location */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold flex items-center gap-2">
-              <MapPin className="h-5 w-5" />
-              Location
-            </h3>
+      case 2:
+        return (
+          <div className="space-y-6">
+            <div className="text-center mb-6">
+              <MapPin className="w-12 h-12 text-[#313D6A] mx-auto mb-2" />
+              <h3 className="text-xl font-semibold text-[#313D6A]">Location</h3>
+              <p className="text-gray-600">Where are you located?</p>
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="address">Address</Label>
@@ -907,13 +698,17 @@ export default function StudentRegistrationForm() {
               </div>
             </div>
           </div>
+        )
 
-          {/* Academic Information */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold flex items-center gap-2">
-              <GraduationCap className="h-5 w-5" />
-              Academic Information
-            </h3>
+      case 3:
+        return (
+          <div className="space-y-6">
+            <div className="text-center mb-6">
+              <GraduationCap className="w-12 h-12 text-[#313D6A] mx-auto mb-2" />
+              <h3 className="text-xl font-semibold text-[#313D6A]">Academic Information</h3>
+              <p className="text-gray-600">Your educational background</p>
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="education_level">Education Level</Label>
@@ -981,13 +776,17 @@ export default function StudentRegistrationForm() {
               </div>
             </div>
           </div>
+        )
 
-          {/* Employment Information */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold flex items-center gap-2">
-              <Briefcase className="h-5 w-5" />
-              Employment Information
-            </h3>
+      case 4:
+        return (
+          <div className="space-y-6">
+            <div className="text-center mb-6">
+              <Briefcase className="w-12 h-12 text-[#313D6A] mx-auto mb-2" />
+              <h3 className="text-xl font-semibold text-[#313D6A]">Employment Information</h3>
+              <p className="text-gray-600">Your work experience and career goals</p>
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="employment_status">Employment Status</Label>
@@ -1019,17 +818,15 @@ export default function StudentRegistrationForm() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="company">Company</Label>
-                <Input
-                  id="company"
-                  name="company"
-                  value={formData.company}
-                  onChange={handleInputChange}
-                  placeholder="Company Name"
-                />
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="company">Company</Label>
+              <Input
+                id="company"
+                name="company"
+                value={formData.company}
+                onChange={handleInputChange}
+                placeholder="Company Name"
+              />
             </div>
 
             <div className="space-y-2">
@@ -1044,13 +841,17 @@ export default function StudentRegistrationForm() {
               />
             </div>
           </div>
+        )
 
-          {/* Social Profiles */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold flex items-center gap-2">
-              <Globe className="h-5 w-5" />
-              Social Profiles
-            </h3>
+      case 5:
+        return (
+          <div className="space-y-6">
+            <div className="text-center mb-6">
+              <Globe className="w-12 h-12 text-[#313D6A] mx-auto mb-2" />
+              <h3 className="text-xl font-semibold text-[#313D6A]">Social Profiles</h3>
+              <p className="text-gray-600">Connect your professional profiles</p>
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="linkedin_profile">LinkedIn Profile</Label>
@@ -1084,13 +885,17 @@ export default function StudentRegistrationForm() {
               </div>
             </div>
           </div>
+        )
 
-          {/* Skills & Interests */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold flex items-center gap-2">
-              <Star className="h-5 w-5" />
-              Skills & Interests
-            </h3>
+      case 6:
+        return (
+          <div className="space-y-6">
+            <div className="text-center mb-6">
+              <Star className="w-12 h-12 text-[#313D6A] mx-auto mb-2" />
+              <h3 className="text-xl font-semibold text-[#313D6A]">Skills & Interests</h3>
+              <p className="text-gray-600">What are you passionate about?</p>
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Skills */}
               <div className="space-y-3">
@@ -1101,8 +906,14 @@ export default function StudentRegistrationForm() {
                     onChange={(e) => setNewSkill(e.target.value)}
                     placeholder="Add a skill"
                     className="flex-1"
+                    onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), handleAddSkill())}
                   />
-                  <Button type="button" onClick={handleAddSkill} variant="outline">
+                  <Button
+                    type="button"
+                    onClick={handleAddSkill}
+                    variant="outline"
+                    className="bg-[#313D6A] text-white hover:bg-[#313D6A]/90"
+                  >
                     Add
                   </Button>
                 </div>
@@ -1111,7 +922,7 @@ export default function StudentRegistrationForm() {
                     {skillsList.map((skill) => (
                       <div
                         key={skill.id}
-                        className="flex items-center gap-1 bg-blue-100 text-blue-800 px-2 py-1 rounded-md text-sm"
+                        className="flex items-center gap-1 bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm"
                       >
                         {skill.name}
                         <Button
@@ -1119,7 +930,7 @@ export default function StudentRegistrationForm() {
                           variant="ghost"
                           size="sm"
                           onClick={() => handleRemoveSkill(skill.id)}
-                          className="h-4 w-4 p-0 hover:bg-blue-200"
+                          className="h-4 w-4 p-0 hover:bg-blue-200 ml-1"
                         >
                           ×
                         </Button>
@@ -1138,8 +949,14 @@ export default function StudentRegistrationForm() {
                     onChange={(e) => setNewInterest(e.target.value)}
                     placeholder="Add an interest"
                     className="flex-1"
+                    onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), handleAddInterest())}
                   />
-                  <Button type="button" onClick={handleAddInterest} variant="outline">
+                  <Button
+                    type="button"
+                    onClick={handleAddInterest}
+                    variant="outline"
+                    className="bg-[#313D6A] text-white hover:bg-[#313D6A]/90"
+                  >
                     Add
                   </Button>
                 </div>
@@ -1148,7 +965,7 @@ export default function StudentRegistrationForm() {
                     {interestsList.map((interest) => (
                       <div
                         key={interest.id}
-                        className="flex items-center gap-1 bg-green-100 text-green-800 px-2 py-1 rounded-md text-sm"
+                        className="flex items-center gap-1 bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm"
                       >
                         {interest.name}
                         <Button
@@ -1156,7 +973,7 @@ export default function StudentRegistrationForm() {
                           variant="ghost"
                           size="sm"
                           onClick={() => handleRemoveInterest(interest.id)}
-                          className="h-4 w-4 p-0 hover:bg-green-200"
+                          className="h-4 w-4 p-0 hover:bg-green-200 ml-1"
                         >
                           ×
                         </Button>
@@ -1167,13 +984,17 @@ export default function StudentRegistrationForm() {
               </div>
             </div>
           </div>
+        )
 
-          {/* Preferences */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold flex items-center gap-2">
-              <Star className="h-5 w-5" />
-              Preferences
-            </h3>
+      case 7:
+        return (
+          <div className="space-y-6">
+            <div className="text-center mb-6">
+              <Star className="w-12 h-12 text-[#313D6A] mx-auto mb-2" />
+              <h3 className="text-xl font-semibold text-[#313D6A]">Preferences</h3>
+              <p className="text-gray-600">Customize your experience</p>
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Preferred Learning Time */}
               <div className="space-y-3">
@@ -1184,8 +1005,14 @@ export default function StudentRegistrationForm() {
                     onChange={(e) => setNewPreferredTime(e.target.value)}
                     placeholder="e.g., Morning, Evening"
                     className="flex-1"
+                    onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), handleAddPreferredTime())}
                   />
-                  <Button type="button" onClick={handleAddPreferredTime} variant="outline">
+                  <Button
+                    type="button"
+                    onClick={handleAddPreferredTime}
+                    variant="outline"
+                    className="bg-[#313D6A] text-white hover:bg-[#313D6A]/90"
+                  >
                     Add
                   </Button>
                 </div>
@@ -1194,7 +1021,7 @@ export default function StudentRegistrationForm() {
                     {preferredLearningTimes.map((time) => (
                       <div
                         key={time.id}
-                        className="flex items-center gap-1 bg-purple-100 text-purple-800 px-2 py-1 rounded-md text-sm"
+                        className="flex items-center gap-1 bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm"
                       >
                         {time.name}
                         <Button
@@ -1202,7 +1029,7 @@ export default function StudentRegistrationForm() {
                           variant="ghost"
                           size="sm"
                           onClick={() => handleRemovePreferredTime(time.id)}
-                          className="h-4 w-4 p-0 hover:bg-purple-200"
+                          className="h-4 w-4 p-0 hover:bg-purple-200 ml-1"
                         >
                           ×
                         </Button>
@@ -1221,8 +1048,14 @@ export default function StudentRegistrationForm() {
                     onChange={(e) => setNewLanguagePref(e.target.value)}
                     placeholder="e.g., English, Spanish"
                     className="flex-1"
+                    onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), handleAddLanguagePref())}
                   />
-                  <Button type="button" onClick={handleAddLanguagePref} variant="outline">
+                  <Button
+                    type="button"
+                    onClick={handleAddLanguagePref}
+                    variant="outline"
+                    className="bg-[#313D6A] text-white hover:bg-[#313D6A]/90"
+                  >
                     Add
                   </Button>
                 </div>
@@ -1231,7 +1064,7 @@ export default function StudentRegistrationForm() {
                     {languagePrefs.map((lang) => (
                       <div
                         key={lang.id}
-                        className="flex items-center gap-1 bg-orange-100 text-orange-800 px-2 py-1 rounded-md text-sm"
+                        className="flex items-center gap-1 bg-orange-100 text-orange-800 px-3 py-1 rounded-full text-sm"
                       >
                         {lang.name}
                         <Button
@@ -1239,7 +1072,7 @@ export default function StudentRegistrationForm() {
                           variant="ghost"
                           size="sm"
                           onClick={() => handleRemoveLanguagePref(lang.id)}
-                          className="h-4 w-4 p-0 hover:bg-orange-200"
+                          className="h-4 w-4 p-0 hover:bg-orange-200 ml-1"
                         >
                           ×
                         </Button>
@@ -1260,8 +1093,14 @@ export default function StudentRegistrationForm() {
                     onChange={(e) => setNewNotificationPref(e.target.value)}
                     placeholder="e.g., Email, SMS"
                     className="flex-1"
+                    onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), handleAddNotificationPref())}
                   />
-                  <Button type="button" onClick={handleAddNotificationPref} variant="outline">
+                  <Button
+                    type="button"
+                    onClick={handleAddNotificationPref}
+                    variant="outline"
+                    className="bg-[#313D6A] text-white hover:bg-[#313D6A]/90"
+                  >
                     Add
                   </Button>
                 </div>
@@ -1270,7 +1109,7 @@ export default function StudentRegistrationForm() {
                     {notificationPrefs.map((pref) => (
                       <div
                         key={pref.id}
-                        className="flex items-center gap-1 bg-yellow-100 text-yellow-800 px-2 py-1 rounded-md text-sm"
+                        className="flex items-center gap-1 bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm"
                       >
                         {pref.name}
                         <Button
@@ -1278,7 +1117,7 @@ export default function StudentRegistrationForm() {
                           variant="ghost"
                           size="sm"
                           onClick={() => handleRemoveNotificationPref(pref.id)}
-                          className="h-4 w-4 p-0 hover:bg-yellow-200"
+                          className="h-4 w-4 p-0 hover:bg-yellow-200 ml-1"
                         >
                           ×
                         </Button>
@@ -1297,8 +1136,14 @@ export default function StudentRegistrationForm() {
                     onChange={(e) => setNewSocialLink(e.target.value)}
                     placeholder="e.g., Twitter, Instagram"
                     className="flex-1"
+                    onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), handleAddSocialLink())}
                   />
-                  <Button type="button" onClick={handleAddSocialLink} variant="outline">
+                  <Button
+                    type="button"
+                    onClick={handleAddSocialLink}
+                    variant="outline"
+                    className="bg-[#313D6A] text-white hover:bg-[#313D6A]/90"
+                  >
                     Add
                   </Button>
                 </div>
@@ -1307,7 +1152,7 @@ export default function StudentRegistrationForm() {
                     {socialLinks.map((link) => (
                       <div
                         key={link.id}
-                        className="flex items-center gap-1 bg-indigo-100 text-indigo-800 px-2 py-1 rounded-md text-sm"
+                        className="flex items-center gap-1 bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full text-sm"
                       >
                         {link.name}
                         <Button
@@ -1315,7 +1160,7 @@ export default function StudentRegistrationForm() {
                           variant="ghost"
                           size="sm"
                           onClick={() => handleRemoveSocialLink(link.id)}
-                          className="h-4 w-4 p-0 hover:bg-indigo-200"
+                          className="h-4 w-4 p-0 hover:bg-indigo-200 ml-1"
                         >
                           ×
                         </Button>
@@ -1326,18 +1171,22 @@ export default function StudentRegistrationForm() {
               </div>
             </div>
           </div>
+        )
 
-          {/* Document Uploads */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold flex items-center gap-2">
-              <Upload className="h-5 w-5" />
-              Document Uploads
-            </h3>
+      case 8:
+        return (
+          <div className="space-y-6">
+            <div className="text-center mb-6">
+              <Upload className="w-12 h-12 text-[#313D6A] mx-auto mb-2" />
+              <h3 className="text-xl font-semibold text-[#313D6A]">Document Uploads</h3>
+              <p className="text-gray-600">Upload your important documents</p>
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {/* Profile Picture */}
               <div className="space-y-2">
                 <Label htmlFor="profile_picture">Profile Picture</Label>
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-gray-400 transition-colors">
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-[#313D6A] transition-colors">
                   <Input
                     id="profile_picture"
                     name="profile_picture"
@@ -1356,7 +1205,7 @@ export default function StudentRegistrationForm() {
               {/* CNIC or Form B Picture */}
               <div className="space-y-2">
                 <Label htmlFor="cnic_or_form_b_picture">CNIC or Form B Picture</Label>
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-gray-400 transition-colors">
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-[#313D6A] transition-colors">
                   <Input
                     id="cnic_or_form_b_picture"
                     name="cnic_or_form_b_picture"
@@ -1375,7 +1224,7 @@ export default function StudentRegistrationForm() {
               {/* Degree */}
               <div className="space-y-2">
                 <Label htmlFor="degree">Degree Certificate</Label>
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-gray-400 transition-colors">
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-[#313D6A] transition-colors">
                   <Input
                     id="degree"
                     name="degree"
@@ -1392,13 +1241,16 @@ export default function StudentRegistrationForm() {
               </div>
             </div>
           </div>
+        )
 
-          {/* Certificates */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold flex items-center gap-2">
-              <FileText className="h-5 w-5" />
-              Certificates
-            </h3>
+      case 9:
+        return (
+          <div className="space-y-6">
+            <div className="text-center mb-6">
+              <FileText className="w-12 h-12 text-[#313D6A] mx-auto mb-2" />
+              <h3 className="text-xl font-semibold text-[#313D6A]">Certificates</h3>
+              <p className="text-gray-600">Add your professional certificates</p>
+            </div>
 
             {/* Add New Certificate */}
             <div className="flex gap-2">
@@ -1407,19 +1259,24 @@ export default function StudentRegistrationForm() {
                 onChange={(e) => setNewCertificateName(e.target.value)}
                 placeholder="Certificate name (e.g., 'JavaScript Certification')"
                 className="flex-1"
+                onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), handleAddCertificate())}
               />
-              <Button type="button" onClick={handleAddCertificate} variant="outline">
+              <Button
+                type="button"
+                onClick={handleAddCertificate}
+                className="bg-[#313D6A] text-white hover:bg-[#313D6A]/90"
+              >
                 Add Certificate
               </Button>
             </div>
 
             {/* Certificate List */}
             {certificates.length > 0 && (
-              <div className="space-y-3">
+              <div className="space-y-4">
                 {certificates.map((certificate) => (
-                  <div key={certificate.id} className="border rounded-lg p-4">
+                  <div key={certificate.id} className="border rounded-lg p-4 bg-gray-50">
                     <div className="flex items-center justify-between mb-3">
-                      <h4 className="font-medium">{certificate.name}</h4>
+                      <h4 className="font-medium text-[#313D6A]">{certificate.name}</h4>
                       <Button
                         type="button"
                         variant="destructive"
@@ -1429,7 +1286,7 @@ export default function StudentRegistrationForm() {
                         Remove
                       </Button>
                     </div>
-                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-gray-400 transition-colors">
+                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-[#313D6A] transition-colors">
                       <Input
                         id={`certificate-${certificate.id}`}
                         type="file"
@@ -1449,12 +1306,63 @@ export default function StudentRegistrationForm() {
               </div>
             )}
           </div>
+        )
 
-          <Button type="submit" disabled={isSubmitting} className="w-full">
-            {isSubmitting ? "Saving..." : "Save Changes"}
-          </Button>
-        </form>
-      </CardContent>
-    </Card>
+      default:
+        return null
+    }
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50 py-4 sm:py-">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <Card className="shadow-lg overflow-hidden">
+          <CardHeader className="bg-[#313D6A] text-white p-4 sm:p-6">
+            <ProgressIndicator />
+          </CardHeader>
+          <CardContent className="p-4 sm:p-6 lg:p-8">
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="min-h-[400px] sm:min-h-[50px]">{renderStepContent()}</div>
+
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 pt-6 border-t border-gray-200">
+                <Button
+                  type="button"
+                  onClick={handleBack}
+                  disabled={currentStep === 1}
+                  variant="outline"
+                  className="flex items-center justify-center gap-2 bg-transparent order-2 sm:order-1 w-full sm:w-auto"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                  Previous
+                </Button>
+
+                <div className="text-sm text-gray-500 text-center order-1 sm:order-2">
+                  Step {currentStep} of {steps.length}
+                </div>
+
+                {currentStep < steps.length ? (
+                  <Button
+                    type="button"
+                    onClick={handleNext}
+                    className="bg-[#313D6A] text-white hover:bg-[#313D6A]/90 flex items-center justify-center gap-2 order-3 w-full sm:w-auto"
+                  >
+                    Next
+                    <ChevronRight className="w-4 h-4" />
+                  </Button>
+                ) : (
+                  <Button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="bg-[#F5BB07] text-black hover:bg-[#F5BB07]/90 font-semibold px-8 order-3 w-full sm:w-auto"
+                  >
+                    {isSubmitting ? "Submitting..." : "Complete Registration"}
+                  </Button>
+                )}
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
   )
 }

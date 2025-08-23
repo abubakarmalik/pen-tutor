@@ -16,7 +16,7 @@ const tutors = [
   {
     id: 1,
     name: "Dr. Alice",
-    teacherId: "TUT001",
+    teacherId: "PT001",
     subject: "Mathematics",
     degree: "PhD",
     specialization: "Algebra",
@@ -28,7 +28,7 @@ const tutors = [
   {
     id: 2,
     name: "Dr. Brian",
-    teacherId: "TUT002",
+    teacherId: "PT002",
     subject: "Physics",
     degree: "PhD",
     specialization: "Quantum Mechanics",
@@ -40,7 +40,7 @@ const tutors = [
   {
     id: 3,
     name: "Prof. Clara",
-    teacherId: "TUT003",
+    teacherId: "PT003",
     subject: "English Literature",
     degree: "MA",
     specialization: "Poetry",
@@ -52,7 +52,7 @@ const tutors = [
   {
     id: 4,
     name: "Dr. Daniel",
-    teacherId: "TUT004",
+    teacherId: "PT004",
     subject: "Chemistry",
     degree: "PhD",
     specialization: "Organic Chemistry",
@@ -64,7 +64,7 @@ const tutors = [
   {
     id: 5,
     name: "Dr. Emma",
-    teacherId: "TUT005",
+    teacherId: "PT005",
     subject: "Biology",
     degree: "PhD",
     specialization: "Genetics",
@@ -173,7 +173,7 @@ export default function FeaturedTutors() {
                 >
                   <Card
                     className={`w-80 h-[480px] transition-all duration-700 ${isCenter
-                        ? "shadow-2xl border-2 border-[#F5BB07] bg-gradient-to-br from-white to-[#F5BB07]/10"
+                        ? "shadow-2xl bg-gradient-to-br from-white to-[#F5BB07]/10"
                         : "shadow-lg bg-white/80 backdrop-blur-sm"
                       }`}
                   >
@@ -193,18 +193,18 @@ export default function FeaturedTutors() {
                               className="rounded-full w-full h-full object-cover bg-white transition-transform duration-300 hover:scale-105"
                             />
                           </div>
-                          {isCenter && (
+                          {/* {isCenter && (
                             <div className="absolute -top-2 -right-2 bg-[#F5BB07] text-white text-xs font-bold px-2 py-1 rounded-full shadow-lg">
                               ID: {tutor.teacherId}
                             </div>
-                          )}
+                          )} */}
                         </div>
                       </div>
 
                       {/* Tutor Info */}
                       <div className="space-y-3 pt-4">
                         <h3 className={`font-bold text-[#313D6A] ${isCenter ? "text-xl" : "text-lg"}`}>
-                          {isCenter ? tutor.name : tutor.teacherId}
+                          {tutor.teacherId}
                         </h3>
 
                         {isCenter ? (

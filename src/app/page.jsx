@@ -3,7 +3,7 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
 import Image from "next/image"
 import { FaArrowRightLong } from "react-icons/fa6"
-import FeaturedTutors from "@/components/FeaturedTutors"
+import FeaturedTutors from "@/components/home/FeaturedTutors"
 import Footer from "@/components/Footer"
 
 import stdBags from "@/assets/images/student_with_bags.png"

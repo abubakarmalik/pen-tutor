@@ -1,5 +1,7 @@
 "use client"
 
+import React from "react"
+
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -7,7 +9,20 @@ import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Upload, User, MapPin, GraduationCap, Briefcase, Globe, Calendar, Award, Link } from "lucide-react"
+import {
+  Upload,
+  User,
+  MapPin,
+  GraduationCap,
+  Briefcase,
+  Globe,
+  Calendar,
+  Award,
+  Link,
+  ChevronLeft,
+  ChevronRight,
+  Check,
+} from "lucide-react"
 import { toast } from "sonner"
 import Loader from "@/components/shared/Loader"
 import { useAuth } from "../auth/AuthContext"
@@ -15,9 +30,106 @@ import axios from "axios"
 import { useRouter } from "next/navigation"
 import { Label } from "../ui/label"
 
+const steps = [
+  { id: 1, title: "Personal Info", icon: User, description: "Basic personal information" },
+  { id: 2, title: "Location", icon: MapPin, description: "Location and contact details" },
+  { id: 3, title: "Professional", icon: Briefcase, description: "Professional information" },
+  { id: 4, title: "Education", icon: GraduationCap, description: "Educational background" },
+  { id: 5, title: "Certifications", icon: Award, description: "Certifications and awards" },
+  { id: 6, title: "Teaching", icon: Calendar, description: "Teaching preferences" },
+  { id: 7, title: "Links", icon: Link, description: "Professional links" },
+  { id: 8, title: "Schedule", icon: Calendar, description: "Availability schedule" },
+  { id: 9, title: "Documents", icon: Upload, description: "Document uploads" },
+  { id: 10, title: "Preferences", icon: Globe, description: "Final preferences" },
+]
+
+const ProgressIndicator = ({ currentStep, totalSteps, onStepClick }) => {
+  return (
+    <div className="w-full mb-8">
+      {/* Mobile Progress Bar */}
+      <div className="block md:hidden">
+        <div className="flex items-center justify-between mb-4">
+          <span className="text-sm font-medium text-[#313D6A]">
+            Step {currentStep} of {totalSteps}
+          </span>
+          <span className="text-sm text-gray-500">{Math.round((currentStep / totalSteps) * 100)}% Complete</span>
+        </div>
+        <div className="w-full bg-gray-200 rounded-full h-2 mb-4">
+          <div
+            className="bg-[#313D6A] h-2 rounded-full transition-all duration-300 ease-in-out"
+            style={{ width: `${(currentStep / totalSteps) * 100}%` }}
+          />
+        </div>
+        <div className="text-center">
+          <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-[#313D6A] text-white mb-2">
+            {React.createElement(steps[currentStep - 1].icon, { size: 20 })}
+          </div>
+          <h3 className="font-semibold text-[#313D6A]">{steps[currentStep - 1].title}</h3>
+          <p className="text-sm text-gray-600">{steps[currentStep - 1].description}</p>
+        </div>
+      </div>
+
+      {/* Desktop Progress Indicator */}
+      <div className="hidden md:block">
+        <div className="flex items-center justify-between mb-6">
+          {steps.map((step, index) => {
+            const isActive = currentStep === step.id
+            const isCompleted = currentStep > step.id
+            const isClickable = currentStep >= step.id
+
+            return (
+              <div key={step.id} className="flex flex-col items-center flex-1">
+                <button
+                  onClick={() => isClickable && onStepClick(step.id)}
+                  disabled={!isClickable}
+                  className={`
+                    w-12 h-12 rounded-full flex items-center justify-center mb-2 transition-all duration-200
+                    ${
+                      isCompleted
+                        ? "bg-[#313D6A] text-white"
+                        : isActive
+                          ? "bg-[#313D6A] text-white ring-4 ring-[#313D6A]/20"
+                          : "bg-gray-200 text-gray-400"
+                    }
+                    ${isClickable ? "hover:scale-105 cursor-pointer" : "cursor-not-allowed"}
+                  `}
+                >
+                  {isCompleted ? <Check size={20} /> : React.createElement(step.icon, { size: 20 })}
+                </button>
+                <span
+                  className={`text-xs font-medium text-center px-1 ${
+                    isActive ? "text-[#313D6A]" : isCompleted ? "text-[#313D6A]" : "text-gray-400"
+                  }`}
+                >
+                  {step.title}
+                </span>
+                {index < steps.length - 1 && (
+                  <div
+                    className={`hidden lg:block absolute h-0.5 w-full mt-6 -ml-6 ${
+                      isCompleted ? "bg-[#313D6A]" : "bg-gray-200"
+                    }`}
+                    style={{
+                      left: "50%",
+                      transform: "translateX(-50%)",
+                      zIndex: -1,
+                    }}
+                  />
+                )}
+              </div>
+            )
+          })}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function TutorRegistrationForm() {
   const { user, refetchUser } = useAuth()
   const router = useRouter()
+
+  const [currentStep, setCurrentStep] = useState(1)
+
   const [formData, setFormData] = useState({
     // Base Information
     full_name: "",
@@ -219,6 +331,41 @@ export default function TutorRegistrationForm() {
     { value: "GMT+12:00", label: "GMT+12:00 (New Zealand)" },
   ]
 
+  const nextStep = () => {
+    if (currentStep < steps.length) {
+      setCurrentStep(currentStep + 1)
+      // Save progress to localStorage
+      localStorage.setItem("tutorFormProgress", JSON.stringify({ step: currentStep + 1, formData }))
+    }
+  }
+
+  const prevStep = () => {
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1)
+    }
+  }
+
+  const goToStep = (stepNumber) => {
+    if (stepNumber >= 1 && stepNumber <= currentStep) {
+      setCurrentStep(stepNumber)
+    }
+  }
+
+  useEffect(() => {
+    const savedProgress = localStorage.getItem("tutorFormProgress")
+    if (savedProgress) {
+      try {
+        const { step, formData: savedFormData } = JSON.parse(savedProgress)
+        if (step && savedFormData) {
+          setCurrentStep(step)
+          setFormData((prev) => ({ ...prev, ...savedFormData }))
+        }
+      } catch (error) {
+        console.error("Error loading saved progress:", error)
+      }
+    }
+  }, [])
+
   useEffect(() => {
     const fetchProfile = async () => {
       try {
@@ -344,10 +491,20 @@ export default function TutorRegistrationForm() {
   const handleInputChange = (e) => {
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value }))
+    // Auto-save progress
+    localStorage.setItem(
+      "tutorFormProgress",
+      JSON.stringify({ step: currentStep, formData: { ...formData, [name]: value } }),
+    )
   }
 
   const handleSelectChange = (name, value) => {
     setFormData((prev) => ({ ...prev, [name]: value }))
+    // Auto-save progress
+    localStorage.setItem(
+      "tutorFormProgress",
+      JSON.stringify({ step: currentStep, formData: { ...formData, [name]: value } }),
+    )
   }
 
   const handleCheckboxChange = (name, checked) => {
@@ -574,6 +731,8 @@ export default function TutorRegistrationForm() {
 
       if (response.status === 201 || response.status === 200) {
         toast.success("Profile updated successfully!")
+        // Clear saved progress
+        localStorage.removeItem("tutorFormProgress")
         refetchUser()
         router.push("/tutor/waiting-for-approval")
       } else {
@@ -593,917 +752,972 @@ export default function TutorRegistrationForm() {
     }
   }
 
+  const renderStepContent = () => {
+    switch (currentStep) {
+      case 1:
+        return (
+          <div className="space-y-6">
+            <div className="space-y-4">
+              <h3 className="font-semibold flex items-center gap-2 text-[#313D6A]">
+                <User />
+                Personal Information
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="full_name">Full Name *</Label>
+                  <Input
+                    id="full_name"
+                    name="full_name"
+                    value={formData.full_name}
+                    onChange={handleInputChange}
+                    placeholder="Enter your full name"
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email Address</Label>
+                  <Input
+                    id="email"
+                    name="email"
+                    type="email"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    placeholder="Enter your email address"
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="phone">Phone Number</Label>
+                  <Input
+                    id="phone"
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleInputChange}
+                    placeholder="Enter phone number"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="age">Age</Label>
+                  <Input
+                    id="age"
+                    name="age"
+                    type="number"
+                    value={formData.age}
+                    onChange={handleInputChange}
+                    placeholder="Enter your age"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="gender">Gender</Label>
+                  <Select onValueChange={(value) => handleSelectChange("gender", value)} value={formData.gender}>
+                    <SelectTrigger id="gender">
+                      <SelectValue placeholder="Select gender" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {genderOptions.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="date_of_birth">Date of Birth</Label>
+                  <Input
+                    id="date_of_birth"
+                    name="date_of_birth"
+                    type="date"
+                    value={formData.date_of_birth}
+                    onChange={handleInputChange}
+                    placeholder="Select date of birth"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="cnic">CNIC</Label>
+                  <Input
+                    id="cnic"
+                    name="cnic"
+                    value={formData.cnic}
+                    onChange={handleInputChange}
+                    onBlur={handleCNICBlur}
+                    placeholder="xxxxx-xxxxxxx-x"
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="address">Full Address</Label>
+                <Textarea
+                  id="address"
+                  name="address"
+                  value={formData.address}
+                  onChange={handleInputChange}
+                  placeholder="Enter your complete address"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="bio">Bio</Label>
+                <Textarea
+                  id="bio"
+                  name="bio"
+                  value={formData.bio}
+                  onChange={handleInputChange}
+                  placeholder="A brief bio about yourself and your teaching philosophy"
+                />
+              </div>
+            </div>
+          </div>
+        )
+
+      case 2:
+        return (
+          <div className="space-y-6">
+            <div className="space-y-4">
+              <h3 className="font-semibold flex items-center gap-2 text-[#313D6A]">
+                <MapPin />
+                Location & Contact
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="country">Country</Label>
+                  <Input
+                    id="country"
+                    name="country"
+                    value={formData.country}
+                    onChange={handleInputChange}
+                    placeholder="Enter your country"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="city">City</Label>
+                  <Input
+                    id="city"
+                    name="city"
+                    value={formData.city}
+                    onChange={handleInputChange}
+                    placeholder="Enter your city"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        )
+
+      case 3:
+        return (
+          <div className="space-y-6">
+            <div className="space-y-4">
+              <h3 className="font-semibold flex items-center gap-2 text-[#313D6A]">
+                <Briefcase />
+                Professional Information
+              </h3>
+              <div className="space-y-2">
+                <Label htmlFor="headline">Professional Headline</Label>
+                <Input
+                  id="headline"
+                  name="headline"
+                  value={formData.headline}
+                  onChange={handleInputChange}
+                  placeholder="e.g., 'Experienced Math Tutor'"
+                />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="expertise_level">Expertise Level</Label>
+                  <Select
+                    onValueChange={(value) => handleSelectChange("expertise_level", value)}
+                    value={formData.expertise_level}
+                  >
+                    <SelectTrigger id="expertise_level">
+                      <SelectValue placeholder="Select expertise level" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {expertiseLevelOptions.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="years_of_experience">Years of Experience</Label>
+                  <Input
+                    id="years_of_experience"
+                    name="years_of_experience"
+                    type="number"
+                    value={formData.years_of_experience}
+                    onChange={handleInputChange}
+                    placeholder="Enter years of experience"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="employment_type">Employment Type</Label>
+                  <Select
+                    onValueChange={(value) => handleSelectChange("employment_type", value)}
+                    value={formData.employment_type}
+                  >
+                    <SelectTrigger id="employment_type">
+                      <SelectValue placeholder="Select employment type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {employmentTypeOptions.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="department">Department/Field</Label>
+                  <Input
+                    id="department"
+                    name="department"
+                    value={formData.department}
+                    onChange={handleInputChange}
+                    placeholder="Enter your department or field"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="hourly_rate">Hourly Rate (USD)</Label>
+                  <Input
+                    id="hourly_rate"
+                    name="hourly_rate"
+                    type="number"
+                    step="0.01"
+                    value={formData.hourly_rate}
+                    onChange={handleInputChange}
+                    placeholder="Enter hourly rate"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="expertise_areas">Expertise Areas</Label>
+                <Input
+                  id="expertise_areas"
+                  placeholder="Enter expertise areas separated by commas (e.g., Mathematics, Physics, Chemistry)"
+                  value={formData.expertise_areas.join(", ")}
+                  onChange={(e) => {
+                    const areas = e.target.value
+                      .split(",")
+                      .map((area) => area.trim())
+                      .filter((area) => area)
+                    setFormData((prev) => ({ ...prev, expertise_areas: areas }))
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+        )
+
+      case 4:
+        return (
+          <div className="space-y-6">
+            <div className="space-y-4">
+              <h3 className="font-semibold flex items-center gap-2 text-[#313D6A]">
+                <GraduationCap />
+                Education
+              </h3>
+              {educationEntries.map((entry, index) => (
+                <div key={index} className="border rounded-lg p-4 space-y-3">
+                  <div className="flex justify-between items-center">
+                    <h4 className="font-medium">Education {index + 1}</h4>
+                    {educationEntries.length > 1 && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => removeDynamicEntry("education", educationEntries, setEducationEntries, index)}
+                      >
+                        Remove
+                      </Button>
+                    )}
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div className="space-y-2">
+                      <Label htmlFor={`institution-${index}`}>Institution</Label>
+                      <Input
+                        id={`institution-${index}`}
+                        placeholder="Enter institution name"
+                        value={entry.institution || ""}
+                        onChange={(e) =>
+                          handleDynamicArrayChange(
+                            "education",
+                            educationEntries,
+                            setEducationEntries,
+                            index,
+                            "institution",
+                            e.target.value,
+                          )
+                        }
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor={`degree-${index}`}>Degree</Label>
+                      <Input
+                        id={`degree-${index}`}
+                        placeholder="Enter degree"
+                        value={entry.degree || ""}
+                        onChange={(e) =>
+                          handleDynamicArrayChange(
+                            "education",
+                            educationEntries,
+                            setEducationEntries,
+                            index,
+                            "degree",
+                            e.target.value,
+                          )
+                        }
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor={`year-${index}`}>Year</Label>
+                      <Input
+                        id={`year-${index}`}
+                        placeholder="Enter year"
+                        type="number"
+                        value={entry.year || ""}
+                        onChange={(e) =>
+                          handleDynamicArrayChange(
+                            "education",
+                            educationEntries,
+                            setEducationEntries,
+                            index,
+                            "year",
+                            e.target.value,
+                          )
+                        }
+                      />
+                    </div>
+                  </div>
+                </div>
+              ))}
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() =>
+                  addDynamicEntry("education", educationEntries, setEducationEntries, {
+                    institution: "",
+                    degree: "",
+                    year: "",
+                  })
+                }
+              >
+                Add Education
+              </Button>
+            </div>
+          </div>
+        )
+
+      case 5:
+        return (
+          <div className="space-y-6">
+            <div className="space-y-4">
+              <h3 className="font-semibold flex items-center gap-2 text-[#313D6A]">
+                <Award />
+                Certifications
+              </h3>
+              {certificationEntries.map((entry, index) => (
+                <div key={index} className="border rounded-lg p-4 space-y-3">
+                  <div className="flex justify-between items-center">
+                    <h4 className="font-medium">Certification {index + 1}</h4>
+                    {certificationEntries.length > 1 && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                          removeDynamicEntry("certifications", certificationEntries, setCertificationEntries, index)
+                        }
+                      >
+                        Remove
+                      </Button>
+                    )}
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div className="space-y-2">
+                      <Label htmlFor={`cert-name-${index}`}>Certification Name</Label>
+                      <Input
+                        id={`cert-name-${index}`}
+                        placeholder="Enter certification name"
+                        value={entry.name || ""}
+                        onChange={(e) =>
+                          handleDynamicArrayChange(
+                            "certifications",
+                            certificationEntries,
+                            setCertificationEntries,
+                            index,
+                            "name",
+                            e.target.value,
+                          )
+                        }
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor={`cert-year-${index}`}>Year</Label>
+                      <Input
+                        id={`cert-year-${index}`}
+                        placeholder="Enter year"
+                        type="number"
+                        value={entry.year || ""}
+                        onChange={(e) =>
+                          handleDynamicArrayChange(
+                            "certifications",
+                            certificationEntries,
+                            setCertificationEntries,
+                            index,
+                            "year",
+                            e.target.value,
+                          )
+                        }
+                      />
+                    </div>
+                  </div>
+                </div>
+              ))}
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() =>
+                  addDynamicEntry("certifications", certificationEntries, setCertificationEntries, {
+                    name: "",
+                    year: "",
+                  })
+                }
+              >
+                Add Certification
+              </Button>
+            </div>
+          </div>
+        )
+
+      case 6:
+        return (
+          <div className="space-y-6">
+            <div className="space-y-4">
+              <h3 className="font-semibold flex items-center gap-2 text-[#313D6A]">
+                <GraduationCap />
+                Teaching & Course Information
+              </h3>
+              <div className="space-y-2">
+                <Label htmlFor="teaching_style">Teaching Style</Label>
+                <Textarea
+                  id="teaching_style"
+                  name="teaching_style"
+                  value={formData.teaching_style}
+                  onChange={handleInputChange}
+                  placeholder="Describe your teaching style and methodology"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Languages Spoken</label>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                  {languageOptions.map((language) => (
+                    <div key={language} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={`language-${language}`}
+                        checked={formData.languages_spoken.includes(language)}
+                        onCheckedChange={() => handleArrayFieldToggle("languages_spoken", language)}
+                      />
+                      <label htmlFor={`language-${language}`} className="text-sm">
+                        {language}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Preferred Teaching Methods</label>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                  {teachingMethodOptions.map((method) => (
+                    <div key={method} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={`method-${method}`}
+                        checked={formData.preferred_teaching_methods.includes(method)}
+                        onCheckedChange={() => handleArrayFieldToggle("preferred_teaching_methods", method)}
+                      />
+                      <label htmlFor={`method-${method}`} className="text-sm">
+                        {method.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Course Categories</label>
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+                  {courseCategoryOptions.map((category) => (
+                    <div key={category} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={`category-${category}`}
+                        checked={formData.course_categories.includes(category)}
+                        onCheckedChange={() => handleArrayFieldToggle("course_categories", category)}
+                      />
+                      <label htmlFor={`category-${category}`} className="text-sm">
+                        {category.charAt(0).toUpperCase() + category.slice(1)}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Legacy Academic Information */}
+              <div className="space-y-4 pt-6 border-t">
+                <h4 className="font-medium text-[#313D6A]">Legacy Academic & Teaching</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="minimum_qualification_required">Minimum Qualification Required</Label>
+                    <Input
+                      id="minimum_qualification_required"
+                      name="minimum_qualification_required"
+                      value={formData.minimum_qualification_required}
+                      onChange={handleInputChange}
+                      placeholder="Enter minimum qualification required"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="experience_required">Experience Required</Label>
+                    <Input
+                      id="experience_required"
+                      name="experience_required"
+                      value={formData.experience_required}
+                      onChange={handleInputChange}
+                      placeholder="Enter experience required"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="areas_to_teach">Areas to Teach</Label>
+                  <Textarea
+                    id="areas_to_teach"
+                    name="areas_to_teach"
+                    value={formData.areas_to_teach}
+                    onChange={handleInputChange}
+                    placeholder="Detailed description of areas you can teach"
+                  />
+                </div>
+
+                {/* Subjects Selection */}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Subjects (Select multiple)</label>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                    {availableSubjects.map((subject) => (
+                      <div key={subject.id} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`subject-${subject.id}`}
+                          checked={formData.subjects.includes(subject.id)}
+                          onCheckedChange={() => handleSubjectToggle(subject.id)}
+                        />
+                        <label htmlFor={`subject-${subject.id}`} className="text-sm">
+                          {subject.name}
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Qualifications Selection */}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Qualifications (Select multiple)</label>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                    {availableQualifications.map((qualification) => (
+                      <div key={qualification.id} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`qualification-${qualification.id}`}
+                          checked={formData.qualifications.includes(qualification.id)}
+                          onCheckedChange={() => handleQualificationToggle(qualification.id)}
+                        />
+                        <label htmlFor={`qualification-${qualification.id}`} className="text-sm">
+                          {qualification.name}
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )
+
+      case 7:
+        return (
+          <div className="space-y-6">
+            <div className="space-y-4">
+              <h3 className="font-semibold flex items-center gap-2 text-[#313D6A]">
+                <Link />
+                Professional Links
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="linkedin_profile">LinkedIn Profile</Label>
+                  <Input
+                    id="linkedin_profile"
+                    name="linkedin_profile"
+                    value={formData.linkedin_profile}
+                    onChange={handleInputChange}
+                    placeholder="LinkedIn Profile URL"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="github_profile">GitHub Profile</Label>
+                  <Input
+                    id="github_profile"
+                    name="github_profile"
+                    value={formData.github_profile}
+                    onChange={handleInputChange}
+                    placeholder="GitHub Profile URL"
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="personal_website">Personal Website</Label>
+                  <Input
+                    id="personal_website"
+                    name="personal_website"
+                    value={formData.personal_website}
+                    onChange={handleInputChange}
+                    placeholder="Personal Website URL"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="youtube_channel">YouTube Channel</Label>
+                  <Input
+                    id="youtube_channel"
+                    name="youtube_channel"
+                    value={formData.youtube_channel}
+                    onChange={handleInputChange}
+                    placeholder="YouTube Channel URL"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Social Media Links</label>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="twitter">Twitter URL</Label>
+                    <Input
+                      id="twitter"
+                      placeholder="Twitter URL"
+                      value={socialLinksEntries.twitter || ""}
+                      onChange={(e) => {
+                        const newSocialLinks = { ...socialLinksEntries, twitter: e.target.value }
+                        setSocialLinksEntries(newSocialLinks)
+                        setFormData((prev) => ({ ...prev, social_links: newSocialLinks }))
+                      }}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="facebook">Facebook URL</Label>
+                    <Input
+                      id="facebook"
+                      placeholder="Facebook URL"
+                      value={socialLinksEntries.facebook || ""}
+                      onChange={(e) => {
+                        const newSocialLinks = { ...socialLinksEntries, facebook: e.target.value }
+                        setSocialLinksEntries(newSocialLinks)
+                        setFormData((prev) => ({ ...prev, social_links: newSocialLinks }))
+                      }}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="instagram">Instagram URL</Label>
+                    <Input
+                      id="instagram"
+                      placeholder="Instagram URL"
+                      value={socialLinksEntries.instagram || ""}
+                      onChange={(e) => {
+                        const newSocialLinks = { ...socialLinksEntries, instagram: e.target.value }
+                        setSocialLinksEntries(newSocialLinks)
+                        setFormData((prev) => ({ ...prev, social_links: newSocialLinks }))
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )
+
+      case 8:
+        return (
+          <div className="space-y-6">
+            <div className="space-y-4">
+              <h3 className="font-semibold flex items-center gap-2 text-[#313D6A]">
+                <Calendar />
+                Availability Schedule
+              </h3>
+              <div className="space-y-3">
+                {daysOfWeek.map((day) => (
+                  <div key={day} className="grid grid-cols-1 md:grid-cols-4 gap-3 items-center">
+                    <Label htmlFor={`schedule-${day}`} className="text-sm font-medium">
+                      {day}
+                    </Label>
+                    <div className="md:col-span-3">
+                      <Input
+                        id={`schedule-${day}`}
+                        placeholder="Time slots (e.g., 9:00-12:00, 14:00-16:00)"
+                        value={formData.availability_schedule[day]?.join(", ") || ""}
+                        onChange={(e) => handleScheduleChange(day, e.target.value)}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )
+
+      case 9:
+        return (
+          <div className="space-y-6">
+            <div className="space-y-4">
+              <h3 className="font-semibold flex items-center gap-2 text-[#313D6A]">
+                <Upload />
+                Document Uploads
+              </h3>
+
+              {/* Profile Picture */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Profile Picture</label>
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-[#313D6A] transition-colors">
+                  <Input
+                    id="profile_picture"
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => handleFileChange(e, "profile_picture")}
+                    className="hidden"
+                  />
+                  <label htmlFor="profile_picture" className="cursor-pointer">
+                    <Upload className="mx-auto h-8 w-8 text-gray-400 mb-2" />
+                    <p className="text-gray-500">{fileNames.profile_picture || "Click to upload profile picture"}</p>
+                  </label>
+                </div>
+              </div>
+
+              {/* Resume */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Resume/CV</label>
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-[#313D6A] transition-colors">
+                  <Input
+                    id="resume"
+                    type="file"
+                    accept=".pdf,.doc,.docx"
+                    onChange={(e) => handleFileChange(e, "resume")}
+                    className="hidden"
+                  />
+                  <label htmlFor="resume" className="cursor-pointer">
+                    <Upload className="mx-auto h-8 w-8 text-gray-400 mb-2" />
+                    <p className="text-gray-500">{fileNames.resume || "Click to upload resume/CV"}</p>
+                  </label>
+                </div>
+              </div>
+
+              {/* Degree Certificates */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Degree Certificates</label>
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-[#313D6A] transition-colors">
+                  <Input
+                    id="degree_certificates"
+                    type="file"
+                    accept=".pdf,.jpg,.jpeg,.png"
+                    onChange={(e) => handleFileChange(e, "degree_certificates")}
+                    className="hidden"
+                  />
+                  <label htmlFor="degree_certificates" className="cursor-pointer">
+                    <Upload className="mx-auto h-8 w-8 text-gray-400 mb-2" />
+                    <p className="text-gray-500">
+                      {fileNames.degree_certificates || "Click to upload degree certificates"}
+                    </p>
+                  </label>
+                </div>
+              </div>
+
+              {/* ID Proof */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">ID Proof</label>
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-[#313D6A] transition-colors">
+                  <Input
+                    id="id_proof"
+                    type="file"
+                    accept=".pdf,.jpg,.jpeg,.png"
+                    onChange={(e) => handleFileChange(e, "id_proof")}
+                    className="hidden"
+                  />
+                  <label htmlFor="id_proof" className="cursor-pointer">
+                    <Upload className="mx-auto h-8 w-8 text-gray-400 mb-2" />
+                    <p className="text-gray-500">{fileNames.id_proof || "Click to upload ID proof"}</p>
+                  </label>
+                </div>
+              </div>
+
+              {/* Legacy file uploads for backward compatibility */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">CNIC Front</label>
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-[#313D6A] transition-colors">
+                    <Input
+                      id="cnic_front"
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleFileChange(e, "cnic_front")}
+                      className="hidden"
+                    />
+                    <label htmlFor="cnic_front" className="cursor-pointer">
+                      <Upload className="mx-auto h-6 w-6 text-gray-400 mb-1" />
+                      <p className="text-sm text-gray-500">{fileNames.cnic_front || "CNIC Front"}</p>
+                    </label>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">CNIC Back</label>
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-[#313D6A] transition-colors">
+                    <Input
+                      id="cnic_back"
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleFileChange(e, "cnic_back")}
+                      className="hidden"
+                    />
+                    <label htmlFor="cnic_back" className="cursor-pointer">
+                      <Upload className="mx-auto h-6 w-6 text-gray-400 mb-1" />
+                      <p className="text-sm text-gray-500">{fileNames.cnic_back || "CNIC Back"}</p>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )
+
+      case 10:
+        return (
+          <div className="space-y-6">
+            <div className="space-y-4">
+              <h3 className="font-semibold flex items-center gap-2 text-[#313D6A]">
+                <Globe />
+                Preferences
+              </h3>
+              <div className="space-y-3">
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="email_notifications"
+                    checked={formData.notification_preferences.email}
+                    onCheckedChange={(checked) => {
+                      setFormData((prev) => ({
+                        ...prev,
+                        notification_preferences: { ...prev.notification_preferences, email: checked },
+                      }))
+                    }}
+                  />
+                  <label htmlFor="email_notifications" className="text-sm font-medium">
+                    Email Notifications
+                  </label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="sms_notifications"
+                    checked={formData.notification_preferences.sms}
+                    onCheckedChange={(checked) => {
+                      setFormData((prev) => ({
+                        ...prev,
+                        notification_preferences: { ...prev.notification_preferences, sms: checked },
+                      }))
+                    }}
+                  />
+                  <label htmlFor="sms_notifications" className="text-sm font-medium">
+                    SMS Notifications
+                  </label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="can_teach_online"
+                    checked={formData.can_teach_online}
+                    onCheckedChange={(checked) => handleCheckboxChange("can_teach_online", checked)}
+                  />
+                  <label htmlFor="can_teach_online" className="text-sm font-medium">
+                    Available for Online Teaching
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+        )
+
+      default:
+        return null
+    }
+  }
+
   if (loading) {
     return <Loader text="Loading Profile..." />
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Tutor Registration</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Personal Information */}
-          <div className="space-y-4">
-            <h3 className="font-semibold flex items-center gap-2">
-              <User />
-              Personal Information
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="full_name">Full Name *</Label>
-                <Input
-                  id="full_name"
-                  name="full_name"
-                  value={formData.full_name}
-                  onChange={handleInputChange}
-                  placeholder="Enter your full name"
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="email">Email Address</Label>
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  placeholder="Enter your email address"
-                />
-              </div>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="phone">Phone Number</Label>
-                <Input
-                  id="phone"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleInputChange}
-                  placeholder="Enter phone number"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="age">Age</Label>
-                <Input
-                  id="age"
-                  name="age"
-                  type="number"
-                  value={formData.age}
-                  onChange={handleInputChange}
-                  placeholder="Enter your age"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="gender">Gender</Label>
-                <Select onValueChange={(value) => handleSelectChange("gender", value)} value={formData.gender}>
-                  <SelectTrigger id="gender">
-                    <SelectValue placeholder="Select gender" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {genderOptions.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="date_of_birth">Date of Birth</Label>
-                <Input
-                  id="date_of_birth"
-                  name="date_of_birth"
-                  type="date"
-                  value={formData.date_of_birth}
-                  onChange={handleInputChange}
-                  placeholder="Select date of birth"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="cnic">CNIC</Label>
-                <Input
-                  id="cnic"
-                  name="cnic"
-                  value={formData.cnic}
-                  onChange={handleInputChange}
-                  onBlur={handleCNICBlur}
-                  placeholder="xxxxx-xxxxxxx-x"
-                />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="address">Full Address</Label>
-              <Textarea
-                id="address"
-                name="address"
-                value={formData.address}
-                onChange={handleInputChange}
-                placeholder="Enter your complete address"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="bio">Bio</Label>
-              <Textarea
-                id="bio"
-                name="bio"
-                value={formData.bio}
-                onChange={handleInputChange}
-                placeholder="A brief bio about yourself and your teaching philosophy"
-              />
-            </div>
-          </div>
+    <div className="min-h-screen bg-gray-50 py-4 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-4xl mx-auto">
+        <Card className="shadow-lg">
+          <CardHeader className="bg-[#313D6A] text-white">
+            <CardTitle className="text-2xl font-bold text-center">Tutor Registration</CardTitle>
+            <p className="text-center text-blue-100 mt-2">Complete your profile to start teaching</p>
+          </CardHeader>
+          <CardContent className="p-6">
+            <ProgressIndicator currentStep={currentStep} totalSteps={steps.length} onStepClick={goToStep} />
 
-          {/* Location Information */}
-          <div className="space-y-4">
-            <h3 className="font-semibold flex items-center gap-2">
-              <MapPin />
-              Location & Contact
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="country">Country</Label>
-                <Input
-                  id="country"
-                  name="country"
-                  value={formData.country}
-                  onChange={handleInputChange}
-                  placeholder="Enter your country"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="city">City</Label>
-                <Input
-                  id="city"
-                  name="city"
-                  value={formData.city}
-                  onChange={handleInputChange}
-                  placeholder="Enter your city"
-                />
-              </div>
-            </div>
-            {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="area">Area/District</Label>
-                <Input
-                  id="area"
-                  name="area"
-                  value={formData.area}
-                  onChange={handleInputChange}
-                  placeholder="Enter area or district"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="location">Specific Location</Label>
-                <Input
-                  id="location"
-                  name="location"
-                  value={formData.location}
-                  onChange={handleInputChange}
-                  placeholder="Enter specific location"
-                />
-              </div>
-            </div> */}
-          </div>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {renderStepContent()}
 
-          {/* Professional Information */}
-          <div className="space-y-4">
-            <h3 className="font-semibold flex items-center gap-2">
-              <Briefcase />
-              Professional Information
-            </h3>
-            <div className="space-y-2">
-              <Label htmlFor="headline">Professional Headline</Label>
-              <Input
-                id="headline"
-                name="headline"
-                value={formData.headline}
-                onChange={handleInputChange}
-                placeholder="e.g., 'Experienced Math Tutor'"
-              />
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="expertise_level">Expertise Level</Label>
-                <Select
-                  onValueChange={(value) => handleSelectChange("expertise_level", value)}
-                  value={formData.expertise_level}
+              <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-6 border-t">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={prevStep}
+                  disabled={currentStep === 1}
+                  className="w-full sm:w-auto order-2 sm:order-1 bg-transparent"
                 >
-                  <SelectTrigger id="expertise_level">
-                    <SelectValue placeholder="Select expertise level" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {expertiseLevelOptions.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="years_of_experience">Years of Experience</Label>
-                <Input
-                  id="years_of_experience"
-                  name="years_of_experience"
-                  type="number"
-                  value={formData.years_of_experience}
-                  onChange={handleInputChange}
-                  placeholder="Enter years of experience"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="employment_type">Employment Type</Label>
-                <Select
-                  onValueChange={(value) => handleSelectChange("employment_type", value)}
-                  value={formData.employment_type}
-                >
-                  <SelectTrigger id="employment_type">
-                    <SelectValue placeholder="Select employment type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {employmentTypeOptions.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
+                  <ChevronLeft className="w-4 h-4 mr-2" />
+                  Previous
+                </Button>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="department">Department/Field</Label>
-                <Input
-                  id="department"
-                  name="department"
-                  value={formData.department}
-                  onChange={handleInputChange}
-                  placeholder="Enter your department or field"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="hourly_rate">Hourly Rate (USD)</Label>
-                <Input
-                  id="hourly_rate"
-                  name="hourly_rate"
-                  type="number"
-                  step="0.01"
-                  value={formData.hourly_rate}
-                  onChange={handleInputChange}
-                  placeholder="Enter hourly rate"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="expertise_areas">Expertise Areas</Label>
-              <Input
-                id="expertise_areas"
-                placeholder="Enter expertise areas separated by commas (e.g., Mathematics, Physics, Chemistry)"
-                value={formData.expertise_areas.join(", ")}
-                onChange={(e) => {
-                  const areas = e.target.value
-                    .split(",")
-                    .map((area) => area.trim())
-                    .filter((area) => area)
-                  setFormData((prev) => ({ ...prev, expertise_areas: areas }))
-                }}
-              />
-            </div>
-
-            {/* Legacy fields for backward compatibility */}
-            {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="organization_name">Current Organization</Label>
-                <Input
-                  id="organization_name"
-                  name="organization_name"
-                  value={formData.organization_name}
-                  onChange={handleInputChange}
-                  placeholder="Enter current organization"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="designation">Current Designation</Label>
-                <Input
-                  id="designation"
-                  name="designation"
-                  value={formData.designation}
-                  onChange={handleInputChange}
-                  placeholder="Enter current designation"
-                />
-              </div>
-            </div> */}
-          </div>
-
-          <div className="space-y-4">
-            <h3 className="font-semibold flex items-center gap-2">
-              <GraduationCap />
-              Education
-            </h3>
-            {educationEntries.map((entry, index) => (
-              <div key={index} className="border rounded-lg p-4 space-y-3">
-                <div className="flex justify-between items-center">
-                  <h4 className="font-medium">Education {index + 1}</h4>
-                  {educationEntries.length > 1 && (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => removeDynamicEntry("education", educationEntries, setEducationEntries, index)}
-                    >
-                      Remove
-                    </Button>
-                  )}
+                <div className="text-sm text-gray-500 order-1 sm:order-2">
+                  Step {currentStep} of {steps.length}
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                  <div className="space-y-2">
-                    <Label htmlFor={`institution-${index}`}>Institution</Label>
-                    <Input
-                      id={`institution-${index}`}
-                      placeholder="Enter institution name"
-                      value={entry.institution || ""}
-                      onChange={(e) =>
-                        handleDynamicArrayChange(
-                          "education",
-                          educationEntries,
-                          setEducationEntries,
-                          index,
-                          "institution",
-                          e.target.value,
-                        )
-                      }
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor={`degree-${index}`}>Degree</Label>
-                    <Input
-                      id={`degree-${index}`}
-                      placeholder="Enter degree"
-                      value={entry.degree || ""}
-                      onChange={(e) =>
-                        handleDynamicArrayChange(
-                          "education",
-                          educationEntries,
-                          setEducationEntries,
-                          index,
-                          "degree",
-                          e.target.value,
-                        )
-                      }
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor={`year-${index}`}>Year</Label>
-                    <Input
-                      id={`year-${index}`}
-                      placeholder="Enter year"
-                      type="number"
-                      value={entry.year || ""}
-                      onChange={(e) =>
-                        handleDynamicArrayChange(
-                          "education",
-                          educationEntries,
-                          setEducationEntries,
-                          index,
-                          "year",
-                          e.target.value,
-                        )
-                      }
-                    />
-                  </div>
-                </div>
-              </div>
-            ))}
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() =>
-                addDynamicEntry("education", educationEntries, setEducationEntries, {
-                  institution: "",
-                  degree: "",
-                  year: "",
-                })
-              }
-            >
-              Add Education
-            </Button>
-          </div>
 
-          <div className="space-y-4">
-            <h3 className="font-semibold flex items-center gap-2">
-              <Award />
-              Certifications
-            </h3>
-            {certificationEntries.map((entry, index) => (
-              <div key={index} className="border rounded-lg p-4 space-y-3">
-                <div className="flex justify-between items-center">
-                  <h4 className="font-medium">Certification {index + 1}</h4>
-                  {certificationEntries.length > 1 && (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() =>
-                        removeDynamicEntry("certifications", certificationEntries, setCertificationEntries, index)
-                      }
-                    >
-                      Remove
-                    </Button>
-                  )}
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <div className="space-y-2">
-                    <Label htmlFor={`cert-name-${index}`}>Certification Name</Label>
-                    <Input
-                      id={`cert-name-${index}`}
-                      placeholder="Enter certification name"
-                      value={entry.name || ""}
-                      onChange={(e) =>
-                        handleDynamicArrayChange(
-                          "certifications",
-                          certificationEntries,
-                          setCertificationEntries,
-                          index,
-                          "name",
-                          e.target.value,
-                        )
-                      }
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor={`cert-year-${index}`}>Year</Label>
-                    <Input
-                      id={`cert-year-${index}`}
-                      placeholder="Enter year"
-                      type="number"
-                      value={entry.year || ""}
-                      onChange={(e) =>
-                        handleDynamicArrayChange(
-                          "certifications",
-                          certificationEntries,
-                          setCertificationEntries,
-                          index,
-                          "year",
-                          e.target.value,
-                        )
-                      }
-                    />
-                  </div>
-                </div>
+                {currentStep === steps.length ? (
+                  <Button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="w-full sm:w-auto bg-[#F5BB07] hover:bg-[#F5BB07]/90 text-black font-semibold order-3"
+                  >
+                    {isSubmitting ? <Loader text="Saving..." /> : "Complete Registration"}
+                  </Button>
+                ) : (
+                  <Button
+                    type="button"
+                    onClick={nextStep}
+                    className="w-full sm:w-auto bg-[#313D6A] hover:bg-[#313D6A]/90 order-3"
+                  >
+                    Next
+                    <ChevronRight className="w-4 h-4 ml-2" />
+                  </Button>
+                )}
               </div>
-            ))}
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() =>
-                addDynamicEntry("certifications", certificationEntries, setCertificationEntries, { name: "", year: "" })
-              }
-            >
-              Add Certification
-            </Button>
-          </div>
-
-          <div className="space-y-4">
-            <h3 className="font-semibold flex items-center gap-2">
-              <GraduationCap />
-              Teaching & Course Information
-            </h3>
-            <div className="space-y-2">
-              <Label htmlFor="teaching_style">Teaching Style</Label>
-              <Textarea
-                id="teaching_style"
-                name="teaching_style"
-                value={formData.teaching_style}
-                onChange={handleInputChange}
-                placeholder="Describe your teaching style and methodology"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Languages Spoken</label>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                {languageOptions.map((language) => (
-                  <div key={language} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={`language-${language}`}
-                      checked={formData.languages_spoken.includes(language)}
-                      onCheckedChange={() => handleArrayFieldToggle("languages_spoken", language)}
-                    />
-                    <label htmlFor={`language-${language}`} className="text-sm">
-                      {language}
-                    </label>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Preferred Teaching Methods</label>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                {teachingMethodOptions.map((method) => (
-                  <div key={method} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={`method-${method}`}
-                      checked={formData.preferred_teaching_methods.includes(method)}
-                      onCheckedChange={() => handleArrayFieldToggle("preferred_teaching_methods", method)}
-                    />
-                    <label htmlFor={`method-${method}`} className="text-sm">
-                      {method.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())}
-                    </label>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Course Categories</label>
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
-                {courseCategoryOptions.map((category) => (
-                  <div key={category} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={`category-${category}`}
-                      checked={formData.course_categories.includes(category)}
-                      onCheckedChange={() => handleArrayFieldToggle("course_categories", category)}
-                    />
-                    <label htmlFor={`category-${category}`} className="text-sm">
-                      {category.charAt(0).toUpperCase() + category.slice(1)}
-                    </label>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <h3 className="font-semibold flex items-center gap-2">
-              <Link />
-              Professional Links
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="linkedin_profile">LinkedIn Profile</Label>
-                <Input
-                  id="linkedin_profile"
-                  name="linkedin_profile"
-                  value={formData.linkedin_profile}
-                  onChange={handleInputChange}
-                  placeholder="LinkedIn Profile URL"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="github_profile">GitHub Profile</Label>
-                <Input
-                  id="github_profile"
-                  name="github_profile"
-                  value={formData.github_profile}
-                  onChange={handleInputChange}
-                  placeholder="GitHub Profile URL"
-                />
-              </div>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="personal_website">Personal Website</Label>
-                <Input
-                  id="personal_website"
-                  name="personal_website"
-                  value={formData.personal_website}
-                  onChange={handleInputChange}
-                  placeholder="Personal Website URL"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="youtube_channel">YouTube Channel</Label>
-                <Input
-                  id="youtube_channel"
-                  name="youtube_channel"
-                  value={formData.youtube_channel}
-                  onChange={handleInputChange}
-                  placeholder="YouTube Channel URL"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Social Media Links</label>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="twitter">Twitter URL</Label>
-                  <Input
-                    id="twitter"
-                    placeholder="Twitter URL"
-                    value={socialLinksEntries.twitter || ""}
-                    onChange={(e) => {
-                      const newSocialLinks = { ...socialLinksEntries, twitter: e.target.value }
-                      setSocialLinksEntries(newSocialLinks)
-                      setFormData((prev) => ({ ...prev, social_links: newSocialLinks }))
-                    }}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="facebook">Facebook URL</Label>
-                  <Input
-                    id="facebook"
-                    placeholder="Facebook URL"
-                    value={socialLinksEntries.facebook || ""}
-                    onChange={(e) => {
-                      const newSocialLinks = { ...socialLinksEntries, facebook: e.target.value }
-                      setSocialLinksEntries(newSocialLinks)
-                      setFormData((prev) => ({ ...prev, social_links: newSocialLinks }))
-                    }}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="instagram">Instagram URL</Label>
-                  <Input
-                    id="instagram"
-                    placeholder="Instagram URL"
-                    value={socialLinksEntries.instagram || ""}
-                    onChange={(e) => {
-                      const newSocialLinks = { ...socialLinksEntries, instagram: e.target.value }
-                      setSocialLinksEntries(newSocialLinks)
-                      setFormData((prev) => ({ ...prev, social_links: newSocialLinks }))
-                    }}
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <h3 className="font-semibold flex items-center gap-2">
-              <Calendar />
-              Availability Schedule
-            </h3>
-            <div className="space-y-3">
-              {daysOfWeek.map((day) => (
-                <div key={day} className="grid grid-cols-1 md:grid-cols-4 gap-3 items-center">
-                  <Label htmlFor={`schedule-${day}`} className="text-sm font-medium">
-                    {day}
-                  </Label>
-                  <div className="md:col-span-3">
-                    <Input
-                      id={`schedule-${day}`}
-                      placeholder="Time slots (e.g., 9:00-12:00, 14:00-16:00)"
-                      value={formData.availability_schedule[day]?.join(", ") || ""}
-                      onChange={(e) => handleScheduleChange(day, e.target.value)}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <h3 className="font-semibold flex items-center gap-2">
-              <Upload />
-              Document Uploads
-            </h3>
-
-            {/* Profile Picture */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Profile Picture</label>
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
-                <Input
-                  id="profile_picture"
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => handleFileChange(e, "profile_picture")}
-                  className="hidden"
-                />
-                <label htmlFor="profile_picture" className="cursor-pointer">
-                  <p className="text-gray-500">{fileNames.profile_picture || "Click to upload profile picture"}</p>
-                </label>
-              </div>
-            </div>
-
-            {/* Resume */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Resume/CV</label>
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
-                <Input
-                  id="resume"
-                  type="file"
-                  accept=".pdf,.doc,.docx"
-                  onChange={(e) => handleFileChange(e, "resume")}
-                  className="hidden"
-                />
-                <label htmlFor="resume" className="cursor-pointer">
-                  <p className="text-gray-500">{fileNames.resume || "Click to upload resume/CV"}</p>
-                </label>
-              </div>
-            </div>
-
-            {/* Degree Certificates */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Degree Certificates</label>
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
-                <Input
-                  id="degree_certificates"
-                  type="file"
-                  accept=".pdf,.jpg,.jpeg,.png"
-                  onChange={(e) => handleFileChange(e, "degree_certificates")}
-                  className="hidden"
-                />
-                <label htmlFor="degree_certificates" className="cursor-pointer">
-                  <p className="text-gray-500">
-                    {fileNames.degree_certificates || "Click to upload degree certificates"}
-                  </p>
-                </label>
-              </div>
-            </div>
-
-            {/* ID Proof */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium">ID Proof</label>
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
-                <Input
-                  id="id_proof"
-                  type="file"
-                  accept=".pdf,.jpg,.jpeg,.png"
-                  onChange={(e) => handleFileChange(e, "id_proof")}
-                  className="hidden"
-                />
-                <label htmlFor="id_proof" className="cursor-pointer">
-                  <p className="text-gray-500">{fileNames.id_proof || "Click to upload ID proof"}</p>
-                </label>
-              </div>
-            </div>
-
-            {/* Legacy file uploads for backward compatibility */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium">CNIC Front</label>
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
-                  <Input
-                    id="cnic_front"
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => handleFileChange(e, "cnic_front")}
-                    className="hidden"
-                  />
-                  <label htmlFor="cnic_front" className="cursor-pointer">
-                    <p className="text-gray-500">{fileNames.cnic_front || "CNIC Front"}</p>
-                  </label>
-                </div>
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">CNIC Back</label>
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
-                  <Input
-                    id="cnic_back"
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => handleFileChange(e, "cnic_back")}
-                    className="hidden"
-                  />
-                  <label htmlFor="cnic_back" className="cursor-pointer">
-                    <p className="text-gray-500">{fileNames.cnic_back || "CNIC Back"}</p>
-                  </label>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <h3 className="font-semibold flex items-center gap-2">
-              <Globe />
-              Preferences
-            </h3>
-            <div className="space-y-3">
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="email_notifications"
-                  checked={formData.notification_preferences.email}
-                  onCheckedChange={(checked) => {
-                    setFormData((prev) => ({
-                      ...prev,
-                      notification_preferences: { ...prev.notification_preferences, email: checked },
-                    }))
-                  }}
-                />
-                <label htmlFor="email_notifications" className="text-sm font-medium">
-                  Email Notifications
-                </label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="sms_notifications"
-                  checked={formData.notification_preferences.sms}
-                  onCheckedChange={(checked) => {
-                    setFormData((prev) => ({
-                      ...prev,
-                      notification_preferences: { ...prev.notification_preferences, sms: checked },
-                    }))
-                  }}
-                />
-                <label htmlFor="sms_notifications" className="text-sm font-medium">
-                  SMS Notifications
-                </label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="can_teach_online"
-                  checked={formData.can_teach_online}
-                  onCheckedChange={(checked) => handleCheckboxChange("can_teach_online", checked)}
-                />
-                <label htmlFor="can_teach_online" className="text-sm font-medium">
-                  Available for Online Teaching
-                </label>
-              </div>
-            </div>
-          </div>
-
-          {/* Legacy Academic Information */}
-          <div className="space-y-4">
-            <h3 className="font-semibold flex items-center gap-2">
-              <GraduationCap />
-              Legacy Academic & Teaching
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="minimum_qualification_required">Minimum Qualification Required</Label>
-                <Input
-                  id="minimum_qualification_required"
-                  name="minimum_qualification_required"
-                  value={formData.minimum_qualification_required}
-                  onChange={handleInputChange}
-                  placeholder="Enter minimum qualification required"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="experience_required">Experience Required</Label>
-                <Input
-                  id="experience_required"
-                  name="experience_required"
-                  value={formData.experience_required}
-                  onChange={handleInputChange}
-                  placeholder="Enter experience required"
-                />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="areas_to_teach">Areas to Teach</Label>
-              <Textarea
-                id="areas_to_teach"
-                name="areas_to_teach"
-                value={formData.areas_to_teach}
-                onChange={handleInputChange}
-                placeholder="Detailed description of areas you can teach"
-              />
-            </div>
-
-            {/* Subjects Selection */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Subjects (Select multiple)</label>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                {availableSubjects.map((subject) => (
-                  <div key={subject.id} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={`subject-${subject.id}`}
-                      checked={formData.subjects.includes(subject.id)}
-                      onCheckedChange={() => handleSubjectToggle(subject.id)}
-                    />
-                    <label htmlFor={`subject-${subject.id}`} className="text-sm">
-                      {subject.name}
-                    </label>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Qualifications Selection */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Qualifications (Select multiple)</label>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                {availableQualifications.map((qualification) => (
-                  <div key={qualification.id} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={`qualification-${qualification.id}`}
-                      checked={formData.qualifications.includes(qualification.id)}
-                      onCheckedChange={() => handleQualificationToggle(qualification.id)}
-                    />
-                    <label htmlFor={`qualification-${qualification.id}`} className="text-sm">
-                      {qualification.name}
-                    </label>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          <Button type="submit" disabled={isSubmitting} className="w-full">
-            {isSubmitting ? <Loader text="Saving..." /> : "Save Profile"}
-          </Button>
-        </form>
-      </CardContent>
-    </Card>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
   )
 }

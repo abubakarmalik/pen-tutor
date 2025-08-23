@@ -32,7 +32,7 @@ export default function TopNavigation() {
     { name: "Courses", href: "/courses" },
     { name: "Our Tutors", href: "/our-tutors" },
     { name: "Job Board", href: "/jobs" },
-    { name: "Get Registered", href: "/profile" },
+    // { name: "Get Registered", href: "/profile" },
     // { name: "Blog", href: "/blog" },
     // { name: "Contact Us", href: "/contact" },
   ]
@@ -62,6 +62,13 @@ export default function TopNavigation() {
 
           {/* Auth Section */}
           <div className="hidden lg:flex items-center space-x-4">
+            {user?.role === "user" && <Button variant="outline" className="flex hover:bg-primary/20 items-center">
+              {/* {<Button variant="outline" className="flex hover:bg-primary/20 items-center"> */}
+              <Link href="/profile" className="px-3 py-2 text-sm font-medium rounded-md">
+                Register
+              </Link>
+            </Button>
+            }
             {isAuthenticated ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -119,7 +126,12 @@ export default function TopNavigation() {
                 </Link>
               ))}
 
-              <div className="pt-4 border-t border-gray-200">
+              <div className="pt-4 border-t border-gray-200 space-y-2">
+                {user?.role === "user" && (
+                  <Button variant="outline" className="flex w-full hover:bg-primary/20 items-center space-x-2">
+                    <Link href="/profile">Register</Link>
+                  </Button>
+                )}
                 {isAuthenticated ? (
                   <div className="space-y-2">
                     <Link

@@ -10,7 +10,8 @@ export default function OurServices() {
             {/* Background Decorative Elements */}
             <div className="absolute inset-0 pointer-events-none">
                 {/* Large yellow circle - top right */}
-                <div className="absolute -top-20 -right-20 w-80 h-80 bg-[#F5BB07] rounded-full opacity-60 blur-"></div>
+                {/* <div className="absolute -top-20 -right-20 w-80 h-80 bg-[#F5BB07] rounded-full opacity-60 blur-"></div> */}
+                <div className="absolute -top-20 -right-20 w-80 h-80 bg-gradient-to-br from-yellow-100 to-yellow-300 rounded-full opacity-60 blur-"></div>
 
                 {/* Medium yellow circle - bottom left */}
                 <div className="absolute -bottom-16 -left-16 w-64 h-64 bg-[#F5BB07] rounded-full opacity-40 blur-"></div>
