@@ -123,9 +123,9 @@ export default function HomePage() {
                   </span>
                 </li>
               </ul>
-              <Button className="bg-yellow-500 hover:bg-yellow-600 text-white px-6 sm:px-8 py-2 sm:py-3 rounded-lg">
+              <Link href="/online-tutoring" className="bg-yellow-500 hover:bg-yellow-600 text-white px-6 sm:px-8 py-2 sm:py-3 rounded-lg">
                 Read More
-              </Button>
+              </Link>
             </div>
           </div>
         </div>
@@ -232,7 +232,7 @@ export default function HomePage() {
       </section>
 
       {/* Footer */}
-      <Footer />
+      {/* <Footer /> */}
     </div>
   )
 }

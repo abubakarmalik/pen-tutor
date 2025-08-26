@@ -64,6 +64,13 @@ export default function OurTutorPage() {
     fetchTeachers()
   }, [])
 
+  const handleTrialClass = async (teacherId) => {
+
+    const user = localStorage.getItem("user")
+    
+    toast.success("Trial class booking feature coming soon!")
+  }
+
   const filteredTeachers = teachers.filter((teacher) => {
     const matchesSearch =
       searchQuery === "" ||
@@ -104,8 +111,8 @@ export default function OurTutorPage() {
   }
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: "#FFFCE0" }}>
-      <div className="relative">
+    <div className="min-h-screen" >
+      <div className="relative bg-[#FFFCE0]">
         <div className="relative min-h-[600px] overflow-hidden">
           {/* Background decorative elements */}
           <div className="absolute top-0 left-0 w-64 h-64 bg-[#F5BB07] rounded-full opacity-20 -translate-x-32 -translate-y-32"></div>
@@ -234,7 +241,7 @@ export default function OurTutorPage() {
 
       <Separator />
 
-      <div className="container mx-auto px-4 py-8">
+      <div className="container bg-white mx-auto px-4 py-8">
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {Array.from({ length: 6 }).map((_, index) => (
@@ -263,7 +270,7 @@ export default function OurTutorPage() {
               {currentTutors.map((teacher) => (
                 <Card
                   key={teacher.id}
-                  className="bg-white shadow-lg hover:shadow-xl transition-all duration-200 cursor-pointer border-2 border-gray-100 hover:border-[#F5BB07]"
+                  className="bg-white shadow-lg hover:shadow-xl transition-all duration-200 cursor-pointer border-2 border-gray-100 hover:shadow-primary/35"
                   onClick={() => handleTutorClick(teacher.id)}
                 >
                   <CardContent className="p-6 text-center">
@@ -335,11 +342,7 @@ export default function OurTutorPage() {
                       </Button>
                       <Button
                         className="flex-1 bg-[#313D6A] hover:bg-[#313D6A]/90 text-white font-medium"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          // Handle trial class booking
-                          toast.success("Trial class booking feature coming soon!")
-                        }}
+                        onClick={() => handleTrialClass(teacher.id)}
                       >
                         Take Trial Class
                       </Button>

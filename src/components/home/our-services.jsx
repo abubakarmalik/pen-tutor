@@ -3,6 +3,7 @@ import Image from "next/image"
 
 import ChildPlay from "@/assets/images/home/childs-play.png"
 import Child from "@/assets/images/home/child.png"
+import Link from "next/link"
 
 export default function OurServices() {
     return (
@@ -71,9 +72,9 @@ export default function OurServices() {
                                 performance.
                             </p>
 
-                            <Button className="bg-[#313D6A] hover:bg-[#313D6A]/90 text-white px-8 py-6 text-lg rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+                            <Link href="/home-tutoring" className="bg-[#313D6A] hover:bg-[#313D6A]/90 text-white px-8 py-3 text-lg rounded-md shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
                                 Read More
-                            </Button>
+                            </Link>
                         </div>
                     </div>
 
@@ -97,9 +98,9 @@ export default function OurServices() {
                                 performance.
                             </p>
 
-                            <Button className="bg-[#313D6A] hover:bg-[#313D6A]/90 text-white px-8 py-6 text-lg rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+                            <Link href="/online-tutoring" className="bg-[#313D6A] hover:bg-[#313D6A]/90 text-white px-8 py-3 text-lg rounded-md shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
                                 Read More
-                            </Button>
+                            </Link>
                         </div>
 
                         {/* Image Container */}

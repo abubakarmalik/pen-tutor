@@ -28,10 +28,10 @@ export default function TopNavigation() {
   const navItems = [
     { name: "Home", href: "/" },
     // { name: "About Us", href: "/about" },
-    // { name: "Our Services", href: "/services" },
+    { name: "Our Services", href: "/our-services" },
     { name: "Courses", href: "/courses" },
     { name: "Our Tutors", href: "/our-tutors" },
-    { name: "Job Board", href: "/jobs" },
+    { name: "Job Board", href: "/job-board" },
     // { name: "Get Registered", href: "/profile" },
     // { name: "Blog", href: "/blog" },
     // { name: "Contact Us", href: "/contact" },

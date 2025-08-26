@@ -29,6 +29,7 @@ import { toast } from "sonner"
 import axios from "axios"
 import { useAuth } from "@/components/auth/AuthContext"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import Link from "next/link"
 
 function TutorDashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -39,6 +40,7 @@ function TutorDashboard() {
   const [loading, setLoading] = useState(true)
   const [notifications, setNotifications] = useState([])
   const [unreadCount, setUnreadCount] = useState(0)
+  const [recentJobs, setRecentJobs] = useState([])
   const router = useRouter()
   const { user, logout } = useAuth()
 
@@ -87,6 +89,7 @@ function TutorDashboard() {
   useEffect(() => {
     fetchNotifications()
     fetchNotificationStats()
+    fetchRecentJobs()
   }, [])
 
   const navLinks = [
@@ -103,6 +106,20 @@ function TutorDashboard() {
     { label: "Become Featured Tutors", icon: Video, path: "#" },
     { label: "Become Pentutor Affiliate", icon: Users, path: "#" },
   ]
+
+  const fetchRecentJobs = async () => {
+    try {
+      const res = await axios.get(`${API_BASE}/api/job-board/jobs/`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+        },
+      })
+      console.log("Recent Jobs Response:", res)
+      setRecentJobs(res.data.results)
+    } catch (error) {
+      toast.error("Failed to fetch recent jobs")
+    }
+  }
 
   const fetchNotifications = async () => {
     try {
@@ -318,12 +335,12 @@ function TutorDashboard() {
     { id: 3, title: "Important Notes", color: "bg-pink-500" },
   ]
 
-  const recentJobs = [
-    "O/A Levels Tutors Required",
-    "O/A Levels Tutors Required",
-    "O/A Levels Tutors Required",
-    "O/A Levels Tutors Required",
-  ]
+  // const recentJobs = [
+  //   "O/A Levels Tutors Required",
+  //   "O/A Levels Tutors Required",
+  //   "O/A Levels Tutors Required",
+  //   "O/A Levels Tutors Required",
+  // ]
 
   const notices = ["Notice No. 1", "Notice No. 2", "Notice No. 3", "Notice No. 4"]
 
@@ -601,7 +618,7 @@ function TutorDashboard() {
               </Card>
 
               <div className="space-y-6">
-                <h2 className="text-2xl font-bold text-[#313D6A]">My Scheduled Classes</h2>
+                <h2 className="text-2xl text-center font-bold text-[#313D6A]">My Scheduled Classes</h2>
 
                 <Card className="border-[#313D6A]/20 shadow-lg">
                   <CardHeader className="bg-white border-b border-gray-200">
@@ -786,12 +803,12 @@ function TutorDashboard() {
                       key={index}
                       className="text-sm text-gray-700 py-2 px-3 bg-gray-50 rounded-lg hover:bg-[#313D6A]/10 transition-colors cursor-pointer"
                     >
-                      - {job}
+                      - {job.title}
                     </div>
                   ))}
-                  <Button variant="link" className="text-[#313D6A] text-sm p-0 h-auto font-medium">
+                  <Link href="/job-board" className="text-[#313D6A] text-sm p-0 h-auto font-medium hover:underline">
                     View All Jobs
-                  </Button>
+                  </Link>
                 </CardContent>
               </Card>
 

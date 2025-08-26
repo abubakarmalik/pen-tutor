@@ -244,7 +244,7 @@ export function AuthProvider({ children }) {
     try {
       const response = await publicApi.post("/api/auth/logout/", { refresh_token: token }, {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+          Authorization: `Bearer ${localStorage.getItem("refresh_token")}`,
         },
       })
       if (response.status === 200) {

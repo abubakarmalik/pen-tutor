@@ -248,7 +248,7 @@ export default function QueryFormShadcn() {
                         <div className="mt-6 flex justify-center">
                             <Button
                                 type="submit"
-                                className="bg-yellow-500 hover:bg-yellow-600 text-white rounded-full px-5 py-3 flex items-center gap-3"
+                                className="bg-[#F5BB07] hover:bg-[#F5BB07]/80 cursor-pointer text-primary text-lg rounded-full px-5 py-3 flex items-center gap-3"
                                 disabled={loading}
                             >
                                 {loading ? (
@@ -259,7 +259,7 @@ export default function QueryFormShadcn() {
                                 ) : (
                                     <>
                                         <span>Send Query</span>
-                                        <FaArrowRightLong className="h-5 w-5" />
+                                        {/* <FaArrowRightLong className="h-5 w-5" /> */}
                                     </>
                                 )}
                             </Button>

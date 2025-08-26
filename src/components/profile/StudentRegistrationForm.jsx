@@ -11,6 +11,10 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar"
 import { cn } from "@/lib/utils"
 import { format } from "date-fns"
+import axios from "axios"
+import { toast } from "sonner"
+import { useRouter } from "next/navigation"
+import { useAuth } from "@/components/auth/AuthContext"
 import {
   User,
   Mail,
@@ -29,6 +33,10 @@ import {
 } from "lucide-react"
 
 export default function StudentRegistrationForm() {
+  const router = useRouter()
+  const { user, refetchUser } = useAuth()
+
+  const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
   const [formData, setFormData] = useState({
     // Personal Information
     full_name: "",

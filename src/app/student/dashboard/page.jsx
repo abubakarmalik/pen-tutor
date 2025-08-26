@@ -33,6 +33,7 @@ import {
   BookOpen,
 } from "lucide-react"
 import axios from "axios"
+import Link from "next/link"
 
 export default function StudentDashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -42,6 +43,7 @@ export default function StudentDashboard() {
   const [notifications, setNotifications] = useState([])
   const [notificationStats, setNotificationStats] = useState({ unread_count: 0, total_count: 0 })
   const [loading, setLoading] = useState(true)
+  const [recentJobs, setRecentJobs] = useState([])
   const [notificationsLoading, setNotificationsLoading] = useState(false)
   const router = useRouter()
 
@@ -163,6 +165,20 @@ export default function StudentDashboard() {
     }
   }
 
+  const fetchRecentJobs = async () => {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/api/job-board/jobs/`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+        },
+      })
+      console.log("Recent Jobs Response:", response)
+      setRecentJobs(response.data.results)
+    } catch (error) {
+      console.error("Error fetching recent jobs:", error)
+    }
+  }
+
   const fetchNotifications = async () => {
     setNotificationsLoading(true)
     try {
@@ -266,6 +282,7 @@ export default function StudentDashboard() {
   useEffect(() => {
     fetchStudentData()
     fetchEnrolledCourses()
+    fetchRecentJobs()
     fetchNotificationStats()
   }, [])
 
@@ -512,7 +529,7 @@ export default function StudentDashboard() {
                       <tbody>
                         {enrolledCourses?.slice(0, 2).map((enrollment, index) => (
                           <tr
-                            key={enrollment.enrollment_id}
+                            key={index}
                             className={index % 2 === 0 ? "bg-[#313D6A]/5" : "bg-white"}
                           >
                             <td className="px-4 py-3 text-sm border-r border-gray-200 whitespace-nowrap">
@@ -546,7 +563,7 @@ export default function StudentDashboard() {
               </Card>
 
               <div className="space-y-6">
-                <h2 className="text-2xl font-bold text-[#313D6A]">My Scheduled Classes</h2>
+                <h2 className="text-2xl text-center font-bold text-[#313D6A]">My Scheduled Classes</h2>
 
                 <Card className="border-[#313D6A]/20 shadow-lg">
                   <CardHeader className="bg-white border-b border-gray-200">
@@ -574,7 +591,7 @@ export default function StudentDashboard() {
                         </thead>
                         <tbody>
                           {enrolledCourses?.slice(0, 2).map((enrollment, index) => (
-                            <tr key={enrollment.enrolled_at} className="bg-[#F5BB07]/10">
+                            <tr key={index} className="bg-[#F5BB07]/10">
                               <td className="px-4 py-3 text-sm border-r border-gray-200 whitespace-nowrap">
                                 <div className="font-medium text-[#313D6A]">ST{enrollment.course.teacher.id}</div>
                                 <div className="text-xs text-gray-600">Muhammad Ahmad</div>
@@ -614,7 +631,7 @@ export default function StudentDashboard() {
                         </thead>
                         <tbody>
                           {enrolledCourses?.slice(0, 2).map((enrollment, index) => (
-                            <tr key={enrollment.enrollment_id} className="bg-cyan-50">
+                            <tr key={index} className="bg-cyan-50">
                               <td className="px-4 py-3 text-sm border-r border-gray-200">
                                 <div className="font-medium text-[#313D6A]">PT{enrollment.course.teacher.id}</div>
                                 <div className="text-xs text-gray-600">
@@ -660,7 +677,7 @@ export default function StudentDashboard() {
                         <tbody>
                           {enrolledCourses?.length > 0 ? (
                             enrolledCourses?.slice(0, 2).map((enrollment, index) => (
-                              <tr key={enrollment.enrollment_id} className="bg-pink-50">
+                              <tr key={index} className="bg-pink-50">
                                 <td className="px-4 py-3 text-sm border-r border-gray-200 whitespace-nowrap">
                                   <div className="font-medium text-[#313D6A]">ST{enrollment.course.teacher.id}</div>
                                   <div className="text-xs text-gray-600">Muhammad Ahmad</div>
@@ -773,23 +790,20 @@ export default function StudentDashboard() {
                     </Button>
                   </div>
                 </CardHeader>
-                <CardContent className="space-y-3">
-                  {[
-                    "O/A Levels Tutors Required",
-                    "O/A Levels Tutors Required",
-                    "O/A Levels Tutors Required",
-                    "O/A Levels Tutors Required",
-                  ].map((job, index) => (
-                    <div
+                <CardContent className="flex flex-col space-y-3">
+                  {recentJobs.map((job, index) => (
+                    <Link
                       key={index}
+                      href="#"
+                      // href={`/job-board/job-details/${job.id}`}
                       className="text-sm text-gray-700 py-2 px-3 bg-gray-50 rounded-lg hover:bg-[#313D6A]/10 transition-colors cursor-pointer"
                     >
-                      - {job}
-                    </div>
+                      - {job.title}
+                    </Link>
                   ))}
-                  <Button variant="link" className="text-[#F5BB07] text-sm p-0 h-auto font-medium">
+                  <Link href="/job-board" className="text-[#F5BB07] text-sm p-0 h-auto font-medium hover:underline">
                     View All Jobs
-                  </Button>
+                  </Link>
                 </CardContent>
               </Card>
 

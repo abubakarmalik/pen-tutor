@@ -243,13 +243,13 @@ export default function TutorProfilePage() {
 
           {/* Main Content */}
           <div className="lg:col-span-6 space-y-6">
-            <Card className="border-l-4 overflow-hidden p-0 border-l-[#F5BB07]">
-              <CardHeader className="bg-[#F5BB07] py-2 text-[#313D6A]">
-                <CardTitle className="flex items-center gap-2">
-                  <User className="h-5 w-5" />
-                  Professional Details
-                </CardTitle>
-              </CardHeader>
+            <div className="inline-block">
+              <div className="inline-flex items-center gap-2 bg-[#F5BB07] text-[#313D6A] px-3 py-2 rounded-full">
+                <User className="h-5 w-5" />
+                <span className="font-semibold text-sm md:text-base">Professional Details</span>
+              </div>
+            </div>
+            <Card className="border-l-4 overflow-hidden p-0]">
               <CardContent className="p-6">
                 <div className="space-y-4">
                   <div>
@@ -292,19 +292,19 @@ export default function TutorProfilePage() {
               </CardContent>
             </Card>
 
-            <Card className="border-l-4 p-0 overflow-hidden border-l-[#F5BB07]">
-              <CardHeader className="bg-[#F5BB07] py-2 text-[#313D6A]">
-                <CardTitle className="flex items-center gap-2">
-                  <GraduationCap className="h-5 w-5" />
-                  Education & Qualifications
-                </CardTitle>
-              </CardHeader>
+            <div className="inline-block">
+              <div className="inline-flex items-center gap-2 bg-[#F5BB07] py-2 px-4 text-[#313D6A] rounded-full">
+                <GraduationCap className="h-5 w-5" />
+                <span className="font-semibold text-sm md:text-base">Education & Qualifications</span>
+              </div>
+            </div>
+            <Card className="border-l-4 p-0 overflow-hidden ">
               <CardContent className="p-0">
                 {education.length === 0 ? (
                   <div className="p-6 text-center text-gray-500">No education data available</div>
                 ) : (
                   <div className="overflow-x-auto">
-                    <table className="w-full">
+                    <table className="w-full border-collapse">
                       <thead className="bg-gray-50">
                         <tr>
                           <th className="px-6 py-3 text-left text-xs font-semibold text-[#313D6A] uppercase tracking-wider">
@@ -332,31 +332,32 @@ export default function TutorProfilePage() {
                 )}
 
                 {certifications.length > 0 && (
-                  <>
-                    <div className="px-6 py-4 bg-gray-50 border-t">
-                      <h4 className="font-semibold text-[#313D6A] mb-3">Certifications</h4>
-                      <div className="space-y-2">
-                        {certifications.map((cert, index) => (
-                          <div key={index} className="flex justify-between items-center bg-white p-3 rounded border">
-                            <span className="font-medium text-[#313D6A]">{safe(cert.name, "")}</span>
-                            <span className="text-sm text-gray-600">Year: {safe(cert.year, "")}</span>
-                          </div>
-                        ))}
-                      </div>
+                  <div className="px-6 py-4 bg-gray-50 border-t">
+                    <h4 className="font-semibold text-[#313D6A] mb-3">Certifications</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {certifications.map((cert, index) => (
+                        <span
+                          key={index}
+                          className="px-3 py-1 rounded-full bg-[#F5BB07]/20 text-[#313D6A] text-sm font-medium border border-[#F5BB07]/50"
+                        >
+                          {safe(cert.name, "")} <span className="text-xs text-gray-600">(Year: {safe(cert.year, "")})</span>
+                        </span>
+                      ))}
                     </div>
-                  </>
+                  </div>
                 )}
               </CardContent>
             </Card>
 
-            <Card className="border-l-4 p-0 overflow-hidden border-l-[#F5BB07]">
-              <CardHeader className="bg-[#F5BB07] py-2 text-[#313D6A]">
-                <CardTitle className="flex items-center gap-2">
-                  <Languages className="h-5 w-5" />
-                  Teaching & Languages
-                </CardTitle>
-              </CardHeader>
+            <div className="inline-block">
+              <div className="inline-flex items-center gap-2 bg-[#F5BB07] py-2 px-4 text-[#313D6A] rounded-full">
+                <Languages className="h-5 w-5" />
+                <span className="font-semibold text-sm md:text-base">Teaching & Languages</span>
+              </div>
+            </div>
+            <Card className="border-l-4 p-0 overflow-hidden">
               <CardContent className="p-6 space-y-6">
+                {/* Languages */}
                 <div>
                   <label className="text-sm font-semibold text-[#313D6A] block mb-2">Languages Spoken</label>
                   <div className="flex flex-wrap gap-2">
@@ -364,42 +365,54 @@ export default function TutorProfilePage() {
                       <span className="text-gray-500 text-sm">No languages listed</span>
                     ) : (
                       languagesSpoken.map((lang, index) => (
-                        <Badge key={index} variant="outline" className="border-[#313D6A] text-[#313D6A]">
+                        <span
+                          key={index}
+                          className="px-3 py-1 rounded-full border border-[#313D6A] text-[#313D6A] text-sm font-medium"
+                        >
                           {lang}
-                        </Badge>
+                        </span>
                       ))
                     )}
                   </div>
                 </div>
 
+                {/* Teaching Methods */}
                 <div>
                   <label className="text-sm font-semibold text-[#313D6A] block mb-2">Teaching Methods</label>
                   <div className="flex flex-wrap gap-2">
                     {preferredTeachingMethods.map((method, index) => (
-                      <Badge key={index} className="bg-[#F5BB07] text-[#313D6A] hover:bg-[#E5A906]">
+                      <span
+                        key={index}
+                        className="px-3 py-1 rounded-full bg-[#F5BB07] text-[#313D6A] text-sm font-medium hover:bg-[#E5A906]"
+                      >
                         {formatTeachingMethod(method)}
-                      </Badge>
+                      </span>
                     ))}
                   </div>
                 </div>
 
+                {/* Course Categories */}
                 <div>
                   <label className="text-sm font-semibold text-[#313D6A] block mb-2">Course Categories</label>
                   <div className="flex flex-wrap gap-2">
                     {courseCategories.map((category, index) => (
-                      <Badge key={index} className="bg-[#313D6A] text-white hover:bg-[#2A3458]">
+                      <span
+                        key={index}
+                        className="px-3 py-1 rounded-full bg-[#313D6A] text-white text-sm font-medium hover:bg-[#2A3458]"
+                      >
                         {formatCourseCategory(category)}
-                      </Badge>
+                      </span>
                     ))}
                   </div>
                 </div>
               </CardContent>
-            </Card>
+            </Card> 
+
           </div>
 
           {/* Right Sidebar - Stats and Status */}
-          <div className="lg:col-span-3 space-y-6">
-            <Card className="bg-[#FFFCE0] rounded-none rounded-l-lg border-[#F5BB07]">
+          <div className="lg:col-span-3 bg-[#FFFCE0] rounded-none rounded-l-lg  space-y-6">
+            <Card className="bg-[#FFFCE0] shadow-none border-none rounded-none rounded-l-lg ">
               <CardHeader className="text-center pb-2">
                 <CardTitle className="text-[#313D6A] text-lg">Teaching Statistics</CardTitle>
               </CardHeader>
@@ -424,7 +437,7 @@ export default function TutorProfilePage() {
               </CardContent>
             </Card>
 
-            <Card className="bg-[#FFFCE0] rounded-none rounded-l-lg border-[#F5BB07]">
+            <Card className="bg-[#FFFCE0] shadow-none border-none rounded-none rounded-l-lg ">
               <CardHeader>
                 <CardTitle className="text-[#313D6A] text-lg flex items-center gap-2">
                   <Mail className="h-5 w-5" />
@@ -448,7 +461,7 @@ export default function TutorProfilePage() {
             </Card>
 
             {(profile?.resume || profile?.degree_certificates) && (
-              <Card className="bg-[#FFFCE0] rounded-none rounded-l-lg border-[#F5BB07]">
+              <Card className="bg-[#FFFCE0] shadow-none border-none rounded-none rounded-l-lg ">
                 <CardHeader>
                   <CardTitle className="text-[#313D6A] text-lg flex items-center gap-2">
                     <Globe className="h-5 w-5" />
@@ -514,6 +527,6 @@ export default function TutorProfilePage() {
           </CardContent>
         </Card> */}
       </div>
-    </div>
+    </div >
   )
 }
