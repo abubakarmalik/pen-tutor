@@ -164,8 +164,10 @@ export function AuthProvider({ children }) {
   const login = async (credentials) => {
     try {
       const response = await publicApi.post("/api/auth/login/", credentials)
-      if (!response.data?.success) {
-        throw new Error(response.data?.message || "Login failed")
+      if (response.status !== 200) {
+        console.log(response)
+        console.log(response.data.errors.non_field_errors[0])
+        throw new Error(response.data.errors.non_field_errors[0] || "Login failed")
       }
 
       const { access_token, refresh_token, user: userData } = response.data.data
@@ -191,7 +193,7 @@ export function AuthProvider({ children }) {
   const register = async (userData) => {
     try {
       const response = await publicApi.post("/api/auth/register/", userData)
-      if (!response.data?.data?.success) {
+      if (response.status !== 201) {
         throw new Error(response.data?.data?.message || "Registration failed")
       }
       // registration usually does not log the user in; return response

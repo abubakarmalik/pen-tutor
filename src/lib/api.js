@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const BASE_URL = "https://pen-tutor-api.onrender.com"; // change if needed
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL ; // change if needed
 
 export const api = axios.create({
   baseURL: BASE_URL,

@@ -1,7 +1,4 @@
 "use client"
-
-import React from "react"
-
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -12,16 +9,18 @@ import { Checkbox } from "@/components/ui/checkbox"
 import {
   Upload,
   User,
-  MapPin,
   GraduationCap,
   Briefcase,
-  Globe,
   Calendar,
-  Award,
-  Link,
   ChevronLeft,
   ChevronRight,
   Check,
+  Star,
+  BookOpen,
+  Clock,
+  Heart,
+  Send,
+  Loader2,
 } from "lucide-react"
 import { toast } from "sonner"
 import Loader from "@/components/shared/Loader"
@@ -31,16 +30,48 @@ import { useRouter } from "next/navigation"
 import { Label } from "../ui/label"
 
 const steps = [
-  { id: 1, title: "Personal Info", icon: User, description: "Basic personal information" },
-  { id: 2, title: "Location", icon: MapPin, description: "Location and contact details" },
-  { id: 3, title: "Professional", icon: Briefcase, description: "Professional information" },
-  { id: 4, title: "Education", icon: GraduationCap, description: "Educational background" },
-  { id: 5, title: "Certifications", icon: Award, description: "Certifications and awards" },
-  { id: 6, title: "Teaching", icon: Calendar, description: "Teaching preferences" },
-  { id: 7, title: "Links", icon: Link, description: "Professional links" },
-  { id: 8, title: "Schedule", icon: Calendar, description: "Availability schedule" },
-  { id: 9, title: "Documents", icon: Upload, description: "Document uploads" },
-  { id: 10, title: "Preferences", icon: Globe, description: "Final preferences" },
+  {
+    id: 1,
+    title: "Personal Details",
+    icon: User,
+    description: "Tell us about yourself",
+    color: "from-blue-500 to-purple-600",
+  },
+  {
+    id: 2,
+    title: "Professional Background",
+    icon: Briefcase,
+    description: "Your expertise & experience",
+    color: "from-purple-500 to-pink-600",
+  },
+  {
+    id: 3,
+    title: "Qualifications",
+    icon: GraduationCap,
+    description: "Education & certifications",
+    color: "from-pink-500 to-red-600",
+  },
+  {
+    id: 4,
+    title: "Teaching Preferences",
+    icon: BookOpen,
+    description: "How you like to teach",
+    color: "from-red-500 to-orange-600",
+  },
+  {
+    id: 5,
+    title: "Availability & Links",
+    icon: Calendar,
+    description: "Schedule & social profiles",
+    color: "from-orange-500 to-yellow-600",
+  },
+  {
+    id: 6,
+    title: "Final Setup",
+    icon: Star,
+    description: "Documents & preferences",
+    color: "from-yellow-500 to-green-600",
+  },
 ]
 
 const ProgressIndicator = ({ currentStep, totalSteps, onStepClick }) => {
@@ -49,72 +80,66 @@ const ProgressIndicator = ({ currentStep, totalSteps, onStepClick }) => {
       {/* Mobile Progress Bar */}
       <div className="block md:hidden">
         <div className="flex items-center justify-between mb-4">
-          <span className="text-sm font-medium text-[#313D6A]">
-            Step {currentStep} of {totalSteps}
-          </span>
-          <span className="text-sm text-gray-500">{Math.round((currentStep / totalSteps) * 100)}% Complete</span>
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 rounded-full bg-[#313D6A] flex items-center justify-center">
+              <span className="text-white text-sm font-bold">{currentStep}</span>
+            </div>
+            <div>
+              <p className="text-base font-semibold text-[#313D6A]">{steps[currentStep - 1]?.title}</p>
+              <p className="text-sm text-gray-500">{steps[currentStep - 1]?.description}</p>
+            </div>
+          </div>
+          <div className="text-sm text-gray-500 font-medium">
+            {currentStep}/{totalSteps}
+          </div>
         </div>
-        <div className="w-full bg-gray-200 rounded-full h-2 mb-4">
+        <div className="w-full bg-gray-200 rounded-full h-2">
           <div
-            className="bg-[#313D6A] h-2 rounded-full transition-all duration-300 ease-in-out"
+            className="bg-[#313D6A] h-2 rounded-full transition-all duration-500 ease-out"
             style={{ width: `${(currentStep / totalSteps) * 100}%` }}
           />
         </div>
-        <div className="text-center">
-          <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-[#313D6A] text-white mb-2">
-            {React.createElement(steps[currentStep - 1].icon, { size: 20 })}
-          </div>
-          <h3 className="font-semibold text-[#313D6A]">{steps[currentStep - 1].title}</h3>
-          <p className="text-sm text-gray-600">{steps[currentStep - 1].description}</p>
-        </div>
       </div>
 
-      {/* Desktop Progress Indicator */}
+      {/* Desktop Step Indicator */}
       <div className="hidden md:block">
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between max-w-4xl mx-auto">
           {steps.map((step, index) => {
-            const isActive = currentStep === step.id
             const isCompleted = currentStep > step.id
-            const isClickable = currentStep >= step.id
+            const isCurrent = currentStep === step.id
+            const IconComponent = step.icon
 
             return (
               <div key={step.id} className="flex flex-col items-center flex-1">
-                <button
-                  onClick={() => isClickable && onStepClick(step.id)}
-                  disabled={!isClickable}
-                  className={`
-                    w-12 h-12 rounded-full flex items-center justify-center mb-2 transition-all duration-200
-                    ${
-                      isCompleted
-                        ? "bg-[#313D6A] text-white"
-                        : isActive
-                          ? "bg-[#313D6A] text-white ring-4 ring-[#313D6A]/20"
-                          : "bg-gray-200 text-gray-400"
-                    }
-                    ${isClickable ? "hover:scale-105 cursor-pointer" : "cursor-not-allowed"}
-                  `}
-                >
-                  {isCompleted ? <Check size={20} /> : React.createElement(step.icon, { size: 20 })}
-                </button>
-                <span
-                  className={`text-xs font-medium text-center px-1 ${
-                    isActive ? "text-[#313D6A]" : isCompleted ? "text-[#313D6A]" : "text-gray-400"
-                  }`}
-                >
-                  {step.title}
-                </span>
-                {index < steps.length - 1 && (
-                  <div
-                    className={`hidden lg:block absolute h-0.5 w-full mt-6 -ml-6 ${
-                      isCompleted ? "bg-[#313D6A]" : "bg-gray-200"
-                    }`}
-                    style={{
-                      left: "50%",
-                      transform: "translateX(-50%)",
-                      zIndex: -1,
-                    }}
-                  />
-                )}
+                <div className="flex items-center w-full">
+                  <button
+                    onClick={() => onStepClick(step.id)}
+                    className={`
+                      w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 transform hover:scale-105 border-2
+                      ${isCompleted
+                        ? "bg-[#313D6A] border-[#313D6A] text-white shadow-md"
+                        : isCurrent
+                          ? "bg-white border-[#F5BB07] text-[#313D6A] shadow-md"
+                          : "bg-white border-gray-300 text-gray-400 hover:border-gray-400"
+                      }
+                    `}
+                  >
+                    {isCompleted ? <Check className="w-5 h-5" /> : <IconComponent className="w-5 h-5" />}
+                  </button>
+                  {index < steps.length - 1 && (
+                    <div
+                      className={`
+                      flex-1 h-0.5 mx-4 rounded transition-all duration-500
+                      ${isCompleted ? "bg-[#313D6A]" : "bg-gray-300"}
+                    `}
+                    />
+                  )}
+                </div>
+                <div className="mt-3 text-center max-w-24">
+                  <p className={`text-xs font-medium leading-tight ${isCurrent ? "text-[#313D6A]" : "text-gray-500"}`}>
+                    {step.title}
+                  </p>
+                </div>
               </div>
             )
           })}
@@ -129,6 +154,9 @@ export default function TutorRegistrationForm() {
   const router = useRouter()
 
   const [currentStep, setCurrentStep] = useState(1)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
 
   const [formData, setFormData] = useState({
     // Base Information
@@ -147,9 +175,9 @@ export default function TutorRegistrationForm() {
     // Professional Information
     headline: "",
     expertise_areas: [],
-    expertise_level: "expert", // Default as per backend
+    expertise_level: "expert",
     years_of_experience: 0,
-    employment_type: "part_time", // Default as per backend
+    employment_type: "part_time",
     department: "",
     hourly_rate: "",
 
@@ -205,8 +233,6 @@ export default function TutorRegistrationForm() {
     degree_image: null,
   })
 
-  const [loading, setLoading] = useState(true)
-  const [isSubmitting, setIsSubmitting] = useState(false)
   const [fileNames, setFileNames] = useState({
     profile_picture: "",
     resume: "",
@@ -366,115 +392,6 @@ export default function TutorRegistrationForm() {
     }
   }, [])
 
-  useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const token = localStorage.getItem("access_token")
-        if (!token || !user?.id) {
-          // Don't spam toast on page load for unauthenticated users — just stop loading
-          setLoading(false)
-          return
-        }
-        const response = await axios.get(`${API_BASE}/api/auth/profile/update/`, {
-          headers: { Authorization: `Bearer ${token}` },
-        })
-
-        // be defensive about response shape
-        const payload = response.data
-        const data = payload?.data ?? payload
-
-        const normalizeArray = (v) => (Array.isArray(v) ? v : [])
-        const normalizeObject = (v) => (v && typeof v === "object" && !Array.isArray(v) ? v : {})
-
-        setFormData((prev) => ({
-          ...prev,
-          full_name: data.full_name ?? "",
-          email: data.email ?? "",
-          age: data.age ?? "",
-          date_of_birth: data.date_of_birth ?? "",
-          gender: data.gender ?? "",
-          phone: data.phone ?? data.mobile_number_1 ?? "",
-          address: data.address ?? "",
-          city: data.city ?? "",
-          country: data.country ?? "",
-          bio: data.bio ?? "",
-          profile_picture: null,
-
-          headline: data.headline ?? "",
-          expertise_areas: normalizeArray(data.expertise_areas),
-          expertise_level: data.expertise_level ?? "expert",
-          years_of_experience: data.years_of_experience ?? 0,
-          employment_type: data.employment_type ?? "part_time",
-          department: data.department ?? "",
-          hourly_rate: data.hourly_rate ?? "",
-
-          resume: null,
-          degree_certificates: null,
-          id_proof: null,
-
-          education: normalizeArray(data.education),
-          certifications: normalizeArray(data.certifications),
-          awards: normalizeArray(data.awards),
-          publications: normalizeArray(data.publications),
-
-          teaching_style: data.teaching_style ?? "",
-          languages_spoken: normalizeArray(data.languages_spoken),
-
-          linkedin_profile: data.linkedin_profile ?? "",
-          github_profile: data.github_profile ?? "",
-          personal_website: data.personal_website ?? "",
-          youtube_channel: data.youtube_channel ?? "",
-          social_links: normalizeObject(data.social_links),
-
-          availability_schedule: normalizeObject(data.availability_schedule),
-          preferred_teaching_methods: normalizeArray(data.preferred_teaching_methods),
-          course_categories: normalizeArray(data.course_categories),
-          notification_preferences: normalizeObject(data.notification_preferences) || { email: true, sms: false },
-
-          mobile_number_1: data.mobile_number_1 ?? "",
-          mobile_number_2: data.mobile_number_2 ?? "",
-          area: data.area ?? "",
-          location: data.location ?? "",
-          organization_name: data.organization_name ?? "",
-          designation: data.designation ?? "",
-          level: data.level ?? "",
-          member_since: data.member_since ?? "",
-          salary_package: data.salary_package ?? "",
-          timings_required: data.timings_required ?? "",
-          experience: data.experience ?? "",
-          areas_to_teach: data.areas_to_teach ?? "",
-          can_teach_online: data.can_teach_online ?? false,
-          minimum_qualification_required: data.minimum_qualification_required ?? "",
-          experience_required: data.experience_required ?? "",
-          subjects: normalizeArray(data.subjects),
-          qualifications: normalizeArray(data.qualifications),
-          cnic: data.cnic ?? "",
-          cnic_front: null,
-          cnic_back: null,
-          degree_image: null,
-        }))
-
-        // Set dynamic arrays defensively
-        if (data.education && Array.isArray(data.education) && data.education.length > 0)
-          setEducationEntries(data.education)
-        if (data.certifications && Array.isArray(data.certifications) && data.certifications.length > 0)
-          setCertificationEntries(data.certifications)
-        if (data.awards && Array.isArray(data.awards) && data.awards.length > 0) setAwardEntries(data.awards)
-        if (data.publications && Array.isArray(data.publications) && data.publications.length > 0)
-          setPublicationEntries(data.publications)
-        if (data.social_links && typeof data.social_links === "object") setSocialLinksEntries(data.social_links)
-      } catch (error) {
-        console.error(error)
-        toast.error("Something went wrong while loading profile data.")
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    //  user?.role === "teacher" && fetchProfile()
-    fetchProfile()
-  }, [user?.id])
-
   const validateCNIC = (cnic) => {
     const cnicPattern = /^\d{5}-\d{7}-\d{1}$/
     return cnicPattern.test(cnic)
@@ -488,14 +405,18 @@ export default function TutorRegistrationForm() {
     }
   }
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
-    // Auto-save progress
-    localStorage.setItem(
-      "tutorFormProgress",
-      JSON.stringify({ step: currentStep, formData: { ...formData, [name]: value } }),
-    )
+  const handleInputChange = (field, value) => {
+    setFormData((prev) => ({
+      ...prev,
+      [field]: value,
+    }))
+  }
+
+  const handleArrayChange = (field, value) => {
+    setFormData((prev) => ({
+      ...prev,
+      [field]: Array.isArray(value) ? value : [value],
+    }))
   }
 
   const handleSelectChange = (name, value) => {
@@ -619,1037 +540,718 @@ export default function TutorRegistrationForm() {
     e.preventDefault()
     setIsSubmitting(true)
 
-    if (!formData.full_name) {
-      toast.error("Full name is required")
-      setIsSubmitting(false)
-      return
-    }
-
-    if (formData.cnic && !validateCNIC(formData.cnic)) {
-      toast.error("Please enter a valid CNIC format (xxxxx-xxxxxxx-x)")
-      setIsSubmitting(false)
-      return
-    }
-
-    const data = new FormData()
-
-    // required JSON fields we MUST send (force presence)
-    const requiredJsonKeys = [
-      "expertise_areas",
-      "education",
-      "languages_spoken",
-      "availability_schedule",
-      "preferred_teaching_methods",
-      "course_categories",
-    ]
-
-    const ensureJson = {
-      expertise_areas: Array.isArray(formData.expertise_areas) ? formData.expertise_areas : [],
-      education:
-        Array.isArray(formData.education) && formData.education.length > 0
-          ? formData.education
-          : Array.isArray(educationEntries) && educationEntries.length > 0
-            ? educationEntries
-            : [],
-      languages_spoken: Array.isArray(formData.languages_spoken) ? formData.languages_spoken : [],
-      availability_schedule:
-        formData.availability_schedule && typeof formData.availability_schedule === "object"
-          ? formData.availability_schedule
-          : {},
-      preferred_teaching_methods: Array.isArray(formData.preferred_teaching_methods)
-        ? formData.preferred_teaching_methods
-        : [],
-      course_categories: Array.isArray(formData.course_categories) ? formData.course_categories : [],
-    }
-
-    // Append everything except the required JSON keys and notification/social (we'll set them explicitly)
-    Object.keys(formData).forEach((key) => {
-      if (requiredJsonKeys.includes(key)) return
-      if (key === "notification_preferences" || key === "social_links") return
-      appendIf(data, key, formData[key])
-    })
-
-    // Now explicitly set the required JSON fields (stringified)
-    // Object.entries(ensureJson).forEach(([k, v]) => {
-    //   data.set(k, JSON.stringify(v))
-    // })
-    // --- set required JSON fields in two formats (JSON string + repeated [] entries) ---
-    Object.entries(ensureJson).forEach(([k, v]) => {
-      // Always include a JSON string (safe for JSONField parsing)
-      data.set(k, JSON.stringify(v))
-
-      // Also append repeated keys for array parsing on some backends
-      if (Array.isArray(v)) {
-        v.forEach((item) => {
-          // For primitives append item directly, for objects stringify each item
-          if (item === null || item === undefined) return
-          if (typeof item === "object") {
-            data.append(`${k}[]`, JSON.stringify(item))
-          } else {
-            data.append(`${k}[]`, String(item))
-          }
-        })
-      } else if (typeof v === "object" && v !== null) {
-        // For availability_schedule (object), some servers accept flattened keys like:
-        // availability_schedule[Monday] = JSON.stringify([...])
-        // We'll also add keys for each day to help parsers that expect nested form syntax.
-        Object.entries(v).forEach(([subKey, subVal]) => {
-          if (subVal === null || subVal === undefined) return
-          // subVal may be an array of timeslots -> append as JSON string and as repeated items
-          data.append(`${k}[${subKey}]`, JSON.stringify(subVal))
-          if (Array.isArray(subVal)) {
-            subVal.forEach((slot) => {
-              data.append(`${k}[${subKey}][]`, String(slot))
-            })
-          }
-        })
-      }
-    })
-
-    // Ensure notification_preferences & social_links are JSON strings
-    if (formData.notification_preferences && typeof formData.notification_preferences === "object") {
-      data.set("notification_preferences", JSON.stringify(formData.notification_preferences))
-    } else {
-      data.set("notification_preferences", JSON.stringify({ email: true, sms: false }))
-    }
-    if (formData.social_links && typeof formData.social_links === "object") {
-      data.set("social_links", JSON.stringify(formData.social_links))
-    } else {
-      data.set("social_links", JSON.stringify({}))
-    }
-
-    // Debug: inspect what is sent (open console -> Network to verify)
-    for (const pair of data.entries()) {
-      console.log(pair[0], ":", pair[1])
-    }
-
     try {
-      const token = localStorage.getItem("access_token")
-      const response = await axios.post(`${API_BASE}/api/auth/teacher-profile/create/`, data, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-
-      if (response.status === 201 || response.status === 200) {
-        toast.success("Profile updated successfully!")
-        // Clear saved progress
-        localStorage.removeItem("tutorFormProgress")
-        refetchUser()
-        router.push("/tutor/waiting-for-approval")
-      } else {
-        const errorData = response.data
-        toast.error(`Failed to update profile: ${JSON.stringify(errorData)}`)
-      }
+      const response = await axios.post("/api/tutors/register/", formData)
+      toast.success("Registration completed successfully!")
+      router.push("/success?type=tutor")
     } catch (error) {
-      if (error.response && error.response.data) {
-        console.error("Backend error:", error.response.data)
-        toast.error(`Failed: ${error.response.data.message}`)
-      } else {
-        console.error(error)
-        toast.error("An error occurred while updating your profile.")
-      }
+      console.error("Registration error:", error)
+      toast.error("Registration failed. Please try again.")
     } finally {
       setIsSubmitting(false)
     }
   }
 
   const renderStepContent = () => {
+    const currentStepData = steps[currentStep - 1]
+
     switch (currentStep) {
-      case 1:
+      case 1: // Personal Details (combines old steps 1-2)
+        return (
+          <div className="space-y-8">
+            <div className="text-center mb-8">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-[#313D6A] flex items-center justify-center">
+                <User className="w-8 h-8 text-white" />
+              </div>
+              <h2 className="text-2xl font-bold text-[#313D6A] mb-2">Personal Information</h2>
+              <p className="text-gray-600 max-w-md mx-auto">Tell us about yourself and where you're located</p>
+            </div>
+
+            <div className="max-w-4xl mx-auto">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div className="space-y-6">
+                  <div>
+                    <Label htmlFor="full_name" className="text-sm font-medium text-[#313D6A] mb-2 block">
+                      Full Name *
+                    </Label>
+                    <Input
+                      id="full_name"
+                      value={formData.full_name}
+                      onChange={(e) => handleInputChange("full_name", e.target.value)}
+                      placeholder="Enter your full name"
+                      className="h-12 border-2 border-gray-200 focus:border-[#313D6A] focus:ring-0 transition-colors"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="email" className="text-sm font-medium text-[#313D6A] mb-2 block">
+                      Email Address *
+                    </Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={formData.email}
+                      onChange={(e) => handleInputChange("email", e.target.value)}
+                      placeholder="your.email@example.com"
+                      className="h-12 border-2 border-gray-200 focus:border-[#313D6A] focus:ring-0 transition-colors"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="phone" className="text-sm font-medium text-[#313D6A] mb-2 block">
+                      Phone Number *
+                    </Label>
+                    <Input
+                      id="phone"
+                      value={formData.phone}
+                      onChange={(e) => handleInputChange("phone", e.target.value)}
+                      placeholder="+1 (555) 123-4567"
+                      className="h-12 border-2 border-gray-200 focus:border-[#313D6A] focus:ring-0 transition-colors"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-6">
+                  <div>
+                    <Label htmlFor="date_of_birth" className="text-sm font-medium text-[#313D6A] mb-2 block">
+                      Date of Birth *
+                    </Label>
+                    <Input
+                      id="date_of_birth"
+                      type="date"
+                      value={formData.date_of_birth}
+                      onChange={(e) => handleInputChange("date_of_birth", e.target.value)}
+                      className="h-12 border-2 border-gray-200 focus:border-[#313D6A] focus:ring-0 transition-colors"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <Label className="text-sm font-medium text-[#313D6A] mb-3 block">Gender *</Label>
+                    <div className="grid grid-cols-3 gap-3">
+                      {["Male", "Female", "Other"].map((gender) => (
+                        <label
+                          key={gender}
+                          className={`
+                            flex items-center justify-center p-3 rounded-lg border-2 cursor-pointer transition-all
+                            ${formData.gender === gender.toLowerCase()
+                              ? "border-[#313D6A] bg-[#313D6A]/5 text-[#313D6A]"
+                              : "border-gray-200 hover:border-gray-300"
+                            }
+                          `}
+                        >
+                          <input
+                            type="radio"
+                            name="gender"
+                            value={gender.toLowerCase()}
+                            checked={formData.gender === gender.toLowerCase()}
+                            onChange={(e) => handleInputChange("gender", e.target.value)}
+                            className="sr-only"
+                          />
+                          <span className="text-sm font-medium">{gender}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="address" className="text-sm font-medium text-[#313D6A] mb-2 block">
+                      Address *
+                    </Label>
+                    <Textarea
+                      id="address"
+                      value={formData.address}
+                      onChange={(e) => handleInputChange("address", e.target.value)}
+                      placeholder="Enter your full address"
+                      className="min-h-[80px] border-2 border-gray-200 focus:border-[#313D6A] focus:ring-0 transition-colors resize-none"
+                      required
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )
+
+      case 2: // Professional Background (combines old steps 3-4)
         return (
           <div className="space-y-6">
-            <div className="space-y-4">
-              <h3 className="font-semibold flex items-center gap-2 text-[#313D6A]">
-                <User />
-                Personal Information
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="full_name">Full Name *</Label>
+            <div className="text-center mb-8">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-r from-[#313D6A] to-[#F5BB07] flex items-center justify-center">
+                <Briefcase className="w-8 h-8 text-white" />
+              </div>
+              <h2 className="text-2xl font-bold text-[#313D6A] mb-2">Your Professional Journey</h2>
+              <p className="text-gray-600">Share your expertise and experience</p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="headline" className="text-sm font-medium text-[#313D6A]">
+                    Professional Headline *
+                  </Label>
                   <Input
-                    id="full_name"
-                    name="full_name"
-                    value={formData.full_name}
-                    onChange={handleInputChange}
-                    placeholder="Enter your full name"
+                    id="headline"
+                    value={formData.headline}
+                    onChange={(e) => handleInputChange("headline", e.target.value)}
+                    placeholder="e.g., Expert Math Tutor with 5+ Years Experience"
+                    className="mt-1 border-2 border-gray-200 focus:border-[#F5BB07] transition-colors"
                     required
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email Address</Label>
-                  <Input
-                    id="email"
-                    name="email"
-                    type="email"
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    placeholder="Enter your email address"
-                  />
-                </div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="phone">Phone Number</Label>
-                  <Input
-                    id="phone"
-                    name="phone"
-                    value={formData.phone}
-                    onChange={handleInputChange}
-                    placeholder="Enter phone number"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="age">Age</Label>
-                  <Input
-                    id="age"
-                    name="age"
-                    type="number"
-                    value={formData.age}
-                    onChange={handleInputChange}
-                    placeholder="Enter your age"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="gender">Gender</Label>
-                  <Select onValueChange={(value) => handleSelectChange("gender", value)} value={formData.gender}>
-                    <SelectTrigger id="gender">
-                      <SelectValue placeholder="Select gender" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {genderOptions.map((option) => (
-                        <SelectItem key={option.value} value={option.value}>
-                          {option.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="date_of_birth">Date of Birth</Label>
-                  <Input
-                    id="date_of_birth"
-                    name="date_of_birth"
-                    type="date"
-                    value={formData.date_of_birth}
-                    onChange={handleInputChange}
-                    placeholder="Select date of birth"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="cnic">CNIC</Label>
-                  <Input
-                    id="cnic"
-                    name="cnic"
-                    value={formData.cnic}
-                    onChange={handleInputChange}
-                    onBlur={handleCNICBlur}
-                    placeholder="xxxxx-xxxxxxx-x"
-                  />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="address">Full Address</Label>
-                <Textarea
-                  id="address"
-                  name="address"
-                  value={formData.address}
-                  onChange={handleInputChange}
-                  placeholder="Enter your complete address"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="bio">Bio</Label>
-                <Textarea
-                  id="bio"
-                  name="bio"
-                  value={formData.bio}
-                  onChange={handleInputChange}
-                  placeholder="A brief bio about yourself and your teaching philosophy"
-                />
-              </div>
-            </div>
-          </div>
-        )
 
-      case 2:
-        return (
-          <div className="space-y-6">
-            <div className="space-y-4">
-              <h3 className="font-semibold flex items-center gap-2 text-[#313D6A]">
-                <MapPin />
-                Location & Contact
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="country">Country</Label>
-                  <Input
-                    id="country"
-                    name="country"
-                    value={formData.country}
-                    onChange={handleInputChange}
-                    placeholder="Enter your country"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="city">City</Label>
-                  <Input
-                    id="city"
-                    name="city"
-                    value={formData.city}
-                    onChange={handleInputChange}
-                    placeholder="Enter your city"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-        )
-
-      case 3:
-        return (
-          <div className="space-y-6">
-            <div className="space-y-4">
-              <h3 className="font-semibold flex items-center gap-2 text-[#313D6A]">
-                <Briefcase />
-                Professional Information
-              </h3>
-              <div className="space-y-2">
-                <Label htmlFor="headline">Professional Headline</Label>
-                <Input
-                  id="headline"
-                  name="headline"
-                  value={formData.headline}
-                  onChange={handleInputChange}
-                  placeholder="e.g., 'Experienced Math Tutor'"
-                />
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="expertise_level">Expertise Level</Label>
+                <div>
+                  <Label htmlFor="expertise_level" className="text-sm font-medium text-[#313D6A]">
+                    Expertise Level
+                  </Label>
                   <Select
-                    onValueChange={(value) => handleSelectChange("expertise_level", value)}
                     value={formData.expertise_level}
+                    onValueChange={(value) => handleInputChange("expertise_level", value)}
                   >
-                    <SelectTrigger id="expertise_level">
-                      <SelectValue placeholder="Select expertise level" />
+                    <SelectTrigger className="mt-1 border-2 border-gray-200 focus:border-[#F5BB07]">
+                      <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {expertiseLevelOptions.map((option) => (
-                        <SelectItem key={option.value} value={option.value}>
-                          {option.label}
-                        </SelectItem>
-                      ))}
+                      <SelectItem value="beginner">Beginner</SelectItem>
+                      <SelectItem value="intermediate">Intermediate</SelectItem>
+                      <SelectItem value="expert">Expert</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="years_of_experience">Years of Experience</Label>
+
+                <div>
+                  <Label htmlFor="years_of_experience" className="text-sm font-medium text-[#313D6A]">
+                    Years of Experience
+                  </Label>
                   <Input
                     id="years_of_experience"
-                    name="years_of_experience"
                     type="number"
                     value={formData.years_of_experience}
-                    onChange={handleInputChange}
-                    placeholder="Enter years of experience"
+                    onChange={(e) => handleInputChange("years_of_experience", Number.parseInt(e.target.value) || 0)}
+                    placeholder="5"
+                    className="mt-1 border-2 border-gray-200 focus:border-[#F5BB07] transition-colors"
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="employment_type">Employment Type</Label>
+
+                <div>
+                  <Label htmlFor="employment_type" className="text-sm font-medium text-[#313D6A]">
+                    Employment Type
+                  </Label>
                   <Select
-                    onValueChange={(value) => handleSelectChange("employment_type", value)}
                     value={formData.employment_type}
+                    onValueChange={(value) => handleInputChange("employment_type", value)}
                   >
-                    <SelectTrigger id="employment_type">
-                      <SelectValue placeholder="Select employment type" />
+                    <SelectTrigger className="mt-1 border-2 border-gray-200 focus:border-[#F5BB07]">
+                      <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {employmentTypeOptions.map((option) => (
-                        <SelectItem key={option.value} value={option.value}>
-                          {option.label}
-                        </SelectItem>
-                      ))}
+                      <SelectItem value="full_time">Full Time</SelectItem>
+                      <SelectItem value="part_time">Part Time</SelectItem>
+                      <SelectItem value="freelance">Freelance</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="department">Department/Field</Label>
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="department" className="text-sm font-medium text-[#313D6A]">
+                    Department/Field
+                  </Label>
                   <Input
                     id="department"
-                    name="department"
                     value={formData.department}
-                    onChange={handleInputChange}
-                    placeholder="Enter your department or field"
+                    onChange={(e) => handleInputChange("department", e.target.value)}
+                    placeholder="e.g., Mathematics, Computer Science"
+                    className="mt-1 border-2 border-gray-200 focus:border-[#F5BB07] transition-colors"
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="hourly_rate">Hourly Rate (USD)</Label>
+
+                <div>
+                  <Label htmlFor="hourly_rate" className="text-sm font-medium text-[#313D6A]">
+                    Hourly Rate ($)
+                  </Label>
                   <Input
                     id="hourly_rate"
-                    name="hourly_rate"
-                    type="number"
-                    step="0.01"
                     value={formData.hourly_rate}
-                    onChange={handleInputChange}
-                    placeholder="Enter hourly rate"
+                    onChange={(e) => handleInputChange("hourly_rate", e.target.value)}
+                    placeholder="50"
+                    className="mt-1 border-2 border-gray-200 focus:border-[#F5BB07] transition-colors"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="organization_name" className="text-sm font-medium text-[#313D6A]">
+                    Current Organization
+                  </Label>
+                  <Input
+                    id="organization_name"
+                    value={formData.organization_name}
+                    onChange={(e) => handleInputChange("organization_name", e.target.value)}
+                    placeholder="University/Company name"
+                    className="mt-1 border-2 border-gray-200 focus:border-[#F5BB07] transition-colors"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="designation" className="text-sm font-medium text-[#313D6A]">
+                    Current Designation
+                  </Label>
+                  <Input
+                    id="designation"
+                    value={formData.designation}
+                    onChange={(e) => handleInputChange("designation", e.target.value)}
+                    placeholder="Professor, Senior Developer, etc."
+                    className="mt-1 border-2 border-gray-200 focus:border-[#F5BB07] transition-colors"
                   />
                 </div>
               </div>
+            </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="expertise_areas">Expertise Areas</Label>
-                <Input
-                  id="expertise_areas"
-                  placeholder="Enter expertise areas separated by commas (e.g., Mathematics, Physics, Chemistry)"
-                  value={formData.expertise_areas.join(", ")}
-                  onChange={(e) => {
-                    const areas = e.target.value
-                      .split(",")
-                      .map((area) => area.trim())
-                      .filter((area) => area)
-                    setFormData((prev) => ({ ...prev, expertise_areas: areas }))
-                  }}
-                />
+            <div>
+              <Label htmlFor="expertise_areas" className="text-sm font-medium text-[#313D6A]">
+                Areas of Expertise
+              </Label>
+              <Textarea
+                id="expertise_areas"
+                value={
+                  Array.isArray(formData.expertise_areas)
+                    ? formData.expertise_areas.join(", ")
+                    : formData.expertise_areas
+                }
+                onChange={(e) =>
+                  handleArrayChange(
+                    "expertise_areas",
+                    e.target.value.split(",").map((item) => item.trim()),
+                  )
+                }
+                placeholder="Mathematics, Physics, Programming, Data Science (separate with commas)"
+                className="mt-1 border-2 border-gray-200 focus:border-[#F5BB07] transition-colors"
+                rows={3}
+              />
+            </div>
+          </div>
+        )
+
+      case 3: // Qualifications (old step 5 + education)
+        return (
+          <div className="space-y-6">
+            <div className="text-center mb-8">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-r from-[#313D6A] to-[#F5BB07] flex items-center justify-center">
+                <GraduationCap className="w-8 h-8 text-white" />
               </div>
+              <h2 className="text-2xl font-bold text-[#313D6A] mb-2">Your Qualifications</h2>
+              <p className="text-gray-600">Education, certifications, and achievements</p>
             </div>
-          </div>
-        )
 
-      case 4:
-        return (
-          <div className="space-y-6">
-            <div className="space-y-4">
-              <h3 className="font-semibold flex items-center gap-2 text-[#313D6A]">
-                <GraduationCap />
-                Education
-              </h3>
-              {educationEntries.map((entry, index) => (
-                <div key={index} className="border rounded-lg p-4 space-y-3">
-                  <div className="flex justify-between items-center">
-                    <h4 className="font-medium">Education {index + 1}</h4>
-                    {educationEntries.length > 1 && (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => removeDynamicEntry("education", educationEntries, setEducationEntries, index)}
-                      >
-                        Remove
-                      </Button>
-                    )}
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                    <div className="space-y-2">
-                      <Label htmlFor={`institution-${index}`}>Institution</Label>
-                      <Input
-                        id={`institution-${index}`}
-                        placeholder="Enter institution name"
-                        value={entry.institution || ""}
-                        onChange={(e) =>
-                          handleDynamicArrayChange(
-                            "education",
-                            educationEntries,
-                            setEducationEntries,
-                            index,
-                            "institution",
-                            e.target.value,
-                          )
-                        }
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor={`degree-${index}`}>Degree</Label>
-                      <Input
-                        id={`degree-${index}`}
-                        placeholder="Enter degree"
-                        value={entry.degree || ""}
-                        onChange={(e) =>
-                          handleDynamicArrayChange(
-                            "education",
-                            educationEntries,
-                            setEducationEntries,
-                            index,
-                            "degree",
-                            e.target.value,
-                          )
-                        }
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor={`year-${index}`}>Year</Label>
-                      <Input
-                        id={`year-${index}`}
-                        placeholder="Enter year"
-                        type="number"
-                        value={entry.year || ""}
-                        onChange={(e) =>
-                          handleDynamicArrayChange(
-                            "education",
-                            educationEntries,
-                            setEducationEntries,
-                            index,
-                            "year",
-                            e.target.value,
-                          )
-                        }
-                      />
-                    </div>
-                  </div>
-                </div>
-              ))}
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() =>
-                  addDynamicEntry("education", educationEntries, setEducationEntries, {
-                    institution: "",
-                    degree: "",
-                    year: "",
-                  })
-                }
-              >
-                Add Education
-              </Button>
-            </div>
-          </div>
-        )
-
-      case 5:
-        return (
-          <div className="space-y-6">
-            <div className="space-y-4">
-              <h3 className="font-semibold flex items-center gap-2 text-[#313D6A]">
-                <Award />
-                Certifications
-              </h3>
-              {certificationEntries.map((entry, index) => (
-                <div key={index} className="border rounded-lg p-4 space-y-3">
-                  <div className="flex justify-between items-center">
-                    <h4 className="font-medium">Certification {index + 1}</h4>
-                    {certificationEntries.length > 1 && (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() =>
-                          removeDynamicEntry("certifications", certificationEntries, setCertificationEntries, index)
-                        }
-                      >
-                        Remove
-                      </Button>
-                    )}
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <div className="space-y-2">
-                      <Label htmlFor={`cert-name-${index}`}>Certification Name</Label>
-                      <Input
-                        id={`cert-name-${index}`}
-                        placeholder="Enter certification name"
-                        value={entry.name || ""}
-                        onChange={(e) =>
-                          handleDynamicArrayChange(
-                            "certifications",
-                            certificationEntries,
-                            setCertificationEntries,
-                            index,
-                            "name",
-                            e.target.value,
-                          )
-                        }
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor={`cert-year-${index}`}>Year</Label>
-                      <Input
-                        id={`cert-year-${index}`}
-                        placeholder="Enter year"
-                        type="number"
-                        value={entry.year || ""}
-                        onChange={(e) =>
-                          handleDynamicArrayChange(
-                            "certifications",
-                            certificationEntries,
-                            setCertificationEntries,
-                            index,
-                            "year",
-                            e.target.value,
-                          )
-                        }
-                      />
-                    </div>
-                  </div>
-                </div>
-              ))}
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() =>
-                  addDynamicEntry("certifications", certificationEntries, setCertificationEntries, {
-                    name: "",
-                    year: "",
-                  })
-                }
-              >
-                Add Certification
-              </Button>
-            </div>
-          </div>
-        )
-
-      case 6:
-        return (
-          <div className="space-y-6">
-            <div className="space-y-4">
-              <h3 className="font-semibold flex items-center gap-2 text-[#313D6A]">
-                <GraduationCap />
-                Teaching & Course Information
-              </h3>
-              <div className="space-y-2">
-                <Label htmlFor="teaching_style">Teaching Style</Label>
+            <div className="space-y-6">
+              <div>
+                <Label className="text-sm font-medium text-[#313D6A] mb-3 block">Education Background</Label>
                 <Textarea
-                  id="teaching_style"
-                  name="teaching_style"
-                  value={formData.teaching_style}
-                  onChange={handleInputChange}
-                  placeholder="Describe your teaching style and methodology"
+                  value={Array.isArray(formData.education) ? formData.education.join("\n") : ""}
+                  onChange={(e) =>
+                    handleArrayChange(
+                      "education",
+                      e.target.value.split("\n").filter((item) => item.trim()),
+                    )
+                  }
+                  placeholder="PhD in Mathematics - Harvard University (2018)&#10;MS in Computer Science - MIT (2015)&#10;BS in Mathematics - Stanford University (2013)"
+                  className="border-2 border-gray-200 focus:border-[#F5BB07] transition-colors"
+                  rows={4}
                 />
+                <p className="text-xs text-gray-500 mt-1">Enter each degree on a new line</p>
               </div>
 
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Languages Spoken</label>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                  {languageOptions.map((language) => (
-                    <div key={language} className="flex items-center space-x-2">
-                      <Checkbox
-                        id={`language-${language}`}
-                        checked={formData.languages_spoken.includes(language)}
-                        onCheckedChange={() => handleArrayFieldToggle("languages_spoken", language)}
-                      />
-                      <label htmlFor={`language-${language}`} className="text-sm">
-                        {language}
-                      </label>
-                    </div>
-                  ))}
-                </div>
+              <div>
+                <Label className="text-sm font-medium text-[#313D6A] mb-3 block">Certifications</Label>
+                <Textarea
+                  value={Array.isArray(formData.certifications) ? formData.certifications.join("\n") : ""}
+                  onChange={(e) =>
+                    handleArrayChange(
+                      "certifications",
+                      e.target.value.split("\n").filter((item) => item.trim()),
+                    )
+                  }
+                  placeholder="AWS Certified Solutions Architect (2023)&#10;Google Cloud Professional (2022)&#10;Teaching Excellence Certificate (2021)"
+                  className="border-2 border-gray-200 focus:border-[#F5BB07] transition-colors"
+                  rows={4}
+                />
+                <p className="text-xs text-gray-500 mt-1">Enter each certification on a new line</p>
               </div>
 
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Preferred Teaching Methods</label>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                  {teachingMethodOptions.map((method) => (
-                    <div key={method} className="flex items-center space-x-2">
-                      <Checkbox
-                        id={`method-${method}`}
-                        checked={formData.preferred_teaching_methods.includes(method)}
-                        onCheckedChange={() => handleArrayFieldToggle("preferred_teaching_methods", method)}
-                      />
-                      <label htmlFor={`method-${method}`} className="text-sm">
-                        {method.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())}
-                      </label>
-                    </div>
-                  ))}
-                </div>
+              <div>
+                <Label className="text-sm font-medium text-[#313D6A] mb-3 block">Awards & Recognition (Optional)</Label>
+                <Textarea
+                  value={Array.isArray(formData.awards) ? formData.awards.join("\n") : ""}
+                  onChange={(e) =>
+                    handleArrayChange(
+                      "awards",
+                      e.target.value.split("\n").filter((item) => item.trim()),
+                    )
+                  }
+                  placeholder="Best Teacher Award 2023&#10;Research Excellence Award 2022&#10;Dean's List 2020"
+                  className="border-2 border-gray-200 focus:border-[#F5BB07] transition-colors"
+                  rows={3}
+                />
+                <p className="text-xs text-gray-500 mt-1">Enter each award on a new line</p>
               </div>
 
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Course Categories</label>
-                <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
-                  {courseCategoryOptions.map((category) => (
-                    <div key={category} className="flex items-center space-x-2">
-                      <Checkbox
-                        id={`category-${category}`}
-                        checked={formData.course_categories.includes(category)}
-                        onCheckedChange={() => handleArrayFieldToggle("course_categories", category)}
-                      />
-                      <label htmlFor={`category-${category}`} className="text-sm">
-                        {category.charAt(0).toUpperCase() + category.slice(1)}
-                      </label>
-                    </div>
-                  ))}
-                </div>
+              <div>
+                <Label className="text-sm font-medium text-[#313D6A] mb-3 block">Publications (Optional)</Label>
+                <Textarea
+                  value={Array.isArray(formData.publications) ? formData.publications.join("\n") : ""}
+                  onChange={(e) =>
+                    handleArrayChange(
+                      "publications",
+                      e.target.value.split("\n").filter((item) => item.trim()),
+                    )
+                  }
+                  placeholder="Advanced Machine Learning Techniques - IEEE 2023&#10;Teaching Methods in STEM - Education Journal 2022"
+                  className="border-2 border-gray-200 focus:border-[#F5BB07] transition-colors"
+                  rows={3}
+                />
+                <p className="text-xs text-gray-500 mt-1">Enter each publication on a new line</p>
               </div>
+            </div>
+          </div>
+        )
 
-              {/* Legacy Academic Information */}
-              <div className="space-y-4 pt-6 border-t">
-                <h4 className="font-medium text-[#313D6A]">Legacy Academic & Teaching</h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="minimum_qualification_required">Minimum Qualification Required</Label>
-                    <Input
-                      id="minimum_qualification_required"
-                      name="minimum_qualification_required"
-                      value={formData.minimum_qualification_required}
-                      onChange={handleInputChange}
-                      placeholder="Enter minimum qualification required"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="experience_required">Experience Required</Label>
-                    <Input
-                      id="experience_required"
-                      name="experience_required"
-                      value={formData.experience_required}
-                      onChange={handleInputChange}
-                      placeholder="Enter experience required"
-                    />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="areas_to_teach">Areas to Teach</Label>
+      case 4: // Teaching Preferences (old step 6)
+        return (
+          <div className="space-y-6">
+            <div className="text-center mb-8">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-r from-[#313D6A] to-[#F5BB07] flex items-center justify-center">
+                <BookOpen className="w-8 h-8 text-white" />
+              </div>
+              <h2 className="text-2xl font-bold text-[#313D6A] mb-2">Teaching Style & Preferences</h2>
+              <p className="text-gray-600">How do you like to teach and connect with students?</p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="teaching_style" className="text-sm font-medium text-[#313D6A]">
+                    Teaching Style
+                  </Label>
                   <Textarea
-                    id="areas_to_teach"
-                    name="areas_to_teach"
-                    value={formData.areas_to_teach}
-                    onChange={handleInputChange}
-                    placeholder="Detailed description of areas you can teach"
+                    id="teaching_style"
+                    value={formData.teaching_style}
+                    onChange={(e) => handleInputChange("teaching_style", e.target.value)}
+                    placeholder="Describe your teaching approach, methodology, and what makes your teaching unique..."
+                    className="mt-1 border-2 border-gray-200 focus:border-[#F5BB07] transition-colors"
+                    rows={4}
                   />
                 </div>
 
-                {/* Subjects Selection */}
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Subjects (Select multiple)</label>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                    {availableSubjects.map((subject) => (
-                      <div key={subject.id} className="flex items-center space-x-2">
+                <div>
+                  <Label className="text-sm font-medium text-[#313D6A] mb-3 block">Languages You Speak</Label>
+                  <Input
+                    value={Array.isArray(formData.languages_spoken) ? formData.languages_spoken.join(", ") : ""}
+                    onChange={(e) =>
+                      handleArrayChange(
+                        "languages_spoken",
+                        e.target.value.split(",").map((item) => item.trim()),
+                      )
+                    }
+                    placeholder="English, Spanish, French (separate with commas)"
+                    className="border-2 border-gray-200 focus:border-[#F5BB07] transition-colors"
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-sm font-medium text-[#313D6A] mb-3 block">Subjects You Can Teach</Label>
+                  <Textarea
+                    value={Array.isArray(formData.subjects) ? formData.subjects.join(", ") : ""}
+                    onChange={(e) =>
+                      handleArrayChange(
+                        "subjects",
+                        e.target.value.split(",").map((item) => item.trim()),
+                      )
+                    }
+                    placeholder="Mathematics, Physics, Programming, Data Science (separate with commas)"
+                    className="border-2 border-gray-200 focus:border-[#F5BB07] transition-colors"
+                    rows={3}
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <Label className="text-sm font-medium text-[#313D6A] mb-3 block">Preferred Teaching Methods</Label>
+                  <div className="space-y-2">
+                    {[
+                      "Interactive Sessions",
+                      "Visual Learning",
+                      "Hands-on Practice",
+                      "Problem Solving",
+                      "Group Discussions",
+                      "One-on-One Mentoring",
+                    ].map((method) => (
+                      <div key={method} className="flex items-center space-x-2">
                         <Checkbox
-                          id={`subject-${subject.id}`}
-                          checked={formData.subjects.includes(subject.id)}
-                          onCheckedChange={() => handleSubjectToggle(subject.id)}
+                          id={method}
+                          checked={formData.preferred_teaching_methods.includes(method)}
+                          onCheckedChange={(checked) => {
+                            if (checked) {
+                              handleArrayChange("preferred_teaching_methods", [
+                                ...formData.preferred_teaching_methods,
+                                method,
+                              ])
+                            } else {
+                              handleArrayChange(
+                                "preferred_teaching_methods",
+                                formData.preferred_teaching_methods.filter((m) => m !== method),
+                              )
+                            }
+                          }}
                         />
-                        <label htmlFor={`subject-${subject.id}`} className="text-sm">
-                          {subject.name}
-                        </label>
+                        <Label htmlFor={method} className="text-sm">
+                          {method}
+                        </Label>
                       </div>
                     ))}
                   </div>
                 </div>
 
-                {/* Qualifications Selection */}
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Qualifications (Select multiple)</label>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                    {availableQualifications.map((qualification) => (
-                      <div key={qualification.id} className="flex items-center space-x-2">
+                <div>
+                  <Label className="text-sm font-medium text-[#313D6A] mb-3 block">Course Categories</Label>
+                  <div className="space-y-2">
+                    {["STEM", "Languages", "Arts", "Business", "Technology", "Test Prep"].map((category) => (
+                      <div key={category} className="flex items-center space-x-2">
                         <Checkbox
-                          id={`qualification-${qualification.id}`}
-                          checked={formData.qualifications.includes(qualification.id)}
-                          onCheckedChange={() => handleQualificationToggle(qualification.id)}
+                          id={category}
+                          checked={formData.course_categories.includes(category)}
+                          onCheckedChange={(checked) => {
+                            if (checked) {
+                              handleArrayChange("course_categories", [...formData.course_categories, category])
+                            } else {
+                              handleArrayChange(
+                                "course_categories",
+                                formData.course_categories.filter((c) => c !== category),
+                              )
+                            }
+                          }}
                         />
-                        <label htmlFor={`qualification-${qualification.id}`} className="text-sm">
-                          {qualification.name}
-                        </label>
+                        <Label htmlFor={category} className="text-sm">
+                          {category}
+                        </Label>
                       </div>
                     ))}
                   </div>
                 </div>
-              </div>
-            </div>
-          </div>
-        )
 
-      case 7:
-        return (
-          <div className="space-y-6">
-            <div className="space-y-4">
-              <h3 className="font-semibold flex items-center gap-2 text-[#313D6A]">
-                <Link />
-                Professional Links
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="linkedin_profile">LinkedIn Profile</Label>
-                  <Input
-                    id="linkedin_profile"
-                    name="linkedin_profile"
-                    value={formData.linkedin_profile}
-                    onChange={handleInputChange}
-                    placeholder="LinkedIn Profile URL"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="github_profile">GitHub Profile</Label>
-                  <Input
-                    id="github_profile"
-                    name="github_profile"
-                    value={formData.github_profile}
-                    onChange={handleInputChange}
-                    placeholder="GitHub Profile URL"
-                  />
-                </div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="personal_website">Personal Website</Label>
-                  <Input
-                    id="personal_website"
-                    name="personal_website"
-                    value={formData.personal_website}
-                    onChange={handleInputChange}
-                    placeholder="Personal Website URL"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="youtube_channel">YouTube Channel</Label>
-                  <Input
-                    id="youtube_channel"
-                    name="youtube_channel"
-                    value={formData.youtube_channel}
-                    onChange={handleInputChange}
-                    placeholder="YouTube Channel URL"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Social Media Links</label>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="twitter">Twitter URL</Label>
-                    <Input
-                      id="twitter"
-                      placeholder="Twitter URL"
-                      value={socialLinksEntries.twitter || ""}
-                      onChange={(e) => {
-                        const newSocialLinks = { ...socialLinksEntries, twitter: e.target.value }
-                        setSocialLinksEntries(newSocialLinks)
-                        setFormData((prev) => ({ ...prev, social_links: newSocialLinks }))
-                      }}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="facebook">Facebook URL</Label>
-                    <Input
-                      id="facebook"
-                      placeholder="Facebook URL"
-                      value={socialLinksEntries.facebook || ""}
-                      onChange={(e) => {
-                        const newSocialLinks = { ...socialLinksEntries, facebook: e.target.value }
-                        setSocialLinksEntries(newSocialLinks)
-                        setFormData((prev) => ({ ...prev, social_links: newSocialLinks }))
-                      }}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="instagram">Instagram URL</Label>
-                    <Input
-                      id="instagram"
-                      placeholder="Instagram URL"
-                      value={socialLinksEntries.instagram || ""}
-                      onChange={(e) => {
-                        const newSocialLinks = { ...socialLinksEntries, instagram: e.target.value }
-                        setSocialLinksEntries(newSocialLinks)
-                        setFormData((prev) => ({ ...prev, social_links: newSocialLinks }))
-                      }}
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )
-
-      case 8:
-        return (
-          <div className="space-y-6">
-            <div className="space-y-4">
-              <h3 className="font-semibold flex items-center gap-2 text-[#313D6A]">
-                <Calendar />
-                Availability Schedule
-              </h3>
-              <div className="space-y-3">
-                {daysOfWeek.map((day) => (
-                  <div key={day} className="grid grid-cols-1 md:grid-cols-4 gap-3 items-center">
-                    <Label htmlFor={`schedule-${day}`} className="text-sm font-medium">
-                      {day}
-                    </Label>
-                    <div className="md:col-span-3">
-                      <Input
-                        id={`schedule-${day}`}
-                        placeholder="Time slots (e.g., 9:00-12:00, 14:00-16:00)"
-                        value={formData.availability_schedule[day]?.join(", ") || ""}
-                        onChange={(e) => handleScheduleChange(day, e.target.value)}
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )
-
-      case 9:
-        return (
-          <div className="space-y-6">
-            <div className="space-y-4">
-              <h3 className="font-semibold flex items-center gap-2 text-[#313D6A]">
-                <Upload />
-                Document Uploads
-              </h3>
-
-              {/* Profile Picture */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Profile Picture</label>
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-[#313D6A] transition-colors">
-                  <Input
-                    id="profile_picture"
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => handleFileChange(e, "profile_picture")}
-                    className="hidden"
-                  />
-                  <label htmlFor="profile_picture" className="cursor-pointer">
-                    <Upload className="mx-auto h-8 w-8 text-gray-400 mb-2" />
-                    <p className="text-gray-500">{fileNames.profile_picture || "Click to upload profile picture"}</p>
-                  </label>
-                </div>
-              </div>
-
-              {/* Resume */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Resume/CV</label>
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-[#313D6A] transition-colors">
-                  <Input
-                    id="resume"
-                    type="file"
-                    accept=".pdf,.doc,.docx"
-                    onChange={(e) => handleFileChange(e, "resume")}
-                    className="hidden"
-                  />
-                  <label htmlFor="resume" className="cursor-pointer">
-                    <Upload className="mx-auto h-8 w-8 text-gray-400 mb-2" />
-                    <p className="text-gray-500">{fileNames.resume || "Click to upload resume/CV"}</p>
-                  </label>
-                </div>
-              </div>
-
-              {/* Degree Certificates */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Degree Certificates</label>
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-[#313D6A] transition-colors">
-                  <Input
-                    id="degree_certificates"
-                    type="file"
-                    accept=".pdf,.jpg,.jpeg,.png"
-                    onChange={(e) => handleFileChange(e, "degree_certificates")}
-                    className="hidden"
-                  />
-                  <label htmlFor="degree_certificates" className="cursor-pointer">
-                    <Upload className="mx-auto h-8 w-8 text-gray-400 mb-2" />
-                    <p className="text-gray-500">
-                      {fileNames.degree_certificates || "Click to upload degree certificates"}
-                    </p>
-                  </label>
-                </div>
-              </div>
-
-              {/* ID Proof */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium">ID Proof</label>
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-[#313D6A] transition-colors">
-                  <Input
-                    id="id_proof"
-                    type="file"
-                    accept=".pdf,.jpg,.jpeg,.png"
-                    onChange={(e) => handleFileChange(e, "id_proof")}
-                    className="hidden"
-                  />
-                  <label htmlFor="id_proof" className="cursor-pointer">
-                    <Upload className="mx-auto h-8 w-8 text-gray-400 mb-2" />
-                    <p className="text-gray-500">{fileNames.id_proof || "Click to upload ID proof"}</p>
-                  </label>
-                </div>
-              </div>
-
-              {/* Legacy file uploads for backward compatibility */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">CNIC Front</label>
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-[#313D6A] transition-colors">
-                    <Input
-                      id="cnic_front"
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => handleFileChange(e, "cnic_front")}
-                      className="hidden"
-                    />
-                    <label htmlFor="cnic_front" className="cursor-pointer">
-                      <Upload className="mx-auto h-6 w-6 text-gray-400 mb-1" />
-                      <p className="text-sm text-gray-500">{fileNames.cnic_front || "CNIC Front"}</p>
-                    </label>
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">CNIC Back</label>
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-[#313D6A] transition-colors">
-                    <Input
-                      id="cnic_back"
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => handleFileChange(e, "cnic_back")}
-                      className="hidden"
-                    />
-                    <label htmlFor="cnic_back" className="cursor-pointer">
-                      <Upload className="mx-auto h-6 w-6 text-gray-400 mb-1" />
-                      <p className="text-sm text-gray-500">{fileNames.cnic_back || "CNIC Back"}</p>
-                    </label>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )
-
-      case 10:
-        return (
-          <div className="space-y-6">
-            <div className="space-y-4">
-              <h3 className="font-semibold flex items-center gap-2 text-[#313D6A]">
-                <Globe />
-                Preferences
-              </h3>
-              <div className="space-y-3">
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="email_notifications"
-                    checked={formData.notification_preferences.email}
-                    onCheckedChange={(checked) => {
-                      setFormData((prev) => ({
-                        ...prev,
-                        notification_preferences: { ...prev.notification_preferences, email: checked },
-                      }))
-                    }}
-                  />
-                  <label htmlFor="email_notifications" className="text-sm font-medium">
-                    Email Notifications
-                  </label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="sms_notifications"
-                    checked={formData.notification_preferences.sms}
-                    onCheckedChange={(checked) => {
-                      setFormData((prev) => ({
-                        ...prev,
-                        notification_preferences: { ...prev.notification_preferences, sms: checked },
-                      }))
-                    }}
-                  />
-                  <label htmlFor="sms_notifications" className="text-sm font-medium">
-                    SMS Notifications
-                  </label>
-                </div>
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-2 p-4 bg-[#FFFCE0] rounded-lg border border-[#F5BB07]/30">
                   <Checkbox
                     id="can_teach_online"
                     checked={formData.can_teach_online}
-                    onCheckedChange={(checked) => handleCheckboxChange("can_teach_online", checked)}
+                    onCheckedChange={(checked) => handleInputChange("can_teach_online", checked)}
                   />
-                  <label htmlFor="can_teach_online" className="text-sm font-medium">
+                  <Label htmlFor="can_teach_online" className="text-sm font-medium text-[#313D6A]">
                     Available for Online Teaching
-                  </label>
+                  </Label>
+                </div>
+              </div>
+            </div>
+          </div>
+        )
+
+      case 5: // Availability & Links (combines old steps 7, 8)
+        return (
+          <div className="space-y-6">
+            <div className="text-center mb-8">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-r from-[#313D6A] to-[#F5BB07] flex items-center justify-center">
+                <Calendar className="w-8 h-8 text-white" />
+              </div>
+              <h2 className="text-2xl font-bold text-[#313D6A] mb-2">Schedule & Social Presence</h2>
+              <p className="text-gray-600">When are you available and where can students find you?</p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="timings_required" className="text-sm font-medium text-[#313D6A]">
+                    Preferred Teaching Hours
+                  </Label>
+                  <Input
+                    id="timings_required"
+                    value={formData.timings_required}
+                    onChange={(e) => handleInputChange("timings_required", e.target.value)}
+                    placeholder="e.g., Weekdays 9 AM - 5 PM, Weekends flexible"
+                    className="mt-1 border-2 border-gray-200 focus:border-[#F5BB07] transition-colors"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="linkedin_profile" className="text-sm font-medium text-[#313D6A]">
+                    LinkedIn Profile
+                  </Label>
+                  <Input
+                    id="linkedin_profile"
+                    value={formData.linkedin_profile}
+                    onChange={(e) => handleInputChange("linkedin_profile", e.target.value)}
+                    placeholder="https://linkedin.com/in/yourprofile"
+                    className="mt-1 border-2 border-gray-200 focus:border-[#F5BB07] transition-colors"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="github_profile" className="text-sm font-medium text-[#313D6A]">
+                    GitHub Profile (Optional)
+                  </Label>
+                  <Input
+                    id="github_profile"
+                    value={formData.github_profile}
+                    onChange={(e) => handleInputChange("github_profile", e.target.value)}
+                    placeholder="https://github.com/yourusername"
+                    className="mt-1 border-2 border-gray-200 focus:border-[#F5BB07] transition-colors"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="personal_website" className="text-sm font-medium text-[#313D6A]">
+                    Personal Website (Optional)
+                  </Label>
+                  <Input
+                    id="personal_website"
+                    value={formData.personal_website}
+                    onChange={(e) => handleInputChange("personal_website", e.target.value)}
+                    placeholder="https://yourwebsite.com"
+                    className="mt-1 border-2 border-gray-200 focus:border-[#F5BB07] transition-colors"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="youtube_channel" className="text-sm font-medium text-[#313D6A]">
+                    YouTube Channel (Optional)
+                  </Label>
+                  <Input
+                    id="youtube_channel"
+                    value={formData.youtube_channel}
+                    onChange={(e) => handleInputChange("youtube_channel", e.target.value)}
+                    placeholder="https://youtube.com/c/yourchannel"
+                    className="mt-1 border-2 border-gray-200 focus:border-[#F5BB07] transition-colors"
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-sm font-medium text-[#313D6A] mb-3 block">Notification Preferences</Label>
+                  <div className="space-y-2">
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="email_notifications"
+                        checked={formData.notification_preferences.email}
+                        onCheckedChange={(checked) =>
+                          handleInputChange("notification_preferences", {
+                            ...formData.notification_preferences,
+                            email: checked,
+                          })
+                        }
+                      />
+                      <Label htmlFor="email_notifications" className="text-sm">
+                        Email notifications
+                      </Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="sms_notifications"
+                        checked={formData.notification_preferences.sms}
+                        onCheckedChange={(checked) =>
+                          handleInputChange("notification_preferences", {
+                            ...formData.notification_preferences,
+                            sms: checked,
+                          })
+                        }
+                      />
+                      <Label htmlFor="sms_notifications" className="text-sm">
+                        SMS notifications
+                      </Label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )
+
+      case 6: // Final Setup (combines old steps 9, 10)
+        return (
+          <div className="space-y-6">
+            <div className="text-center mb-8">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-r from-[#313D6A] to-[#F5BB07] flex items-center justify-center">
+                <Star className="w-8 h-8 text-white" />
+              </div>
+              <h2 className="text-2xl font-bold text-[#313D6A] mb-2">Almost Done!</h2>
+              <p className="text-gray-600">Upload your documents and set final preferences</p>
+            </div>
+
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div className="space-y-6">
+                  <div>
+                    <Label className="text-sm font-medium text-[#313D6A] mb-3 block">Resume/CV *</Label>
+                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-[#313D6A] transition-colors cursor-pointer">
+                      <Upload className="w-10 h-10 text-gray-400 mx-auto mb-3" />
+                      <p className="text-sm font-medium text-gray-700 mb-1">Click to upload or drag and drop</p>
+                      <p className="text-xs text-gray-500">PDF, DOC, DOCX (Max 5MB)</p>
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label className="text-sm font-medium text-[#313D6A] mb-3 block">
+                      Degree Certificates (Optional)
+                    </Label>
+                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-[#313D6A] transition-colors cursor-pointer">
+                      <Upload className="w-10 h-10 text-gray-400 mx-auto mb-3" />
+                      <p className="text-sm font-medium text-gray-700 mb-1">Upload your certificates</p>
+                      <p className="text-xs text-gray-500">PDF, JPG, PNG (Max 10MB)</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-6">
+                  <div>
+                    <Label className="text-sm font-medium text-[#313D6A] mb-3 block">ID Proof *</Label>
+                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-[#313D6A] transition-colors cursor-pointer">
+                      <Upload className="w-10 h-10 text-gray-400 mx-auto mb-3" />
+                      <p className="text-sm font-medium text-gray-700 mb-1">Upload government ID</p>
+                      <p className="text-xs text-gray-500">PDF, JPG, PNG (Max 5MB)</p>
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label className="text-sm font-medium text-[#313D6A] mb-3 block">Profile Picture (Optional)</Label>
+                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-[#313D6A] transition-colors cursor-pointer">
+                      <Upload className="w-10 h-10 text-gray-400 mx-auto mb-3" />
+                      <p className="text-sm font-medium text-gray-700 mb-1">Upload your photo</p>
+                      <p className="text-xs text-gray-500">JPG, PNG (Max 2MB)</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-gray-50 p-6 rounded-lg border border-gray-200">
+                <div className="flex items-start space-x-4">
+                  <div className="w-8 h-8 rounded-full bg-[#F5BB07] flex items-center justify-center flex-shrink-0 mt-1">
+                    <Heart className="w-4 h-4 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-[#313D6A] mb-2">Ready to inspire students?</h3>
+                    <p className="text-sm text-gray-600 mb-4 leading-relaxed">
+                      You're about to join our community of amazing tutors! Your profile will be reviewed and activated
+                      within 24 hours.
+                    </p>
+                    <div className="flex items-start space-x-3">
+                      <Checkbox id="terms_agreement" required className="mt-0.5" />
+                      <Label htmlFor="terms_agreement" className="text-sm text-gray-600 leading-relaxed">
+                        I agree to the Terms of Service and Privacy Policy
+                      </Label>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1666,53 +1268,73 @@ export default function TutorRegistrationForm() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-4 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-4xl mx-auto">
-        <Card className="shadow-lg">
+    <div className="min-h-screen relative bg-primary/10 overflow-hidden rounded-lg py-8 px-4 sm:px-6 lg:px-8">
+      {/* Decorative background circles */}
+      <div className="absolute z-0 inset-0 pointer-events-none">
+        <div className="absolute top-0 left-0 w-32 h-32 border-[10px] border-[#313D6A]/60 rounded-full " />
+        <div className="absolute top-20 right-9 w-24 h-24 rounded-full opacity-60 bg-[#313D6A]" />
+        <div className="absolute bottom-32 left-16 w-40 h-40 rounded-full opacity-25 bg-[#313D6A]" />
+        <div className="absolute bottom-20 right-32 w-28 h-28 border-[10px] border-[#313D6A]/60 rounded-full opacity-60" />
+        <div className="absolute top-1/2 left-0 w-36 h-36 rounded-full opacity-50 -translate-x-1/2 bg-[#313D6A]" />
+        <div className="absolute top-1/3 right-0 w-32 h-32 border-[10px] border-[#313D6A]/60 rounded-full opacity-60 translate-x-1/2" />
+      </div>
+      <div className="max-w-5xl mx-auto ">
+
+
+        <Card className="shadow-lg  relative z-10 pt-0 overflow-hidden border-0 bg-white">
           <CardHeader className="bg-[#313D6A] text-white">
-            <CardTitle className="text-2xl font-bold text-center">Tutor Registration</CardTitle>
-            <p className="text-center text-blue-100 mt-2">Complete your profile to start teaching</p>
+            <div className="text-center py-6">
+              <CardTitle className="text-3xl font-bold mb-2">Tutor Registration</CardTitle>
+              <p className="text-blue-100 text-lg">Join our community of amazing educators</p>
+              <div className="flex items-center justify-center mt-4 space-x-2 text-blue-200">
+                <Clock className="w-4 h-4" />
+                <span className="text-sm">Takes about 10 minutes</span>
+              </div>
+            </div>
           </CardHeader>
-          <CardContent className="p-6">
+
+          <CardContent className="p-8">
             <ProgressIndicator currentStep={currentStep} totalSteps={steps.length} onStepClick={goToStep} />
 
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {renderStepContent()}
+            <form onSubmit={handleSubmit} className="space-y-8">
+              <div className="bg-white rounded-lg p-8 border border-gray-200">{renderStepContent()}</div>
 
-              <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-6 border-t">
+              <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-8 border-t border-gray-200">
                 <Button
                   type="button"
                   variant="outline"
                   onClick={prevStep}
                   disabled={currentStep === 1}
-                  className="w-full sm:w-auto order-2 sm:order-1 bg-transparent"
+                  className="w-full sm:w-auto order-2 sm:order-1 h-12 px-8 border-2 border-[#313D6A] text-[#313D6A] hover:bg-[#313D6A] hover:text-white transition-all duration-300 bg-transparent"
                 >
                   <ChevronLeft className="w-4 h-4 mr-2" />
                   Previous
                 </Button>
 
-                <div className="text-sm text-gray-500 order-1 sm:order-2">
+                <div className="text-sm text-gray-500 order-1 sm:order-2 font-medium bg-gray-100 px-4 py-2 rounded-full">
                   Step {currentStep} of {steps.length}
                 </div>
 
-                {currentStep === steps.length ? (
-                  <Button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="w-full sm:w-auto bg-[#F5BB07] hover:bg-[#F5BB07]/90 text-black font-semibold order-3"
-                  >
-                    {isSubmitting ? <Loader text="Saving..." /> : "Complete Registration"}
-                  </Button>
-                ) : (
-                  <Button
-                    type="button"
-                    onClick={nextStep}
-                    className="w-full sm:w-auto bg-[#313D6A] hover:bg-[#313D6A]/90 order-3"
-                  >
-                    Next
-                    <ChevronRight className="w-4 h-4 ml-2" />
-                  </Button>
-                )}
+                <Button
+                  type={currentStep === steps.length ? "submit" : "button"}
+                  onClick={currentStep === steps.length ? undefined : nextStep}
+                  disabled={isLoading}
+                  className="w-full sm:w-auto order-3 h-12 px-8 bg-[#F5BB07] hover:bg-[#F5BB07]/90 text-[#313D6A] font-semibold transition-all duration-300"
+                >
+                  {isLoading ? (
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  ) : currentStep === steps.length ? (
+                    <>
+                      <Send className="w-4 h-4 mr-2" />
+                      Submit Registration
+                    </>
+                  ) : (
+                    <>
+                      Continue
+                      <ChevronRight className="w-4 h-4 ml-2" />
+                    </>
+                  )}
+                </Button>
               </div>
             </form>
           </CardContent>

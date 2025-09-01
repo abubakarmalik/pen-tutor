@@ -37,6 +37,7 @@ function TutorDashboard() {
   const [teacherData, setTeacherData] = useState(null)
   const [teacherProfile, setTeacherProfile] = useState(null)
   const [scheduledSessions, setScheduledSessions] = useState([])
+  const [videoCourses, setVideoCourses] = useState([])
   const [loading, setLoading] = useState(true)
   const [notifications, setNotifications] = useState([])
   const [unreadCount, setUnreadCount] = useState(0)
@@ -74,6 +75,7 @@ function TutorDashboard() {
           },
         })
         if (res.status === 200) {
+          console.log(res)
           setScheduledSessions(res.data.data)
         }
       } catch {
@@ -264,84 +266,6 @@ function TutorDashboard() {
 
   const { teacher, statistics, videos, courses } = teacherData
 
-  const upcomingSessions = [
-    {
-      id: 1,
-      studentId: "PTS100",
-      studentName: "Muhammad Ahmad",
-      classLevel: "O Level 1",
-      subject: "Chemistry",
-      dateTime: "Monday 17:00 PM-18:00 PM",
-      timings: "Tuesday 17:00 PM-18:00 PM",
-      mode: "Online",
-      status: "Confirmed",
-    },
-    {
-      id: 2,
-      studentId: "PTS200",
-      studentName: "Sarah Khan",
-      classLevel: "A Level 2",
-      subject: "Physics",
-      dateTime: "Tuesday 15:00 PM-16:00 PM",
-      timings: "Wednesday 15:00 PM-16:00 PM",
-      mode: "Home",
-      status: "Pending",
-    },
-  ]
-
-  const scheduledClasses = {
-    homeTuitions: [
-      {
-        id: 1,
-        studentId: "PTS100",
-        studentName: "Muhammad Ahmad",
-        classLevel: "O Level 1",
-        subject: "Chemistry",
-        daysTime: "Monday 17:00 PM-18:00 PM, Tuesday 17:00 PM-18:00 PM",
-        location: "Street No 6, DHA Phase 5, Lahore",
-      },
-    ],
-    onlineTuitions: [
-      {
-        id: 1,
-        studentId: "PTS100",
-        studentName: "Muhammad Ahmad",
-        classLevel: "O Level 1",
-        subject: "Chemistry",
-        daysTime: "Monday 17:00 PM-18:00 PM, Tuesday 17:00 PM-18:00 PM",
-      },
-    ],
-    onlineGroupSessions: [
-      {
-        id: 1,
-        studentId: "PTS100",
-        studentName: "Muhammad Ahmad",
-        classLevel: "O Level 1",
-        subject: "Chemistry",
-        daysTime: "Monday 17:00 PM-18:00 PM, Tuesday 17:00 PM-18:00 PM",
-      },
-    ],
-  }
-
-  const videoCourses = [
-    { id: 1, title: "O Level Chemistry", color: "bg-[#F5BB07]" },
-    { id: 2, title: "O Level Physics", color: "bg-cyan-400" },
-    { id: 3, title: "O Level Computer", color: "bg-pink-500" },
-  ]
-
-  const onlineResources = [
-    { id: 1, title: "Key Book", color: "bg-[#F5BB07]" },
-    { id: 2, title: "Past Papers", color: "bg-cyan-400" },
-    { id: 3, title: "Important Notes", color: "bg-pink-500" },
-  ]
-
-  // const recentJobs = [
-  //   "O/A Levels Tutors Required",
-  //   "O/A Levels Tutors Required",
-  //   "O/A Levels Tutors Required",
-  //   "O/A Levels Tutors Required",
-  // ]
-
   const notices = ["Notice No. 1", "Notice No. 2", "Notice No. 3", "Notice No. 4"]
 
   const attendanceData = [
@@ -398,7 +322,7 @@ function TutorDashboard() {
 
           {/* Navigation */}
           <nav className="space-y-1">
-            {navLinks.map(({ label, icon: Icon, path }) => (
+            {navLinks?.map(({ label, icon: Icon, path }) => (
               <Button
                 key={label}
                 variant="ghost"
@@ -576,7 +500,8 @@ function TutorDashboard() {
                         </tr>
                       </thead>
                       <tbody>
-                        {upcomingSessions.map((session, index) => (
+                        {/* {upcomingSessions.map((session, index) => ( */}
+                        {scheduledSessions?.length > 0 ? scheduledSessions.map((session, index) => (
                           <tr key={session.id} className={index % 2 === 0 ? "bg-[#313D6A]/5" : "bg-white"}>
                             <td className="px-4 py-3 text-sm border-r border-gray-200">
                               <div className="font-medium text-[#313D6A]">{session.studentId}</div>
@@ -610,7 +535,13 @@ function TutorDashboard() {
                               </Badge>
                             </td>
                           </tr>
-                        ))}
+                        )) : (
+                          <tr>
+                            <td colSpan={7} className="text-center py-4">
+                              No scheduled sessions found
+                            </td>
+                          </tr>
+                        )}
                       </tbody>
                     </table>
                   </div>
@@ -637,7 +568,7 @@ function TutorDashboard() {
                           </tr>
                         </thead>
                         <tbody>
-                          {scheduledClasses?.homeTuitions?.map((session, index) => (
+                          {scheduledSessions?.length > 0 ? scheduledSessions?.homeTuitions?.map((session, index) => (
                             <tr key={session.id} className="bg-[#F5BB07]/10">
                               <td className="px-4 py-3 text-sm border-r border-gray-200">
                                 <div className="font-medium text-[#313D6A]">{session.studentId}</div>
@@ -654,7 +585,13 @@ function TutorDashboard() {
                               </td>
                               <td className="px-4 py-3 text-sm text-gray-700">{session.location}</td>
                             </tr>
-                          ))}
+                          )) : (
+                            <tr>
+                              <td colSpan={5} className="text-center py-4">
+                                No scheduled home tuitions found
+                              </td>
+                            </tr>
+                          )}
                         </tbody>
                       </table>
                     </div>
@@ -677,7 +614,7 @@ function TutorDashboard() {
                           </tr>
                         </thead>
                         <tbody>
-                          {scheduledClasses?.onlineTuitions?.map((session, index) => (
+                          {scheduledSessions?.length > 0 ? scheduledSessions?.onlineTuitions?.map((session, index) => (
                             <tr key={session.id} className="bg-cyan-50">
                               <td className="px-4 py-3 text-sm border-r border-gray-200">
                                 <div className="font-medium text-[#313D6A]">{session.studentId}</div>
@@ -691,7 +628,13 @@ function TutorDashboard() {
                               </td>
                               <td className="px-4 py-3 text-sm text-gray-700">{session.daysTime}</td>
                             </tr>
-                          ))}
+                          )) : (
+                            <tr>
+                              <td colSpan={4} className="text-center py-4">
+                                No scheduled online tuitions found
+                              </td>
+                            </tr>
+                          )}
                         </tbody>
                       </table>
                     </div>
@@ -714,8 +657,8 @@ function TutorDashboard() {
                           </tr>
                         </thead>
                         <tbody>
-                          {scheduledClasses?.onlineGroupSessions?.length > 0 ? (
-                            scheduledClasses?.onlineGroupSessions?.map((session, index) => (
+                          {scheduledSessions?.onlineGroupSessions?.length > 0 ? (
+                            scheduledSessions?.onlineGroupSessions?.map((session, index) => (
                               <tr key={session.id} className="bg-pink-50">
                                 <td className="px-4 py-3 text-sm border-r border-gray-200">
                                   <div className="font-medium text-[#313D6A]">{session.studentId}</div>
@@ -744,10 +687,10 @@ function TutorDashboard() {
                 </Card>
               </div>
 
-              <div className="space-y-4">
+              {/* <div className="space-y-4">
                 <h2 className="text-2xl font-bold text-[#313D6A]">My Video Courses</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {videoCourses.map((course) => (
+                  {videoCourses?.map((course) => (
                     <Card
                       key={course.id}
                       className={`${course.color} text-white cursor-pointer hover:shadow-lg transition-all duration-300 hover:scale-105 shadow-lg`}
@@ -763,12 +706,12 @@ function TutorDashboard() {
                     </Card>
                   ))}
                 </div>
-              </div>
+              </div> */}
 
-              <div className="space-y-4">
+              {/* <div className="space-y-4">
                 <h2 className="text-2xl font-bold text-[#313D6A]">My Online Resources</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {onlineResources.map((resource) => (
+                  {onlineResources?.map((resource) => (
                     <Card
                       key={resource.id}
                       className={`${resource.color} text-white cursor-pointer hover:shadow-lg transition-all duration-300 hover:scale-105 shadow-lg`}
@@ -784,7 +727,7 @@ function TutorDashboard() {
                     </Card>
                   ))}
                 </div>
-              </div>
+              </div> */}
             </div>
 
             <div className="space-y-6">
@@ -798,7 +741,7 @@ function TutorDashboard() {
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  {recentJobs.map((job, index) => (
+                  {recentJobs?.map((job, index) => (
                     <div
                       key={index}
                       className="text-sm text-gray-700 py-2 px-3 bg-gray-50 rounded-lg hover:bg-[#313D6A]/10 transition-colors cursor-pointer"
@@ -822,7 +765,7 @@ function TutorDashboard() {
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  {notices.map((notice, index) => (
+                  {notices?.map((notice, index) => (
                     <div
                       key={index}
                       className="text-sm text-gray-700 py-2 px-3 bg-gray-50 rounded-lg hover:bg-[#313D6A]/10 transition-colors cursor-pointer"

@@ -166,7 +166,7 @@ export default function HomePage() {
             {/* Image + Background Box */}
             <div className="relative flex justify-center items-end min-h-[250px]">
               {/* Background Box (bigger than image) */}
-              <div className="absolute w-40 h-40 sm:w-56 sm:h-56 lg:w-72 lg:h-72 bg-slate-800 rounded-2xl"></div>
+              <div className="absolute w-40 h-40 sm:w-56 sm:h-56 lg:w-72 lg:h-72 bg-slate-800 rounded-md"></div>
 
               {/* Image (slightly smaller so it overlaps the box) */}
               <Image

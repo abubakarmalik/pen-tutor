@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import axios from "axios"
 import HeroBg from "@/assets/images/job-board/home-hero.png"
+import { useRouter } from "next/navigation"
 
 export default function JobBoard() {
     const [jobs, setJobs] = useState([])
@@ -17,6 +18,8 @@ export default function JobBoard() {
     const [searchSubject, setSearchSubject] = useState("")
     const [searchMode, setSearchMode] = useState("")
     const [searchType, setSearchType] = useState("")
+
+    const router = useRouter()
 
 
     const tabs = ["All", "Home Tuition", "Online Tuition", "Other Jobs"]
@@ -34,10 +37,7 @@ export default function JobBoard() {
                 params: {
                     page: currentPage,
                     tab: activeTab !== "All" ? activeTab : undefined,
-                },
-                headers: {
-                    Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-                },
+                }
             })
 
             console.log("Jobs Response:", response)
@@ -273,15 +273,28 @@ export default function JobBoard() {
                                             </div>
                                         </div>
 
-                                        <Button
-                                            className="inline-flex mx-auto  mt-6 font-semibold py-2 rounded-md"
-                                            style={{
-                                                backgroundColor: getJobTypeBadge(job) === "Home Tuition" ? "#F5BB07" : "#313D6A",
-                                                color: getJobTypeBadge(job) === "Home Tuition" ? "#000" : "#fff",
-                                            }}
-                                        >
-                                            Apply Now
-                                        </Button>
+                                        <div className="flex justify-center">
+                                            <Button
+                                                className="inline-flex mx-auto  mt-6 font-semibold py-2 rounded-md"
+                                                style={{
+                                                    backgroundColor: getJobTypeBadge(job) === "Home Tuition" ? "#F5BB07" : "#313D6A",
+                                                    color: getJobTypeBadge(job) === "Home Tuition" ? "#000" : "#fff",
+                                                }}
+                                                onClick={() => router.push(`/job-board/job-details/${job.id}`)}
+                                            >
+                                                View Details
+                                            </Button>
+                                            <Button
+                                                className="inline-flex mx-auto  mt-6 font-semibold py-2 rounded-md"
+                                                style={{
+                                                    backgroundColor: getJobTypeBadge(job) === "Home Tuition" ? "#F5BB07" : "#313D6A",
+                                                    color: getJobTypeBadge(job) === "Home Tuition" ? "#000" : "#fff",
+                                                }}
+                                                onClick={() => router.push(`/job-board/apply?job_id=${job.id}`)}
+                                            >
+                                                Apply Now
+                                            </Button>
+                                        </div>
                                     </CardContent>
                                 </Card>
                             ))}

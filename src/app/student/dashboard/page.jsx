@@ -124,7 +124,7 @@ export default function StudentDashboard() {
     // { id: "payment", label: "Payment", href: "/student/payments", icon: <DollarSign className="h-4 w-4" /> },
     { id: "schedule", label: "Class Schedule", href: "#", icon: <Calendar className="h-4 w-4" /> },
     { id: "courses", label: "Courses & Material", href: "/courses", icon: <BookMarked className="h-4 w-4" /> },
-    { id: "post_job", label: "Post Tuition Job", href: "#", icon: <Users className="h-4 w-4" /> },
+    { id: "post_job", label: "Post Tuition Job", href: "/job-board/post-job", icon: <Users className="h-4 w-4" /> },
     // { id: "post_job", label: "Post Tuition Job", href: "/job-board/post-job", icon: <Users className="h-4 w-4" /> },
     { id: "find_tutor", label: "Find Tutor", href: "/our-tutors", icon: <Search className="h-4 w-4" /> },
   ]
@@ -299,73 +299,73 @@ export default function StudentDashboard() {
 
   return (
     <div className="min-h-screen bg-white max-w-full overflow-x-hidden">
-      {sidebarOpen && (
-        <div className="fixed inset-0 bg-[#313D6A]/20 backdrop-blur-xs z-40 lg:hidden" onClick={() => setSidebarOpen(false)} />
-      )}
+        {sidebarOpen && (
+          <div className="fixed inset-0 bg-[#313D6A]/20 backdrop-blur-xs z-40 lg:hidden" onClick={() => setSidebarOpen(false)} />
+        )}
 
-      <div
-        className={`fixed left-0 top-0 h-full w-64 bg-white text-white transform transition-transform duration-300 ease-in-out z-50 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"
-          } lg:translate-x-0`}
-        style={{ position: "fixed", overflowY: "auto", maxHeight: "100vh" }}
-      >
-        <div className="flex flex-col h-full">
-          <div className="p-6 flex-shrink-0">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="lg:hidden text-white hover:bg-white/10 mb-4"
-              onClick={() => setSidebarOpen(false)}
-            >
-              <X className="h-4 w-4" />
-            </Button>
+        <div
+          className={`fixed left-0 top-0 h-full w-64 bg-white text-white transform transition-transform duration-300 ease-in-out z-50 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"
+            } lg:translate-x-0`}
+          style={{ position: "fixed", overflowY: "auto", maxHeight: "100vh" }}
+        >
+          <div className="flex flex-col h-full">
+            <div className="p-6 flex-shrink-0">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="lg:hidden text-white hover:bg-white/10 mb-4"
+                onClick={() => setSidebarOpen(false)}
+              >
+                <X className="h-4 w-4" />
+              </Button>
 
-            <div className="bg-[#313D6A] w-full shadow-2xl rounded-lg p-4 mb-6 border border-white/20">
-              <div className="flex items-center space-x-3">
-                <Avatar className="h-16 w-16 border-2 border-white/20">
-                  <AvatarImage
-                    src={`${API_BASE_URL}${studentData?.profile_picture}` || "/placeholder.svg"}
-                    alt={studentData?.student_name}
-                  />
-                  <AvatarFallback className="bg-white text-[#313D6A] text-lg font-bold">
-                    {studentData?.student_name?.charAt(0) || "M"}
-                  </AvatarFallback>
-                </Avatar>
-                <div>
-                  <h3 className="font-semibold text-white text-lg">{studentData?.student_name || ""}</h3>
-                  <p className="text-white/80 text-sm font-medium">student</p>
+              <div className="bg-[#313D6A] w-full shadow-2xl rounded-lg p-4 mb-6 border border-white/20">
+                <div className="flex items-center space-x-3">
+                  <Avatar className="h-16 w-16 border-2 border-white/20">
+                    <AvatarImage
+                      src={`${API_BASE_URL}${studentData?.profile_picture}` || "/placeholder.svg"}
+                      alt={studentData?.student_name}
+                    />
+                    <AvatarFallback className="bg-white text-[#313D6A] text-lg font-bold">
+                      {studentData?.student_name?.charAt(0) || "M"}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <h3 className="font-semibold text-white text-lg">{studentData?.student_name.length > 10 ? studentData?.student_name.slice(0, 10) + "..." : studentData?.student_name || ""}</h3>
+                    <p className="text-white/80 text-sm font-medium">student</p>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          <div className="flex-1 w-full px-6 pb-6 overflow-y-auto">
-            <nav className="space-y-1">
-              {navItems.map((item) => (
-                <Button
-                  key={item.id}
-                  variant="ghost"
-                  className="w-full justify-start text-[#313D6A] hover:bg-[#313D6A]/10 hover:text-[#313D6A] transition-colors data-[active=true]:bg-[#313D6A]/20 data-[active=true]:text-[#313D6A] rounded-lg py-3"
-                  data-active={item.id === "dashboard"}
-                  onClick={() => router.push(item.href)}
-                >
-                  {item.icon}
-                  <span className="ml-3 font-medium">{item.label}</span>
-                </Button>
-              ))}
-            </nav>
-          </div>
-          <div className="p-6 border-t border-white/20 flex-shrink-0">
-            <Button
-              variant="ghost"
-              className="w-full justify-start text-white bg-red-600/80 hover:bg-red-500 transition-colors rounded-lg py-3"
-            >
-              <LogOut className="h-4 w-4 mr-3" />
-              <span className="font-medium">Logout</span>
-            </Button>
-          </div>
+            <div className="flex-1 w-full px-6 pb-6 overflow-y-auto">
+              <nav className="space-y-1">
+                {navItems.map((item) => (
+                  <Button
+                    key={item.id}
+                    variant="ghost"
+                    className="w-full justify-start text-[#313D6A] hover:bg-[#313D6A]/10 hover:text-[#313D6A] transition-colors data-[active=true]:bg-[#313D6A]/20 data-[active=true]:text-[#313D6A] rounded-lg py-3"
+                    data-active={item.id === "dashboard"}
+                    onClick={() => router.push(item.href)}
+                  >
+                    {item.icon}
+                    <span className="ml-3 font-medium">{item.label}</span>
+                  </Button>
+                ))}
+              </nav>
+            </div>
+            <div className="p-6 border-t border-white/20 flex-shrink-0">
+              <Button
+                variant="ghost"
+                className="w-full justify-start text-white bg-red-600/80 hover:bg-red-500 transition-colors rounded-lg py-3"
+              >
+                <LogOut className="h-4 w-4 mr-3" />
+                <span className="font-medium">Logout</span>
+              </Button>
+            </div>
 
+          </div>
         </div>
-      </div>
 
       <div className="lg:ml-64 min-h-screen">
         <header className="bg-white border-b border-gray-200 px-4 sm:px-6 lg:px-8 py-4 sticky top-0 z-30">
@@ -529,7 +529,7 @@ export default function StudentDashboard() {
                       <tbody>
                         {enrolledCourses?.slice(0, 2).map((enrollment, index) => (
                           <tr
-                            key={index}
+                            key={enrollment.id || index}
                             className={index % 2 === 0 ? "bg-[#313D6A]/5" : "bg-white"}
                           >
                             <td className="px-4 py-3 text-sm border-r border-gray-200 whitespace-nowrap">
@@ -586,15 +586,15 @@ export default function StudentDashboard() {
                             <th className="px-4 py-3 text-left border-r border-[#313D6A]/20 whitespace-nowrap">
                               Days & Timing
                             </th>
-                            <th className="px-4 py-3 text-left whitespace-nowrap">Location</th>
+                            <th className="px-4 py-3 text-left whitespace-nowrap">Assignments</th>
                           </tr>
                         </thead>
                         <tbody>
                           {enrolledCourses?.slice(0, 2).map((enrollment, index) => (
-                            <tr key={index} className="bg-[#F5BB07]/10">
+                            <tr key={enrollment.id || index} className="bg-[#F5BB07]/10">
                               <td className="px-4 py-3 text-sm border-r border-gray-200 whitespace-nowrap">
-                                <div className="font-medium text-[#313D6A]">ST{enrollment.course.teacher.id}</div>
-                                <div className="text-xs text-gray-600">Muhammad Ahmad</div>
+                                <div className="font-medium text-[#313D6A]">PT00{enrollment.course.teacher.id}</div>
+                                {/* <div className="text-xs text-gray-600">{enrollment.course.teacher.full_name}</div> */}
                               </td>
                               <td className="px-4 py-3 text-sm border-r border-gray-200 text-[#313D6A] font-medium whitespace-nowrap">
                                 O Level 1
@@ -603,9 +603,9 @@ export default function StudentDashboard() {
                                 {enrollment.course.title}
                               </td>
                               <td className="px-4 py-3 text-sm border-r border-gray-200 text-gray-700">
-                                Monday 17:00 PM-18:00 PM, Tuesday 17:00 PM-18:00 PM
+                                {enrollment.course.teacher.days}
                               </td>
-                              <td className="px-4 py-3 text-sm text-gray-700">Street No 6, DHA Phase 5, Lahore</td>
+                              <td className="px-4 py-3 text-sm text-gray-700">{enrollment.course.assignments.length}</td>
                             </tr>
                           ))}
                         </tbody>
@@ -627,15 +627,16 @@ export default function StudentDashboard() {
                             <th className="px-4 py-3 text-left border-r border-white/20">Class/Level</th>
                             <th className="px-4 py-3 text-left border-r border-white/20">Subject</th>
                             <th className="px-4 py-3 text-left">Days & Time</th>
+                            <th className="px-4 py-3 text-left">Join</th>
                           </tr>
                         </thead>
                         <tbody>
                           {enrolledCourses?.slice(0, 2).map((enrollment, index) => (
-                            <tr key={index} className="bg-cyan-50">
+                            <tr key={enrollment.id || index} className="bg-cyan-50">
                               <td className="px-4 py-3 text-sm border-r border-gray-200">
-                                <div className="font-medium text-[#313D6A]">PT{enrollment.course.teacher.id}</div>
+                                <div className="font-medium text-[#313D6A]">PT00{enrollment.course.teacher.id}</div>
                                 <div className="text-xs text-gray-600">
-                                  {enrollment.course.teacher.first_name} {enrollment.course.teacher.last_name}
+                                  {/* {enrollment.course.teacher.first_name} {enrollment.course.teacher.last_name} */}
                                 </div>
                               </td>
                               <td className="px-4 py-3 text-sm border-r border-gray-200 text-[#313D6A] font-medium">
@@ -645,7 +646,10 @@ export default function StudentDashboard() {
                                 {enrollment.course.title}
                               </td>
                               <td className="px-4 py-3 text-sm text-gray-700">
-                                Monday 17:00 PM-18:00 PM, Tuesday 17:00 PM-18:00 PM
+                                {enrollment.course.teacher.days}
+                              </td>
+                              <td className="px-4 py-3 text-sm text-gray-700">
+                                <Button className="bg-[#313D6A] hover:bg-[#313D6A]/80 text-white">Join</Button>
                               </td>
                             </tr>
                           ))}
@@ -672,15 +676,16 @@ export default function StudentDashboard() {
                             </th>
                             <th className="px-4 py-3 text-left border-r border-white/20 whitespace-nowrap">Subject</th>
                             <th className="px-4 py-3 text-left whitespace-nowrap">Days & Time</th>
+                            <th className="px-4 py-3 text-left whitespace-nowrap">Join</th>
                           </tr>
                         </thead>
                         <tbody>
                           {enrolledCourses?.length > 0 ? (
                             enrolledCourses?.slice(0, 2).map((enrollment, index) => (
-                              <tr key={index} className="bg-pink-50">
+                              <tr key={enrollment.id || index} className="bg-pink-50">
                                 <td className="px-4 py-3 text-sm border-r border-gray-200 whitespace-nowrap">
-                                  <div className="font-medium text-[#313D6A]">ST{enrollment.course.teacher.id}</div>
-                                  <div className="text-xs text-gray-600">Muhammad Ahmad</div>
+                                  <div className="font-medium text-[#313D6A]">PT00{enrollment.course.teacher.id}</div>
+                                  {/* <div className="text-xs text-gray-600">Muhammad Ahmad</div> */}
                                 </td>
                                 <td className="px-4 py-3 text-sm border-r border-gray-200 text-[#313D6A] font-medium whitespace-nowrap">
                                   O Level 1
@@ -689,7 +694,10 @@ export default function StudentDashboard() {
                                   {enrollment.course.title}
                                 </td>
                                 <td className="px-4 py-3 text-sm text-gray-700">
-                                  Monday 17:00 PM-18:00 PM, Tuesday 17:00 PM-18:00 PM
+                                  {enrollment.course.teacher.days}
+                                </td>
+                                <td className="px-4 py-3 text-sm text-gray-700">
+                                  <Button className="bg-[#313D6A] hover:bg-[#313D6A]/80 text-white">Join</Button>
                                 </td>
                               </tr>
                             ))
@@ -793,7 +801,7 @@ export default function StudentDashboard() {
                 <CardContent className="flex flex-col space-y-3">
                   {recentJobs.map((job, index) => (
                     <Link
-                      key={index}
+                      key={job.id || index}
                       href="#"
                       // href={`/job-board/job-details/${job.id}`}
                       className="text-sm text-gray-700 py-2 px-3 bg-gray-50 rounded-lg hover:bg-[#313D6A]/10 transition-colors cursor-pointer"
@@ -846,7 +854,7 @@ export default function StudentDashboard() {
                   {["Important Exam Updates", "Holiday Schedule", "New Course Launch", "System Maintenance"].map(
                     (notice, index) => (
                       <div
-                        key={index}
+                        key={notice || index}
                         className="text-sm text-gray-700 py-2 px-3 bg-gray-50 rounded-lg hover:bg-[#313D6A]/10 transition-colors cursor-pointer"
                       >
                         - {notice}

@@ -82,14 +82,130 @@ export default function CourseDetailPage() {
     }
   }
 
-
-
   const toggleSection = (sectionId) => {
     setExpandedSections((prev) => ({
       ...prev,
       [sectionId]: !prev[sectionId],
     }))
   }
+
+  // ---------- Helpers to adapt new API shape ----------
+  const parseDurationToSeconds = (str) => {
+    if (!str) return 0
+    const parts = String(str).split(":").map((p) => parseInt(p || 0, 10))
+    if (parts.length === 3) return parts[0] * 3600 + parts[1] * 60 + parts[2]
+    if (parts.length === 2) return parts[0] * 60 + parts[1]
+    if (parts.length === 1) return parts[0] * 60
+    return 0
+  }
+
+  const formatSeconds = (secs) => {
+    if (!secs) return "0:00"
+    const h = Math.floor(secs / 3600)
+    const m = Math.floor((secs % 3600) / 60)
+    const s = secs % 60
+    if (h > 0) return `${h}h ${String(m).padStart(2, "0")}m`
+    return `${m}:${String(s).padStart(2, "0")}`
+  }
+
+  const getDerivedCourse = (c) => {
+    if (!c) return {}
+
+    const teacher = c.teacher || {}
+
+    // rating and reviews mapped from teacher
+    const rating = teacher.average_rating ?? 0
+    const total_reviews = (teacher.feedbacks && teacher.feedbacks.length) || 0
+
+    // learning outcomes fallback to topic titles
+    const learningOutcomes = c.topics?.map((t) => t.title) || []
+
+    // duration: sum durations from course.videos (if available)
+    const totalSeconds = (c.videos || []).reduce((acc, v) => acc + parseDurationToSeconds(v.duration), 0)
+    const durationStr = formatSeconds(totalSeconds)
+
+    const total_sections = (c.topics && c.topics.length) || 0
+    // const total_lessons = c.total_videos ??   (c.videos && c.videos.length) || 0
+    const total_lessons = c.total_videos ?? ((c.videos && c.videos.length) || 0)
+
+    // rating distribution derived from teacher.feedbacks (if present)
+    const feedbacks = teacher.feedbacks || []
+    const distCounts = [0, 0, 0, 0, 0]
+    feedbacks.forEach((f) => {
+      const r = Number(f.rating) || 0
+      if (r >= 1 && r <= 5) distCounts[r - 1] += 1
+    })
+    const distTotal = feedbacks.length || 1
+    const rating_distribution = distCounts.map((count, idx) => ({ stars: idx + 1, percentage: Math.round((count / distTotal) * 100) }))
+
+    // sections adapted from topics
+    const sections = (c.topics || []).map((topic) => {
+      const videoLessons = (topic.videos || []).map((v) => ({
+        id: v.id,
+        title: v.title,
+        type: "video",
+        duration: v.duration || "",
+      }))
+
+      // placeholder quizzes/assignments based on counts (no detailed objects in topic)
+      const quizLessons = Array.from({ length: topic.quiz_count || 0 }).map((_, i) => ({
+        id: `q-${topic.id}-${i}`,
+        title: `Quiz ${i + 1}`,
+        type: "quiz",
+        duration: "",
+      }))
+
+      const assignmentLessons = Array.from({ length: topic.assignment_count || 0 }).map((_, i) => ({
+        id: `a-${topic.id}-${i}`,
+        title: `Assignment ${i + 1}`,
+        type: "assignment",
+        duration: "",
+      }))
+
+      const lessons = [...videoLessons, ...quizLessons, ...assignmentLessons]
+
+      const topicSeconds = (topic.videos || []).reduce((acc, v) => acc + parseDurationToSeconds(v.duration), 0)
+
+      return {
+        id: topic.id,
+        title: topic.title,
+        total_lessons: (topic.video_count || 0) + (topic.quiz_count || 0) + (topic.assignment_count || 0),
+        total_attachments: 0,
+        assignments: Array.from({ length: topic.assignment_count || 0 }),
+        lessons,
+        duration: formatSeconds(topicSeconds),
+      }
+    })
+
+    // other_courses fallback to teacher.courses_created
+    const other_courses = teacher.courses_created || []
+
+    // reviews fallback to teacher.feedbacks (structure adapted)
+    const reviews = (teacher.feedbacks || []).map((f) => ({
+      id: f.id,
+      studentName: `${f.user?.first_name || ""} ${f.user?.last_name || ""}`.trim() || f.user?.username || "Student",
+      rating: f.rating,
+      feedback_text: f.feedback_text,
+      response_date: f.created_at,
+      instructor_response: null,
+    }))
+
+    return {
+      ...c,
+      rating,
+      total_reviews,
+      learningOutcomes,
+      duration: durationStr,
+      total_sections,
+      total_lessons,
+      rating_distribution,
+      sections,
+      other_courses,
+      reviews,
+    }
+  }
+
+  const derived = getDerivedCourse(course)
 
   if (loading) {
     return (
@@ -129,34 +245,33 @@ export default function CourseDetailPage() {
     <div className="min-h-screen bg-gray-50">
       {/* Course Hero Section */}
       <div className="text-white relative overflow-hidden py-10 bg-cover bg-center bg-no-repeat"
-        // style={{ backgroundImage: `url(${CourseDetailBg.src})` }}
         style={{ backgroundImage: `url(${course.thumbnail || CourseDetailBg.src})` }}
       >
-        <div className="absolute inset-0 bg-[#313D6A]/60 z-0" />
+        <div className="absolute inset-0 bg-[#313D6A]/80 z-0" />
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
             <div className="order-2 lg:order-1">
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4 leading-tight">{course.title}</h1>
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4 leading-tight">{derived.title}</h1>
 
-              <p className="text-lg text-gray-200 mb-6">{course.description}</p>
+              <p className="text-lg text-gray-200 mb-6">{derived.description || course.description}</p>
 
               <div className="flex flex-wrap items-center gap-4 mb-6 text-sm">
                 <div className="flex items-center gap-1">
                   <Star className="h-4 w-4 text-[#F5BB07] fill-current" />
-                  <span className="font-semibold">{course.rating}</span>
+                  <span className="font-semibold">{derived.rating}</span>
                   <span className="text-gray-300">Instructor Rating</span>
                 </div>
                 <div className="text-gray-300">
-                  <span className="text-[#F5BB07]">({course.total_reviews} Reviews)</span>
+                  <span className="text-[#F5BB07]">({derived.total_reviews} Reviews)</span>
                 </div>
                 <div className="text-gray-300">
-                  <span className="font-semibold">{course.total_enrollments}</span> Students
+                  <span className="font-semibold">{derived.total_enrollments ?? course.total_enrollments}</span> Students
                 </div>
               </div>
 
               <div className="mb-6">
                 <span className="text-gray-300">Language: </span>
-                <span className="font-semibold">{course.language}</span>
+                <span className="font-semibold">{course.language || "English"}</span>
               </div>
 
               <div className="flex flex-col sm:flex-row gap-3">
@@ -179,7 +294,7 @@ export default function CourseDetailPage() {
             <div className="order-1 lg:order-2 relative">
               <div className="relative bg-white/10 rounded-lg p-6 backdrop-blur-sm">
                 <img
-                  src={course.thumbnail || "/placeholder.svg"}
+                  src={course.thumbnail || CourseDetailBg.src || "/placeholder.svg"}
                   alt="Course preview"
                   className="w-full h-48 sm:h-64 object-cover rounded-lg"
                 />
@@ -187,9 +302,9 @@ export default function CourseDetailPage() {
                   {course.discount_percentage}% off
                 </div>}
                 <div className="mt-4 text-right">
-                  <div className="text-2xl font-bold">{course.price}</div>
+                  <div className="text-2xl font-bold">{course.course_type === "free" ? "Free" : course.price}</div>
                   {course.discount_percentage && <div className="text-sm text-gray-300">
-                    <span className="text-[#F5BB07]">{course.days_left} Days</span> left at this price
+                    <span className="text-[#F5BB07]">{course.days_left}</span> Days
                   </div>}
                 </div>
               </div>
@@ -224,7 +339,7 @@ export default function CourseDetailPage() {
                   </div>
                   <div className="flex items-center gap-3">
                     <CheckCircle className="h-5 w-5 text-[#313D6A]" />
-                    <span>{course.assignments.length} Assignments</span>
+                    <span>{course.assignments?.length ?? 0} Assignments</span>
                   </div>
                   <div className="flex items-center gap-3 sm:col-span-2">
                     <CheckCircle className="h-5 w-5 text-[#313D6A]" />
@@ -248,7 +363,7 @@ export default function CourseDetailPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {course.learningOutcomes?.map((item, index) => (
+                  {derived.learningOutcomes?.map((item, index) => (
                     <div key={index} className="flex items-start gap-3">
                       <span className="text-[#F5BB07] font-bold text-lg">{index + 1}.</span>
                       <span className={index % 2 === 1 ? "text-[#F5BB07]" : "text-gray-700"}>{item}</span>
@@ -264,9 +379,9 @@ export default function CourseDetailPage() {
                 <CardTitle className="text-[#313D6A] text-xl">Course Details & Requirements</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <p className="text-gray-600 leading-relaxed">{course.details}</p>
+                <p className="text-gray-600 leading-relaxed">{course.description}</p>
 
-                <p className="text-gray-600 leading-relaxed">{course.requirements}</p>
+                <p className="text-gray-600 leading-relaxed">{course.requirements || "No specific requirements."}</p>
               </CardContent>
             </Card>
 
@@ -277,7 +392,7 @@ export default function CourseDetailPage() {
                   <div>
                     <CardTitle className="text-xl">Course Contents</CardTitle>
                     <p className="text-gray-200 text-sm mt-1">
-                      {course.total_sections} Sections, {course.total_lessons} Lectures, {course.duration} total length
+                      {derived.total_sections} Sections, {derived.total_lessons} Lectures, {derived.duration} total length
                     </p>
                   </div>
                   <Button
@@ -291,7 +406,7 @@ export default function CourseDetailPage() {
               </CardHeader>
               <CardContent className="p-0">
                 <div className="divide-y divide-gray-200">
-                  {course.sections?.map((section) => (
+                  {derived.sections?.map((section) => (
                     <div key={section.id} className="border-b border-gray-200">
                       <button
                         onClick={() => toggleSection(section.id)}
@@ -306,8 +421,7 @@ export default function CourseDetailPage() {
                           <span className="font-medium text-left">{section.title}</span>
                         </div>
                         <span className="text-sm text-gray-500">
-                          {section.total_lessons} Lectures. {section.total_attachments} attachment.{" "}
-                          {section.assignments.length} assignment. {section.duration}
+                          {section.total_lessons} Lectures. {section.total_attachments} attachment. {section.assignments.length} assignment. {section.duration}
                         </span>
                       </button>
                       {expandedSections[section.id] && (
@@ -335,7 +449,7 @@ export default function CourseDetailPage() {
                       variant="outline"
                       className="text-[#313D6A] border-[#313D6A] hover:bg-[#313D6A] hover:text-white bg-transparent"
                     >
-                      {course.total_sections - course?.sections?.length} More Sections
+                      {derived.total_sections - (derived.sections?.length || 0)} More Sections
                     </Button>
                   </div>
                 </div>
@@ -350,7 +464,7 @@ export default function CourseDetailPage() {
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div className="text-center">
-                    <div className="text-6xl font-bold text-[#313D6A] mb-2">{course.rating}</div>
+                    <div className="text-6xl font-bold text-[#313D6A] mb-2">{derived.rating}</div>
                     <div className="flex items-center justify-center gap-1 mb-2">
                       {Array.from({ length: 5 }).map((_, i) => (
                         <Star key={i} className="h-5 w-5 text-[#F5BB07] fill-current" />
@@ -360,7 +474,7 @@ export default function CourseDetailPage() {
                   </div>
 
                   <div className="space-y-2">
-                    {course.rating_distribution?.map((rating) => (
+                    {derived.rating_distribution?.map((rating) => (
                       <div key={rating.stars} className="flex items-center gap-3">
                         <div className="flex items-center gap-1">
                           {Array.from({ length: 5 }).map((_, i) => (
@@ -384,10 +498,10 @@ export default function CourseDetailPage() {
 
                 {/* Individual Reviews */}
                 <div className="mt-8 space-y-6">
-                  {course.reviews?.map((review) => (
+                  {derived.reviews?.map((review) => (
                     <div key={review.id} className="flex gap-4">
                       <Avatar className="h-12 w-12">
-                        <AvatarFallback className="bg-gray-200">{review.studentName.charAt(0)}</AvatarFallback>
+                        <AvatarFallback className="bg-gray-200">{(review.studentName || " ").charAt(0)}</AvatarFallback>
                       </Avatar>
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-2">
@@ -452,7 +566,7 @@ export default function CourseDetailPage() {
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {course.teacher?.other_courses?.map((courseItem) => (
+                  {derived.other_courses?.map((courseItem) => (
                     <div
                       key={courseItem.id}
                       className="border rounded-lg overflow-hidden hover:shadow-lg transition-shadow"
@@ -511,25 +625,25 @@ export default function CourseDetailPage() {
                     <div className="text-3xl font-bold text-[#313D6A] mb-2">
                       {course.course_type === "free" ? "Free" : course.price}
                     </div>
-                    {course.course_type === "paid" && (
+                    {/* {course.course_type === "paid" && (
                       <p className="text-sm text-gray-600">
                         <span className="text-[#F5BB07]">{course.days_left}</span> Days left at this price
                       </p>
-                    )}
+                    )} */}
                   </div>
 
                   <div className="space-y-4 mb-6">
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-gray-600">Duration</span>
-                      <span className="font-medium">{course.duration}</span>
+                      <span className="font-medium">{derived.duration}</span>
                     </div>
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-gray-600">Lectures</span>
-                      <span className="font-medium">{course.total_lessons}</span>
+                      <span className="font-medium">{derived.total_lessons}</span>
                     </div>
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-gray-600">Assignments</span>
-                      <span className="font-medium">{course.assignments.length}</span>
+                      <span className="font-medium">{course.assignments?.length ?? 0}</span>
                     </div>
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-gray-600">Students</span>
@@ -537,7 +651,7 @@ export default function CourseDetailPage() {
                     </div>
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-gray-600">Language</span>
-                      <span className="font-medium">{course.language}</span>
+                      <span className="font-medium">{course.language || "English"}</span>
                     </div>
                   </div>
 
@@ -565,7 +679,7 @@ export default function CourseDetailPage() {
                   <div className="flex items-center gap-3 mb-4">
                     <Avatar className="h-12 w-12">
                       <AvatarImage
-                        src={course.teacher?.profile_picture || "/placeholder.svg"}
+                        src={course.teacher?.profile_picture || course.teacher?.profile_picture || "/placeholder.svg"}
                         alt={course.teacher?.first_name}
                       />
                       <AvatarFallback>{course.teacher?.first_name?.charAt(0) || "I"}</AvatarFallback>
@@ -580,7 +694,7 @@ export default function CourseDetailPage() {
                   <div className="space-y-2 text-sm">
                     <div className="flex items-center gap-2">
                       <Star className="h-4 w-4 text-[#F5BB07] fill-current" />
-                      <span>{course.teacher?.rating} Instructor Rating</span>
+                      <span>{course.teacher?.average_rating} Instructor Rating</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <Users className="h-4 w-4 text-gray-500" />

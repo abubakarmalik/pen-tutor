@@ -42,6 +42,7 @@ export default {
     },
   },
   plugins: [
-    require('tw-animate-css'),  // ← use the correct package name here
+    require('tw-animate-css'),
+    require('tailwind-scrollbar')({ nocompatible: true }), // ← use the correct package name here
   ],
 }

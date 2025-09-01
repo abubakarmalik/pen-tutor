@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Switch } from "@/components/ui/switch"
-import { ArrowLeft, BookOpen, DollarSign, Users, Video } from "lucide-react"
+import { ArrowLeft, BookOpen, DollarSign, Users, Video, Plus, Trash } from "lucide-react"
 import { toast } from "@/hooks/use-toast"
 
 export default function CreateCoursePage() {
@@ -26,10 +26,14 @@ export default function CreateCoursePage() {
     isActive: true,
     hasLiveClasses: false,
     subject: "",
+    courseCategories: "", // comma separated
   })
 
   const [thumbnailFile, setThumbnailFile] = useState(null)
   const [thumbnailPreview, setThumbnailPreview] = useState(null)
+
+  // topics: array of { title, description, order, videoFile }
+  const [topics, setTopics] = useState([])
 
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({
@@ -50,6 +54,23 @@ export default function CreateCoursePage() {
     }
   }
 
+  const addTopic = () => {
+    setTopics((prev) => [...prev, { title: "", description: "", order: prev.length + 1, videoFile: null }])
+  }
+
+  const updateTopic = (index, key, value) => {
+    setTopics((prev) => prev.map((t, i) => (i === index ? { ...t, [key]: value } : t)))
+  }
+
+  const removeTopic = (index) => {
+    setTopics((prev) => prev.filter((_, i) => i !== index).map((t, i) => ({ ...t, order: i + 1 })))
+  }
+
+  const handleTopicVideoChange = (index, e) => {
+    const file = e.target.files?.[0] ?? null
+    updateTopic(index, "videoFile", file)
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     setIsLoading(true)
@@ -62,34 +83,57 @@ export default function CreateCoursePage() {
         return
       }
 
-      // Use FormData to send file + fields
       const payload = new FormData()
       payload.append("title", formData.title)
       payload.append("description", formData.description)
-      // if free, ensure price is 0
-      const priceValue = formData.courseType === "free" ? 0 : (formData.price || 0)
+
+      const priceValue = formData.courseType === "free" ? "0.00" : (formData.price ? parseFloat(formData.price).toFixed(2) : "0.00")
       payload.append("price", priceValue)
+
+      // API expects snake_case
       payload.append("course_type", formData.courseType)
-      payload.append("is_active", formData.isActive)
-      payload.append("has_live_classes", formData.hasLiveClasses)
+      payload.append("is_active", formData.isActive ? "true" : "false")
+      payload.append("has_live_classes", formData.hasLiveClasses ? "true" : "false")
+
       payload.append("subject", formData.subject)
 
-      if (thumbnailFile) {
-        // "thumbnail" must match the field name expected by your DRF Course model
-        payload.append("thumbnail", thumbnailFile)
-      }
+      // categories as JSON array
+      const categoriesArr = formData.courseCategories
+        .split(",")
+        .map((c) => c.trim())
+        .filter(Boolean)
+      payload.append("course_categories", JSON.stringify(categoriesArr))
 
+      if (thumbnailFile) payload.append("thumbnail", thumbnailFile)
+
+      // Append topics as JSON (without files) and append any topic video files separately.
+      const topicsPayload = topics.map((t, i) => ({ title: t.title, description: t.description, order: t.order }))
+      payload.append("topics", JSON.stringify(topicsPayload))
+
+      // Append topic video files with predictable keys: topic_0_videos, topic_1_videos
+      topics.forEach((t, i) => {
+        if (t.videoFile) {
+          // Append one file; server should accept this key and associate with topic by order/index.
+          payload.append(`topic_${i}_videos`, t.videoFile)
+        }
+      })
+
+      // Post to teacher endpoint as you requested
       const response = await axios.post(`${API_BASE}/api/teacher/courses/`, payload, {
         headers: {
           Authorization: `Bearer ${token}`,
-          // DO NOT set Content-Type here; letting the browser set the multipart boundary is safer
         },
       })
 
       console.log("course created response", response)
-      if (response.status === 201) {
+
+      if (response.status === 201 || response.status === 200) {
+        const newId = response.data?.id ?? response.data?.data?.id
         toast({ title: "Success", description: "Course created successfully!" })
-        router.push(`/courses/details/${response.data.data.id}`)
+        if (newId) router.push(`/courses/details/${newId}`)
+        else router.push(`/courses`)
+      } else {
+        throw new Error("Unexpected response from server")
       }
     } catch (error) {
       console.log("course created error", error)
@@ -169,6 +213,19 @@ export default function CreateCoursePage() {
                     />
                   </div>
 
+                  {/* Categories */}
+                  <div className="space-y-2">
+                    <Label htmlFor="courseCategories" className="text-[#313D6A] font-medium">Course Categories (comma separated)</Label>
+                    <Input
+                      id="courseCategories"
+                      type="text"
+                      placeholder="e.g., Data Science, Web Development"
+                      value={formData.courseCategories}
+                      onChange={(e) => handleInputChange("courseCategories", e.target.value)}
+                      className="border-gray-300 focus:border-[#F5BB07] focus:ring-[#F5BB07]"
+                    />
+                  </div>
+
                   {/* Thumbnail */}
                   <div className="space-y-2">
                     <Label htmlFor="thumbnail" className="text-[#313D6A] font-medium">Thumbnail</Label>
@@ -234,6 +291,52 @@ export default function CreateCoursePage() {
                           className="pl-10 border-gray-300 focus:border-[#F5BB07] focus:ring-[#F5BB07] disabled:bg-gray-100"
                         />
                       </div>
+                    </div>
+                  </div>
+
+                  {/* Topics editor */}
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-[#313D6A] font-medium">Topics</Label>
+                      <Button type="button" variant="ghost" onClick={addTopic} className="text-[#313D6A]">
+                        <Plus className="h-4 w-4 mr-2" /> Add Topic
+                      </Button>
+                    </div>
+
+                    {topics.length === 0 && <p className="text-sm text-gray-500">No topics added yet.</p>}
+
+                    <div className="space-y-4">
+                      {topics.map((topic, idx) => (
+                        <div key={idx} className="p-4 border rounded-lg bg-gray-50">
+                          <div className="flex justify-between items-start mb-2">
+                            <div className="font-semibold">Topic {idx + 1}</div>
+                            <Button type="button" variant="ghost" onClick={() => removeTopic(idx)} className="text-red-500">
+                              <Trash className="h-4 w-4" />
+                            </Button>
+                          </div>
+
+                          <div className="space-y-2">
+                            <Input
+                              placeholder="Topic title"
+                              value={topic.title}
+                              onChange={(e) => updateTopic(idx, "title", e.target.value)}
+                              className="border-gray-300"
+                            />
+                            <Textarea
+                              placeholder="Topic description"
+                              value={topic.description}
+                              onChange={(e) => updateTopic(idx, "description", e.target.value)}
+                              rows={2}
+                            />
+
+                            <div>
+                              <Label className="text-sm">Optional topic video</Label>
+                              <input type="file" accept="video/*" onChange={(e) => handleTopicVideoChange(idx, e)} className="block w-full text-sm text-gray-600 mt-1" />
+                              {topic.videoFile && <div className="text-xs text-gray-600 mt-1">{topic.videoFile.name}</div>}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
 
@@ -307,6 +410,7 @@ export default function CreateCoursePage() {
                   <div>
                     <h3 className="font-semibold text-[#313D6A] text-lg">{formData.title || "Course Title"}</h3>
                     <p className="text-sm text-gray-600 mt-1">{formData.subject || "Subject"}</p>
+                    <p className="text-xs text-gray-500 mt-1">{(formData.courseCategories || "").split(",").map(s=>s.trim()).filter(Boolean).join(" • ")}</p>
                   </div>
 
                   <p className="text-sm text-gray-700 line-clamp-3">{formData.description || "Course description will appear here..."}</p>
@@ -331,6 +435,21 @@ export default function CreateCoursePage() {
                     <span>Status:</span>
                     <span className={`font-medium ${formData.isActive ? "text-green-600" : "text-gray-500"}`}>{formData.isActive ? "Active" : "Inactive"}</span>
                   </div>
+
+                  {/* Topics preview */}
+                  {topics.length > 0 && (
+                    <div className="mt-4">
+                      <h4 className="font-medium text-sm text-[#313D6A] mb-2">Topics Preview</h4>
+                      <ul className="space-y-2 text-sm text-gray-700">
+                        {topics.map((t, i) => (
+                          <li key={i} className="flex items-center justify-between">
+                            <span>{i + 1}. {t.title || "Untitled"}</span>
+                            <span className="text-xs text-gray-500">{t.videoFile ? "Video" : ""}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>

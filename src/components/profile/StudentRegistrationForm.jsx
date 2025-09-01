@@ -22,7 +22,6 @@ import {
   CalendarIcon,
   MapPin,
   GraduationCap,
-  Briefcase,
   Globe,
   Star,
   Upload,
@@ -30,6 +29,25 @@ import {
   ChevronLeft,
   ChevronRight,
   Check,
+  Sparkles,
+  Heart,
+  Zap,
+  Trophy,
+  Target,
+  Rocket,
+  School,
+  BookOpen,
+  Microscope,
+  Book,
+  Briefcase,
+  Search,
+  Github,
+  Palette,
+  Tag,
+  Camera,
+  IdCard,
+  Paperclip,
+  Link,
 } from "lucide-react"
 
 export default function StudentRegistrationForm() {
@@ -37,8 +55,9 @@ export default function StudentRegistrationForm() {
   const { user, refetchUser } = useAuth()
 
   const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
+
   const [formData, setFormData] = useState({
-    // Personal Information
+    // Essential Information (Required)
     full_name: "",
     first_name: "",
     last_name: "",
@@ -48,41 +67,29 @@ export default function StudentRegistrationForm() {
     age: "",
     gender: "",
     bio: "",
-
-    // Location
-    address: "",
     city: "",
     country: "",
-
-    // Academic Information
     education_level: "",
     institution: "",
+
+    // Optional Details (Can be skipped)
+    address: "",
     field_of_study: "",
     graduation_year: "",
     gpa: "",
-
-    // Employment Information
     employment_status: "",
     current_job_title: "",
     company: "",
     career_goals: "",
-
-    // Social Profiles
     linkedin_profile: "",
     github_profile: "",
     portfolio_website: "",
-
-    // Skills & Interests (as arrays)
     skills: [],
     interests: [],
-
-    // Preferences (as arrays)
     preferred_learning_time: [],
     notification_preferences: [],
     language_preferences: [],
     social_links: [],
-
-    // File uploads
     profile_picture: null,
     cnic_or_form_b_picture: null,
     degree: null,
@@ -90,21 +97,54 @@ export default function StudentRegistrationForm() {
   })
 
   const steps = [
-    { id: 1, title: "Personal Information", icon: User },
-    { id: 2, title: "Location", icon: MapPin },
-    { id: 3, title: "Academic Info", icon: GraduationCap },
-    { id: 4, title: "Employment Info", icon: Briefcase },
-    { id: 5, title: "Social Profiles", icon: Globe },
-    { id: 6, title: "Skills & Interests", icon: Star },
-    { id: 7, title: "Preferences", icon: Star },
-    { id: 8, title: "Document Uploads", icon: Upload },
-    { id: 9, title: "Certificates", icon: FileText },
+    {
+      id: 1,
+      title: "About You",
+      subtitle: "Let's get to know you better!",
+      icon: User,
+      color: "from-blue-400 to-blue-600",
+      required: true,
+    },
+    {
+      id: 2,
+      title: "Your Background",
+      subtitle: "Tell us about your education",
+      icon: GraduationCap,
+      color: "from-green-400 to-green-600",
+      required: true,
+    },
+    {
+      id: 3,
+      title: "Interests",
+      subtitle: "What drives your passion?",
+      icon: Star,
+      color: "from-purple-400 to-purple-600",
+      required: false,
+    },
+    {
+      id: 4,
+      title: "Connect",
+      subtitle: "Your professional presence",
+      icon: Globe,
+      color: "from-orange-400 to-orange-600",
+      required: false,
+    },
+    {
+      id: 5,
+      title: "",
+      subtitle: "Upload your documents",
+      icon: Upload,
+      color: "from-pink-400 to-pink-600",
+      required: false,
+    },
   ]
 
   const [currentStep, setCurrentStep] = useState(1)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [dateOfBirth, setDateOfBirth] = useState()
   const [fileNames, setFileNames] = useState({})
+  const [completedSteps, setCompletedSteps] = useState(new Set())
+  const [showCelebration, setShowCelebration] = useState(false)
 
   // Skills and interests management
   const [skillsList, setSkillsList] = useState([])
@@ -132,15 +172,32 @@ export default function StudentRegistrationForm() {
       const parsed = JSON.parse(saved)
       setCurrentStep(parsed.step || 1)
       setFormData(parsed.formData || formData)
+      setCompletedSteps(new Set(parsed.completedSteps || []))
     }
   }, [])
 
   useEffect(() => {
-    localStorage.setItem("formProgress", JSON.stringify({ step: currentStep, formData }))
-  }, [currentStep, formData])
+    localStorage.setItem(
+      "formProgress",
+      JSON.stringify({
+        step: currentStep,
+        formData,
+        completedSteps: Array.from(completedSteps),
+      }),
+    )
+  }, [currentStep, formData, completedSteps])
+
+  const triggerCelebration = () => {
+    setShowCelebration(true)
+    setTimeout(() => setShowCelebration(false), 2000)
+  }
 
   const handleNext = () => {
     if (currentStep < steps.length) {
+      setCompletedSteps((prev) => new Set([...prev, currentStep]))
+      if (currentStep === 1 || currentStep === 2) {
+        triggerCelebration()
+      }
       setCurrentStep((prev) => prev + 1)
     }
   }
@@ -148,6 +205,12 @@ export default function StudentRegistrationForm() {
   const handleBack = () => {
     if (currentStep > 1) {
       setCurrentStep((prev) => prev - 1)
+    }
+  }
+
+  const handleSkip = () => {
+    if (currentStep < steps.length && !steps[currentStep - 1]) {
+      setCurrentStep((prev) => prev + 1)
     }
   }
 
@@ -295,7 +358,6 @@ export default function StudentRegistrationForm() {
   }
 
   const arrayToObjectTrue = (arr = []) => {
-    // convert ["Email","SMS"] => { Email: true, SMS: true }
     if (!Array.isArray(arr)) return {}
     return arr.reduce((acc, cur) => {
       if (typeof cur === "string" && cur.trim()) acc[cur.trim()] = true
@@ -304,23 +366,18 @@ export default function StudentRegistrationForm() {
   }
 
   const socialLinksArrayToObject = (arr = []) => {
-    // Accept entries like "twitter:https://..." or "Twitter|https://..." or just "Twitter"
-    // Output object { twitter: "https://...", Twitter2: "" }
     if (!Array.isArray(arr)) return {}
     const obj = {}
     arr.forEach((entry, i) => {
       if (!entry || typeof entry !== "string") return
       const trimmed = entry.trim()
-      // try separators :, |, =>
       let key, val
       if (trimmed.includes("://")) {
-        // if URL present, try to split by first space or pipe/colon
         const parts = trimmed.split(/\s+|\||:/)
         if (parts.length >= 2) {
           key = parts[0].replace(/[:\s|]+$/g, "")
           val = parts.slice(1).join(":").trim()
         } else {
-          // only a URL present -> use index-based key
           key = `link_${i + 1}`
           val = trimmed
         }
@@ -341,7 +398,6 @@ export default function StudentRegistrationForm() {
         val = ""
       }
 
-      // normalize key (avoid duplicates)
       let normalizedKey = key || `link_${i + 1}`
       let suffix = 1
       while (obj.hasOwnProperty(normalizedKey)) {
@@ -360,8 +416,6 @@ export default function StudentRegistrationForm() {
       const token = localStorage.getItem("access_token")
       const data = new FormData()
 
-      // Build payload fields (but handle notification_preferences & social_links specially)
-      // We'll iterate keys but skip these special fields
       const skipKeys = ["certificates", "notification_preferences", "social_links"]
       Object.keys(formData).forEach((key) => {
         if (skipKeys.includes(key)) return
@@ -369,13 +423,11 @@ export default function StudentRegistrationForm() {
         const val = formData[key]
         if (val === null || val === "") return
 
-        // Files
         if (val instanceof File) {
           data.append(key, val)
           return
         }
 
-        // Arrays -> send as JSON string
         if (Array.isArray(val)) {
           if (val.length > 0) {
             data.append(key, JSON.stringify(val))
@@ -383,34 +435,25 @@ export default function StudentRegistrationForm() {
           return
         }
 
-        // Objects (non-file) -> stringify
         if (typeof val === "object") {
           data.append(key, JSON.stringify(val))
           return
         }
 
-        // otherwise primitive
         data.append(key, val)
       })
 
-      // notification_preferences: backend expects a dict -> convert array -> object
       const notifObj = arrayToObjectTrue(formData.notification_preferences || notificationPrefs || [])
-      // If user had local `notificationPrefs` state, prefer that fallback
       data.append("notification_preferences", JSON.stringify(notifObj))
 
-      // social_links: convert array -> object
       const socialObj = socialLinksArrayToObject(formData.social_links || socialLinks || [])
       data.append("social_links", JSON.stringify(socialObj))
 
-      // Certificates: metadata + files
-      // We'll append each certificate file (if present) under the same field name `certificates_files`
-      // and send certificates metadata list as `certificates`
       const certificatesMetadata = []
       let fileAppendIndex = 0
       certificates.forEach((cert, index) => {
         const hasFile = cert.file instanceof File
         if (hasFile) {
-          // append file(s) as repeated field name (certificates_files)
           data.append("certificates_files", cert.file)
           certificatesMetadata.push({
             name: cert.name || `Certificate ${index + 1}`,
@@ -419,7 +462,6 @@ export default function StudentRegistrationForm() {
           })
           fileAppendIndex += 1
         } else {
-          // if there's an already uploaded_file_url or just a name
           certificatesMetadata.push({
             name: cert.name || `Certificate ${index + 1}`,
             file_index: null,
@@ -433,30 +475,21 @@ export default function StudentRegistrationForm() {
         data.append("certificates", JSON.stringify(certificatesMetadata))
       }
 
-      // Debug log (optional) — remove in production
-      // for (const [k, v] of data.entries()) console.log(k, v)
-
-      // POST to student profile endpoint (get_or_create in your backend will create or update)
-      const response = await axios.post(
-        `${API_BASE}/api/auth/student-profile/create/`,
-        data,
-        {
-          headers: {
-            Authorization: token ? `Bearer ${token}` : "",
-            // DO NOT set Content-Type — browser sets boundary for FormData
-          },
-        }
-      )
+      const response = await axios.post(`${API_BASE}/api/auth/student-profile/create/`, data, {
+        headers: {
+          Authorization: token ? `Bearer ${token}` : "",
+        },
+      })
 
       if (response.status === 201 || response.status === 200) {
         toast.success("Profile updated successfully!")
         refetchUser()
+        router.push("/student/dashboard")
       } else {
         toast.error("Unexpected response while updating profile.")
         console.error("Unexpected response", response)
       }
     } catch (error) {
-      // DRF commonly responds with { errors: { field: [..] } } or plain data
       if (error.response && error.response.data) {
         console.error("Backend error:", error.response.data)
         toast.error("Failed to update profile: " + (error.response.data.message || JSON.stringify(error.response.data)))
@@ -468,46 +501,64 @@ export default function StudentRegistrationForm() {
       setIsSubmitting(false)
     }
   }
+
   const ProgressIndicator = () => (
-    <div className="mb-6 md:mb-8">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-2">
-        <h2 className="text-lg sm:text-xl font-semibold text-white">Student Registration</h2>
-        <span className="text-xs sm:text-sm text-gray-200">
-          Step {currentStep} of {steps.length}
-        </span>
+    <div className="relative">
+      {showCelebration && (
+        <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
+          <div className="animate-pulse">
+            <Sparkles className="w-12 h-12 text-[#F5BB07] animate-spin" />
+          </div>
+        </div>
+      )}
+
+      <div className="text-center mb-6">
+        {/* <div className="inline-flex items-center gap-3 bg-white/20 backdrop-blur-sm rounded-full px-6 py-3 mb-4">
+          <Rocket className="w-6 h-6 text-[#F5BB07]" />
+          <h2 className="text-2xl font-bold text-white">Your Journey to Success</h2>
+          <Trophy className="w-6 h-6 text-[#F5BB07]" />
+        </div> */}
+        <p className="text-white/90 text-lg">{steps[currentStep - 1].subtitle}</p>
       </div>
 
-      {/* Mobile-first step indicators with horizontal scroll */}
-      <div className="overflow-x-auto pb-2 mb-4">
-        <div className="flex items-center space-x-1 sm:space-x-2 min-w-max px-1">
+      <div className="flex justify-center mb-6">
+        <div className="flex items-center space-x-2 bg-white/10 backdrop-blur-sm rounded-full p-4">
           {steps.map((step, index) => {
-            const isCompleted = step.id < currentStep
+            const isCompleted = completedSteps.has(step.id)
             const isCurrent = step.id === currentStep
-            const IconComponent = step.icon
 
             return (
               <div key={step.id} className="flex items-center">
                 <div
                   className={cn(
-                    "flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 transition-all duration-200 flex-shrink-0",
+                    "relative flex items-center justify-center w-12 h-12 rounded-full border-3 transition-all duration-500 transform",
                     isCompleted
-                      ? "bg-white border-white text-[#313D6A]"
+                      ? "bg-[#F5BB07] border-[#F5BB07] text-[#313D6A] scale-110"
                       : isCurrent
-                        ? "bg-[#F5BB07] border-[#F5BB07] text-white"
-                        : "bg-transparent border-gray-300 text-gray-300",
+                        ? "bg-white border-white text-[#313D6A] scale-110 animate-pulse"
+                        : "bg-transparent border-white/50 text-white/70 hover:scale-105",
                   )}
                 >
                   {isCompleted ? (
-                    <Check className="w-3 h-3 sm:w-5 sm:h-5" />
+                    <div className="flex items-center justify-center">
+                      <Check className="w-6 h-6 " />
+                    </div>
                   ) : (
-                    <IconComponent className="w-3 h-3 sm:w-5 sm:h-5" />
+                    <step.icon className="w-6 h-6" />
                   )}
+
+                  <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 whitespace-nowrap">
+                    <span className={cn("text-xs font-medium", isCurrent ? "text-[#F5BB07]" : "text-white/70")}>
+                      {step.title}
+                    </span>
+                  </div>
                 </div>
+
                 {index < steps.length - 1 && (
                   <div
                     className={cn(
-                      "w-6 sm:w-12 h-0.5 mx-1 sm:mx-2 transition-all duration-200 flex-shrink-0",
-                      isCompleted ? "bg-white" : "bg-gray-400",
+                      "w-8 h-1 mx-2 rounded-full transition-all duration-500",
+                      isCompleted ? "bg-[#F5BB07]" : "bg-white/30",
                     )}
                   />
                 )}
@@ -517,12 +568,20 @@ export default function StudentRegistrationForm() {
         </div>
       </div>
 
-      {/* Progress bar */}
-      <div className="w-full bg-gray-400 rounded-full h-1.5 sm:h-2">
-        <div
-          className="bg-white h-1.5 sm:h-2 rounded-full transition-all duration-300"
-          style={{ width: `${(currentStep / steps.length) * 100}%` }}
-        />
+      <div className="relative">
+        <div className="w-full bg-white/20 rounded-full h-3 overflow-hidden">
+          <div
+            className="bg-gradient-to-r from-[#F5BB07] to-yellow-300 h-3 rounded-full transition-all duration-700 ease-out relative"
+            style={{ width: `${(currentStep / steps.length) * 100}%` }}
+          >
+            <div className="absolute inset-0 bg-white/30 animate-pulse"></div>
+          </div>
+        </div>
+        <div className="text-center mt-2">
+          <span className="text-white/90 text-sm font-medium">
+            {Math.round((currentStep / steps.length) * 100)}% Complete
+          </span>
+        </div>
       </div>
     </div>
   )
@@ -531,178 +590,314 @@ export default function StudentRegistrationForm() {
     switch (currentStep) {
       case 1:
         return (
-          <div className="space-y-6">
-            <div className="text-center mb-6">
-              <User className="w-12 h-12 text-[#313D6A] mx-auto mb-2" />
-              <h3 className="text-xl font-semibold text-[#313D6A]">Personal Information</h3>
-              <p className="text-gray-600">Tell us about yourself</p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="full_name">Full Name *</Label>
-                <Input
-                  id="full_name"
-                  name="full_name"
-                  value={formData.full_name}
-                  onChange={handleInputChange}
-                  placeholder="Full Name"
-                  required
-                />
+          <div className="space-y-8">
+            <div className="text-center mb-8">
+              <div className="relative inline-block">
+                <div className="w-24 h-24 bg-gradient-to-br from-[#F5BB07] to-yellow-300 rounded-full flex items-center justify-center mb-4 mx-auto">
+                  <User className="w-12 h-12 text-[#313D6A]" />
+                </div>
+                <div className="absolute -top-2 -right-2">
+                  <Heart className="w-6 h-6 text-red-400 animate-pulse" />
+                </div>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="first_name">First Name *</Label>
-                <Input
-                  id="first_name"
-                  name="first_name"
-                  value={formData.first_name}
-                  onChange={handleInputChange}
-                  placeholder="First Name"
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="last_name">Last Name *</Label>
-                <Input
-                  id="last_name"
-                  name="last_name"
-                  value={formData.last_name}
-                  onChange={handleInputChange}
-                  placeholder="Last Name"
-                  required
-                />
+              <h3 className="text-3xl font-bold text-[#313D6A] mb-2 flex items-center justify-center gap-2">
+                Welcome! <User className="w-8 h-8" />
+              </h3>
+              <p className="text-gray-600 text-lg">Let's start with the basics about you</p>
+              <div className="mt-4 p-4 bg-blue-50 rounded-lg border-l-4 border-blue-400">
+                <p className="text-sm text-blue-700">
+                  <Zap className="w-4 h-4 inline mr-1" />
+                  This step is required to create your profile
+                </p>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="email" className="flex items-center gap-2">
-                  <Mail className="h-4 w-4" />
-                  Email *
+            <div className="bg-white rounded-xl p-6 shadow-lg border border-gray-100">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="space-y-2">
+                  <Label htmlFor="full_name" className="text-[#313D6A] font-semibold flex items-center gap-2">
+                    <User className="w-4 h-4" />
+                    Full Name *
+                  </Label>
+                  <Input
+                    id="full_name"
+                    name="full_name"
+                    value={formData.full_name}
+                    onChange={handleInputChange}
+                    placeholder="Enter your full name"
+                    required
+                    className="border-2 border-gray-200 focus:border-[#F5BB07] transition-colors"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="first_name" className="text-[#313D6A] font-semibold">
+                    First Name *
+                  </Label>
+                  <Input
+                    id="first_name"
+                    name="first_name"
+                    value={formData.first_name}
+                    onChange={handleInputChange}
+                    placeholder="First name"
+                    required
+                    className="border-2 border-gray-200 focus:border-[#F5BB07] transition-colors"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="last_name" className="text-[#313D6A] font-semibold">
+                    Last Name *
+                  </Label>
+                  <Input
+                    id="last_name"
+                    name="last_name"
+                    value={formData.last_name}
+                    onChange={handleInputChange}
+                    placeholder="Last name"
+                    required
+                    className="border-2 border-gray-200 focus:border-[#F5BB07] transition-colors"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
+                <div className="space-y-2">
+                  <Label htmlFor="email" className="text-[#313D6A] font-semibold flex items-center gap-2">
+                    <Mail className="h-4 w-4" />
+                    Email *
+                  </Label>
+                  <Input
+                    id="email"
+                    name="email"
+                    type="email"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    placeholder="your.email@example.com"
+                    required
+                    className="border-2 border-gray-200 focus:border-[#F5BB07] transition-colors"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="phone" className="text-[#313D6A] font-semibold flex items-center gap-2">
+                    <Phone className="h-4 w-4" />
+                    Phone *
+                  </Label>
+                  <Input
+                    id="phone"
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleInputChange}
+                    placeholder="+1 (555) 123-4567"
+                    required
+                    className="border-2 border-gray-200 focus:border-[#F5BB07] transition-colors"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="age" className="text-[#313D6A] font-semibold">
+                    Age
+                  </Label>
+                  <Input
+                    id="age"
+                    name="age"
+                    type="number"
+                    value={formData.age}
+                    onChange={handleInputChange}
+                    placeholder="25"
+                    className="border-2 border-gray-200 focus:border-[#F5BB07] transition-colors"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                <div className="space-y-2">
+                  <Label className="text-[#313D6A] font-semibold flex items-center gap-2">
+                    <CalendarIcon className="h-4 w-4" />
+                    Date of Birth
+                  </Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "w-full justify-start text-left font-normal border-2 border-gray-200 hover:border-[#F5BB07]",
+                          !dateOfBirth && "text-muted-foreground",
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {dateOfBirth ? format(dateOfBirth, "PPP") : "Pick your birth date"}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0">
+                      <Calendar mode="single" selected={dateOfBirth} onSelect={handleDateChange} initialFocus />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="gender" className="text-[#313D6A] font-semibold">
+                    Gender
+                  </Label>
+                  <Select onValueChange={(value) => handleSelectChange("gender", value)} value={formData.gender}>
+                    <SelectTrigger className="border-2 border-gray-200 focus:border-[#F5BB07]">
+                      <SelectValue placeholder="Select your gender" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="male">Male</SelectItem>
+                      <SelectItem value="female">Female</SelectItem>
+                      <SelectItem value="other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                <div className="space-y-2">
+                  <Label htmlFor="city" className="text-[#313D6A] font-semibold flex items-center gap-2">
+                    <MapPin className="w-4 h-4" />
+                    City *
+                  </Label>
+                  <Input
+                    id="city"
+                    name="city"
+                    value={formData.city}
+                    onChange={handleInputChange}
+                    placeholder="Your city"
+                    required
+                    className="border-2 border-gray-200 focus:border-[#F5BB07] transition-colors"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="country" className="text-[#313D6A] font-semibold">
+                    Country *
+                  </Label>
+                  <Input
+                    id="country"
+                    name="country"
+                    value={formData.country}
+                    onChange={handleInputChange}
+                    placeholder="Your country"
+                    required
+                    className="border-2 border-gray-200 focus:border-[#F5BB07] transition-colors"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2 mt-6">
+                <Label htmlFor="bio" className="text-[#313D6A] font-semibold">
+                  Tell us about yourself
                 </Label>
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  value={formData.email}
+                <Textarea
+                  id="bio"
+                  name="bio"
+                  value={formData.bio}
                   onChange={handleInputChange}
-                  placeholder="Email Address"
-                  required
+                  placeholder="Share a bit about yourself, your interests, and what you're looking to achieve..."
+                  rows={4}
+                  className="border-2 border-gray-200 focus:border-[#F5BB07] transition-colors"
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="phone" className="flex items-center gap-2">
-                  <Phone className="h-4 w-4" />
-                  Phone *
-                </Label>
-                <Input
-                  id="phone"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleInputChange}
-                  placeholder="Phone Number"
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="age">Age</Label>
-                <Input
-                  id="age"
-                  name="age"
-                  type="number"
-                  value={formData.age}
-                  onChange={handleInputChange}
-                  placeholder="Age"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label className="flex items-center gap-2">
-                  <CalendarIcon className="h-4 w-4" />
-                  Date of Birth
-                </Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      className={cn(
-                        "w-full justify-start text-left font-normal",
-                        !dateOfBirth && "text-muted-foreground",
-                      )}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {dateOfBirth ? format(dateOfBirth, "PPP") : "Pick a date"}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0">
-                    <Calendar mode="single" selected={dateOfBirth} onSelect={handleDateChange} initialFocus />
-                  </PopoverContent>
-                </Popover>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="gender">Gender</Label>
-                <Select onValueChange={(value) => handleSelectChange("gender", value)} value={formData.gender}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select Gender" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="male">Male</SelectItem>
-                    <SelectItem value="female">Female</SelectItem>
-                    <SelectItem value="other">Other</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="bio">Bio</Label>
-              <Textarea
-                id="bio"
-                name="bio"
-                value={formData.bio}
-                onChange={handleInputChange}
-                placeholder="Tell us about yourself..."
-                rows={3}
-              />
             </div>
           </div>
         )
 
       case 2:
         return (
-          <div className="space-y-6">
-            <div className="text-center mb-6">
-              <MapPin className="w-12 h-12 text-[#313D6A] mx-auto mb-2" />
-              <h3 className="text-xl font-semibold text-[#313D6A]">Location</h3>
-              <p className="text-gray-600">Where are you located?</p>
+          <div className="space-y-8">
+            <div className="text-center mb-8">
+              <div className="relative inline-block">
+                <div className="w-24 h-24 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center mb-4 mx-auto">
+                  <GraduationCap className="w-12 h-12 text-white" />
+                </div>
+                <div className="absolute -top-2 -right-2">
+                  <Target className="w-6 h-6 text-[#F5BB07] animate-pulse" />
+                </div>
+              </div>
+              <h3 className="text-3xl font-bold text-[#313D6A] mb-2 flex items-center justify-center gap-2">
+                Your Academic Journey <GraduationCap className="w-8 h-8" />
+              </h3>
+              <p className="text-gray-600 text-lg">Tell us about your educational background</p>
+              <div className="mt-4 p-4 bg-green-50 rounded-lg border-l-4 border-green-400">
+                <p className="text-sm text-green-700">
+                  <Zap className="w-4 h-4 inline mr-1" />
+                  This helps us match you with the right opportunities
+                </p>
+              </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="address">Address</Label>
-                <Input
-                  id="address"
-                  name="address"
-                  value={formData.address}
-                  onChange={handleInputChange}
-                  placeholder="Full Address"
-                />
+            <div className="bg-white rounded-xl p-6 shadow-lg border border-gray-100">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <Label htmlFor="education_level" className="text-[#313D6A] font-semibold">
+                    Education Level *
+                  </Label>
+                  <Select
+                    onValueChange={(value) => handleSelectChange("education_level", value)}
+                    value={formData.education_level}
+                  >
+                    <SelectTrigger className="border-2 border-gray-200 focus:border-[#F5BB07]">
+                      <SelectValue placeholder="Select your education level" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="high_school" className="flex items-center">
+                        <School className="w-4 h-4 mr-2" /> High School
+                      </SelectItem>
+                      <SelectItem value="bachelors" className="flex items-center">
+                        <GraduationCap className="w-4 h-4 mr-2" /> Bachelor's Degree
+                      </SelectItem>
+                      <SelectItem value="masters" className="flex items-center">
+                        <BookOpen className="w-4 h-4 mr-2" /> Master's Degree
+                      </SelectItem>
+                      <SelectItem value="phd" className="flex items-center">
+                        <Microscope className="w-4 h-4 mr-2" /> PhD
+                      </SelectItem>
+                      <SelectItem value="other" className="flex items-center">
+                        <Book className="w-4 h-4 mr-2" /> Other
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="institution" className="text-[#313D6A] font-semibold">
+                    Institution *
+                  </Label>
+                  <Input
+                    id="institution"
+                    name="institution"
+                    value={formData.institution}
+                    onChange={handleInputChange}
+                    placeholder="Your school/university name"
+                    required
+                    className="border-2 border-gray-200 focus:border-[#F5BB07] transition-colors"
+                  />
+                </div>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="city">City</Label>
-                <Input id="city" name="city" value={formData.city} onChange={handleInputChange} placeholder="City" />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="country">Country</Label>
-                <Input
-                  id="country"
-                  name="country"
-                  value={formData.country}
-                  onChange={handleInputChange}
-                  placeholder="Country"
-                />
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                <div className="space-y-2">
+                  <Label htmlFor="field_of_study" className="text-[#313D6A] font-semibold">
+                    Field of Study
+                  </Label>
+                  <Input
+                    id="field_of_study"
+                    name="field_of_study"
+                    value={formData.field_of_study}
+                    onChange={handleInputChange}
+                    placeholder="e.g., Computer Science, Business"
+                    className="border-2 border-gray-200 focus:border-[#F5BB07] transition-colors"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="graduation_year" className="text-[#313D6A] font-semibold">
+                    Graduation Year
+                  </Label>
+                  <Input
+                    id="graduation_year"
+                    name="graduation_year"
+                    type="number"
+                    value={formData.graduation_year}
+                    onChange={handleInputChange}
+                    placeholder="2024"
+                    className="border-2 border-gray-200 focus:border-[#F5BB07] transition-colors"
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -710,76 +905,127 @@ export default function StudentRegistrationForm() {
 
       case 3:
         return (
-          <div className="space-y-6">
-            <div className="text-center mb-6">
-              <GraduationCap className="w-12 h-12 text-[#313D6A] mx-auto mb-2" />
-              <h3 className="text-xl font-semibold text-[#313D6A]">Academic Information</h3>
-              <p className="text-gray-600">Your educational background</p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="education_level">Education Level</Label>
-                <Select
-                  onValueChange={(value) => handleSelectChange("education_level", value)}
-                  value={formData.education_level}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select Education Level" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="high_school">High School</SelectItem>
-                    <SelectItem value="bachelors">Bachelor's Degree</SelectItem>
-                    <SelectItem value="masters">Master's Degree</SelectItem>
-                    <SelectItem value="phd">PhD</SelectItem>
-                    <SelectItem value="other">Other</SelectItem>
-                  </SelectContent>
-                </Select>
+          <div className="space-y-8">
+            <div className="text-center mb-8">
+              <div className="relative inline-block">
+                <div className="w-24 h-24 bg-gradient-to-br from-purple-400 to-purple-600 rounded-full flex items-center justify-center mb-4 mx-auto">
+                  <Star className="w-12 h-12 text-white" />
+                </div>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="institution">Institution</Label>
-                <Input
-                  id="institution"
-                  name="institution"
-                  value={formData.institution}
-                  onChange={handleInputChange}
-                  placeholder="Institution/University"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="field_of_study">Field of Study</Label>
-                <Input
-                  id="field_of_study"
-                  name="field_of_study"
-                  value={formData.field_of_study}
-                  onChange={handleInputChange}
-                  placeholder="Field of Study"
-                />
+              <h3 className="text-3xl font-bold text-[#313D6A] mb-2 flex items-center justify-center gap-2">
+                What Drives You? <Star className="w-8 h-8" />
+              </h3>
+              <p className="text-gray-600 text-lg">Share your interests and goals with us</p>
+              <div className="mt-4 p-4 bg-purple-50 rounded-lg border-l-4 border-purple-400">
+                <p className="text-sm text-purple-700 flex items-center">
+                  <Sparkles className="w-4 h-4 mr-1" /> This step is optional but helps us personalize your experience
+                </p>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="graduation_year">Graduation Year</Label>
-                <Input
-                  id="graduation_year"
-                  name="graduation_year"
-                  type="number"
-                  value={formData.graduation_year}
-                  onChange={handleInputChange}
-                  placeholder="Graduation Year"
-                />
+            <div className="bg-white rounded-xl p-6 shadow-lg border border-gray-100">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                {/* Skills */}
+                <div className="space-y-4">
+                  <Label className="text-[#313D6A] font-semibold text-lg flex items-center gap-2">
+                    <Rocket className="w-5 h-5" /> Your Skills
+                  </Label>
+                  <div className="flex gap-2">
+                    <Input
+                      value={newSkill}
+                      onChange={(e) => setNewSkill(e.target.value)}
+                      placeholder="Add a skill (e.g., JavaScript, Design)"
+                      className="flex-1 border-2 border-gray-200 focus:border-[#F5BB07]"
+                      onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), handleAddSkill())}
+                    />
+                    <Button
+                      type="button"
+                      onClick={handleAddSkill}
+                      className="bg-[#313D6A] text-white hover:bg-[#313D6A]/90"
+                    >
+                      Add
+                    </Button>
+                  </div>
+                  {skillsList.length > 0 && (
+                    <div className="flex flex-wrap gap-2">
+                      {skillsList.map((skill) => (
+                        <div
+                          key={skill.id}
+                          className="flex items-center gap-1 bg-blue-100 text-blue-800 px-3 py-2 rounded-full text-sm font-medium animate-fadeIn"
+                        >
+                          {skill.name}
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleRemoveSkill(skill.id)}
+                            className="h-4 w-4 p-0 hover:bg-blue-200 ml-1"
+                          >
+                            ×
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Interests */}
+                <div className="space-y-4">
+                  <Label className="text-[#313D6A] font-semibold text-lg flex items-center gap-2">
+                    <Heart className="w-5 h-5" /> Your Interests
+                  </Label>
+                  <div className="flex gap-2">
+                    <Input
+                      value={newInterest}
+                      onChange={(e) => setNewInterest(e.target.value)}
+                      placeholder="Add an interest (e.g., Photography, Music)"
+                      className="flex-1 border-2 border-gray-200 focus:border-[#F5BB07]"
+                      onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), handleAddInterest())}
+                    />
+                    <Button
+                      type="button"
+                      onClick={handleAddInterest}
+                      className="bg-[#313D6A] text-white hover:bg-[#313D6A]/90"
+                    >
+                      Add
+                    </Button>
+                  </div>
+                  {interestsList.length > 0 && (
+                    <div className="flex flex-wrap gap-2">
+                      {interestsList.map((interest) => (
+                        <div
+                          key={interest.id}
+                          className="flex items-center gap-1 bg-green-100 text-green-800 px-3 py-2 rounded-full text-sm font-medium animate-fadeIn"
+                        >
+                          {interest.name}
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleRemoveInterest(interest.id)}
+                            className="h-4 w-4 p-0 hover:bg-green-200 ml-1"
+                          >
+                            ×
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="gpa">GPA</Label>
-                <Input
-                  id="gpa"
-                  name="gpa"
-                  type="number"
-                  step="0.01"
-                  value={formData.gpa}
+
+              <div className="mt-8 space-y-2">
+                <Label htmlFor="career_goals" className="text-[#313D6A] font-semibold text-lg flex items-center gap-2">
+                  <Target className="w-5 h-5" /> Your Goals
+                </Label>
+                <Textarea
+                  id="career_goals"
+                  name="career_goals"
+                  value={formData.career_goals}
                   onChange={handleInputChange}
-                  placeholder="GPA"
+                  placeholder="What are your career goals and aspirations? What do you hope to achieve?"
+                  rows={4}
+                  className="border-2 border-gray-200 focus:border-[#F5BB07] transition-colors"
                 />
               </div>
             </div>
@@ -788,531 +1034,206 @@ export default function StudentRegistrationForm() {
 
       case 4:
         return (
-          <div className="space-y-6">
-            <div className="text-center mb-6">
-              <Briefcase className="w-12 h-12 text-[#313D6A] mx-auto mb-2" />
-              <h3 className="text-xl font-semibold text-[#313D6A]">Employment Information</h3>
-              <p className="text-gray-600">Your work experience and career goals</p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="employment_status">Employment Status</Label>
-                <Select
-                  onValueChange={(value) => handleSelectChange("employment_status", value)}
-                  value={formData.employment_status}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select Employment Status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="student">Student</SelectItem>
-                    <SelectItem value="employed">Employed</SelectItem>
-                    <SelectItem value="self_employed">Self Employed</SelectItem>
-                    <SelectItem value="unemployed">Unemployed</SelectItem>
-                    <SelectItem value="other">Other</SelectItem>
-                  </SelectContent>
-                </Select>
+          <div className="space-y-8">
+            <div className="text-center mb-8">
+              <div className="relative inline-block">
+                <div className="w-24 h-24 bg-gradient-to-br from-orange-400 to-orange-600 rounded-full flex items-center justify-center mb-4 mx-auto">
+                  <Globe className="w-12 h-12 text-white" />
+                </div>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="current_job_title">Current Job Title</Label>
-                <Input
-                  id="current_job_title"
-                  name="current_job_title"
-                  value={formData.current_job_title}
-                  onChange={handleInputChange}
-                  placeholder="Current Job Title"
-                />
+              <h3 className="text-3xl font-bold text-[#313D6A] mb-2 flex items-center justify-center gap-2">
+                Connect & Share <Globe className="w-8 h-8" />
+              </h3>
+              <p className="text-gray-600 text-lg">Show off your professional presence</p>
+              <div className="mt-4 p-4 bg-orange-50 rounded-lg border-l-4 border-orange-400">
+                <p className="text-sm text-orange-700 flex items-center">
+                  <Link className="w-4 h-4 mr-1" /> Optional: Add your professional profiles to stand out
+                </p>
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="company">Company</Label>
-              <Input
-                id="company"
-                name="company"
-                value={formData.company}
-                onChange={handleInputChange}
-                placeholder="Company Name"
-              />
-            </div>
+            <div className="bg-white rounded-xl p-6 shadow-lg border border-gray-100">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="space-y-2">
+                  <Label htmlFor="linkedin_profile" className="text-[#313D6A] font-semibold flex items-center gap-2">
+                    <Briefcase className="w-4 h-4" /> LinkedIn Profile
+                  </Label>
+                  <Input
+                    id="linkedin_profile"
+                    name="linkedin_profile"
+                    value={formData.linkedin_profile}
+                    onChange={handleInputChange}
+                    placeholder="https://linkedin.com/in/yourname"
+                    className="border-2 border-gray-200 focus:border-[#F5BB07] transition-colors"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="github_profile" className="text-[#313D6A] font-semibold flex items-center gap-2">
+                    <Github className="w-4 h-4" /> GitHub Profile
+                  </Label>
+                  <Input
+                    id="github_profile"
+                    name="github_profile"
+                    value={formData.github_profile}
+                    onChange={handleInputChange}
+                    placeholder="https://github.com/yourname"
+                    className="border-2 border-gray-200 focus:border-[#F5BB07] transition-colors"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="portfolio_website" className="text-[#313D6A] font-semibold flex items-center gap-2">
+                    <Palette className="w-4 h-4" /> Portfolio Website
+                  </Label>
+                  <Input
+                    id="portfolio_website"
+                    name="portfolio_website"
+                    value={formData.portfolio_website}
+                    onChange={handleInputChange}
+                    placeholder="https://yourportfolio.com"
+                    className="border-2 border-gray-200 focus:border-[#F5BB07] transition-colors"
+                  />
+                </div>
+              </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="career_goals">Career Goals</Label>
-              <Textarea
-                id="career_goals"
-                name="career_goals"
-                value={formData.career_goals}
-                onChange={handleInputChange}
-                placeholder="Describe your career goals..."
-                rows={3}
-              />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                <div className="space-y-2">
+                  <Label htmlFor="employment_status" className="text-[#313D6A] font-semibold flex items-center gap-2">
+                    <Briefcase className="w-4 h-4" /> Employment Status
+                  </Label>
+                  <Select
+                    onValueChange={(value) => handleSelectChange("employment_status", value)}
+                    value={formData.employment_status}
+                  >
+                    <SelectTrigger className="border-2 border-gray-200 focus:border-[#F5BB07]">
+                      <SelectValue placeholder="Select your current status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="student" className="flex items-center">
+                        <GraduationCap className="w-4 h-4 mr-2" /> Student
+                      </SelectItem>
+                      <SelectItem value="employed" className="flex items-center">
+                        <Briefcase className="w-4 h-4 mr-2" /> Employed
+                      </SelectItem>
+                      <SelectItem value="self_employed" className="flex items-center">
+                        <Rocket className="w-4 h-4 mr-2" /> Self Employed
+                      </SelectItem>
+                      <SelectItem value="unemployed" className="flex items-center">
+                        <Search className="w-4 h-4 mr-2" /> Looking for opportunities
+                      </SelectItem>
+                      <SelectItem value="other" className="flex items-center">
+                        <FileText className="w-4 h-4 mr-2" /> Other
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="current_job_title" className="text-[#313D6A] font-semibold flex items-center gap-2">
+                    <Tag className="w-4 h-4" /> Current Job Title
+                  </Label>
+                  <Input
+                    id="current_job_title"
+                    name="current_job_title"
+                    value={formData.current_job_title}
+                    onChange={handleInputChange}
+                    placeholder="e.g., Software Developer, Student"
+                    className="border-2 border-gray-200 focus:border-[#F5BB07] transition-colors"
+                  />
+                </div>
+              </div>
             </div>
           </div>
         )
 
       case 5:
         return (
-          <div className="space-y-6">
-            <div className="text-center mb-6">
-              <Globe className="w-12 h-12 text-[#313D6A] mx-auto mb-2" />
-              <h3 className="text-xl font-semibold text-[#313D6A]">Social Profiles</h3>
-              <p className="text-gray-600">Connect your professional profiles</p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="linkedin_profile">LinkedIn Profile</Label>
-                <Input
-                  id="linkedin_profile"
-                  name="linkedin_profile"
-                  value={formData.linkedin_profile}
-                  onChange={handleInputChange}
-                  placeholder="LinkedIn URL"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="github_profile">GitHub Profile</Label>
-                <Input
-                  id="github_profile"
-                  name="github_profile"
-                  value={formData.github_profile}
-                  onChange={handleInputChange}
-                  placeholder="GitHub URL"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="portfolio_website">Portfolio Website</Label>
-                <Input
-                  id="portfolio_website"
-                  name="portfolio_website"
-                  value={formData.portfolio_website}
-                  onChange={handleInputChange}
-                  placeholder="Portfolio URL"
-                />
-              </div>
-            </div>
-          </div>
-        )
-
-      case 6:
-        return (
-          <div className="space-y-6">
-            <div className="text-center mb-6">
-              <Star className="w-12 h-12 text-[#313D6A] mx-auto mb-2" />
-              <h3 className="text-xl font-semibold text-[#313D6A]">Skills & Interests</h3>
-              <p className="text-gray-600">What are you passionate about?</p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Skills */}
-              <div className="space-y-3">
-                <Label>Skills</Label>
-                <div className="flex gap-2">
-                  <Input
-                    value={newSkill}
-                    onChange={(e) => setNewSkill(e.target.value)}
-                    placeholder="Add a skill"
-                    className="flex-1"
-                    onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), handleAddSkill())}
-                  />
-                  <Button
-                    type="button"
-                    onClick={handleAddSkill}
-                    variant="outline"
-                    className="bg-[#313D6A] text-white hover:bg-[#313D6A]/90"
-                  >
-                    Add
-                  </Button>
+          <div className="space-y-8">
+            <div className="text-center mb-8">
+              <div className="relative inline-block">
+                <div className="w-24 h-24 bg-gradient-to-br from-pink-400 to-pink-600 rounded-full flex items-center justify-center mb-4 mx-auto">
+                  <Upload className="w-12 h-12 text-white" />
                 </div>
-                {skillsList.length > 0 && (
-                  <div className="flex flex-wrap gap-2">
-                    {skillsList.map((skill) => (
-                      <div
-                        key={skill.id}
-                        className="flex items-center gap-1 bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm"
-                      >
-                        {skill.name}
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleRemoveSkill(skill.id)}
-                          className="h-4 w-4 p-0 hover:bg-blue-200 ml-1"
-                        >
-                          ×
-                        </Button>
-                      </div>
-                    ))}
+              </div>
+              <h3 className="text-3xl font-bold text-[#313D6A] mb-2 flex items-center justify-center gap-2">
+                Final Touches <FileText className="w-8 h-8" />
+              </h3>
+              <p className="text-gray-600 text-lg">Upload your documents to complete your profile</p>
+              <div className="mt-4 p-4 bg-pink-50 rounded-lg border-l-4 border-pink-400">
+                <p className="text-sm text-pink-700 flex items-center">
+                  <Paperclip className="w-4 h-4 mr-1" /> Optional: Add documents to verify your credentials
+                </p>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-xl p-6 shadow-lg border border-gray-100">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {/* Profile Picture */}
+                <div className="space-y-2">
+                  <Label htmlFor="profile_picture" className="text-[#313D6A] font-semibold flex items-center gap-2">
+                    <Camera className="w-4 h-4" /> Profile Picture
+                  </Label>
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-[#F5BB07] transition-colors cursor-pointer bg-gradient-to-br from-blue-50 to-blue-100">
+                    <Input
+                      id="profile_picture"
+                      name="profile_picture"
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleFileChange(e, "profile_picture")}
+                      className="hidden"
+                    />
+                    <label htmlFor="profile_picture" className="cursor-pointer">
+                      <Upload className="mx-auto h-12 w-12 text-[#313D6A] mb-3" />
+                      <p className="text-sm text-gray-600 font-medium">
+                        {fileNames.profile_picture || "Click to upload your photo"}
+                      </p>
+                    </label>
                   </div>
-                )}
-              </div>
-
-              {/* Interests */}
-              <div className="space-y-3">
-                <Label>Interests</Label>
-                <div className="flex gap-2">
-                  <Input
-                    value={newInterest}
-                    onChange={(e) => setNewInterest(e.target.value)}
-                    placeholder="Add an interest"
-                    className="flex-1"
-                    onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), handleAddInterest())}
-                  />
-                  <Button
-                    type="button"
-                    onClick={handleAddInterest}
-                    variant="outline"
-                    className="bg-[#313D6A] text-white hover:bg-[#313D6A]/90"
-                  >
-                    Add
-                  </Button>
                 </div>
-                {interestsList.length > 0 && (
-                  <div className="flex flex-wrap gap-2">
-                    {interestsList.map((interest) => (
-                      <div
-                        key={interest.id}
-                        className="flex items-center gap-1 bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm"
-                      >
-                        {interest.name}
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleRemoveInterest(interest.id)}
-                          className="h-4 w-4 p-0 hover:bg-green-200 ml-1"
-                        >
-                          ×
-                        </Button>
-                      </div>
-                    ))}
+
+                {/* CNIC or Form B Picture */}
+                <div className="space-y-2">
+                  <Label htmlFor="cnic_or_form_b_picture" className="text-[#313D6A] font-semibold flex items-center gap-2">
+                    <IdCard className="w-4 h-4" /> ID Document
+                  </Label>
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-[#F5BB07] transition-colors cursor-pointer bg-gradient-to-br from-green-50 to-green-100">
+                    <Input
+                      id="cnic_or_form_b_picture"
+                      name="cnic_or_form_b_picture"
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleFileChange(e, "cnic_or_form_b_picture")}
+                      className="hidden"
+                    />
+                    <label htmlFor="cnic_or_form_b_picture" className="cursor-pointer">
+                      <FileText className="mx-auto h-12 w-12 text-[#313D6A] mb-3" />
+                      <p className="text-sm text-gray-600 font-medium">
+                        {fileNames.cnic_or_form_b_picture || "Upload CNIC/Form B"}
+                      </p>
+                    </label>
                   </div>
-                )}
-              </div>
-            </div>
-          </div>
-        )
-
-      case 7:
-        return (
-          <div className="space-y-6">
-            <div className="text-center mb-6">
-              <Star className="w-12 h-12 text-[#313D6A] mx-auto mb-2" />
-              <h3 className="text-xl font-semibold text-[#313D6A]">Preferences</h3>
-              <p className="text-gray-600">Customize your experience</p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Preferred Learning Time */}
-              <div className="space-y-3">
-                <Label>Preferred Learning Time</Label>
-                <div className="flex gap-2">
-                  <Input
-                    value={newPreferredTime}
-                    onChange={(e) => setNewPreferredTime(e.target.value)}
-                    placeholder="e.g., Morning, Evening"
-                    className="flex-1"
-                    onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), handleAddPreferredTime())}
-                  />
-                  <Button
-                    type="button"
-                    onClick={handleAddPreferredTime}
-                    variant="outline"
-                    className="bg-[#313D6A] text-white hover:bg-[#313D6A]/90"
-                  >
-                    Add
-                  </Button>
                 </div>
-                {preferredLearningTimes.length > 0 && (
-                  <div className="flex flex-wrap gap-2">
-                    {preferredLearningTimes.map((time) => (
-                      <div
-                        key={time.id}
-                        className="flex items-center gap-1 bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm"
-                      >
-                        {time.name}
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleRemovePreferredTime(time.id)}
-                          className="h-4 w-4 p-0 hover:bg-purple-200 ml-1"
-                        >
-                          ×
-                        </Button>
-                      </div>
-                    ))}
+
+                {/* Degree */}
+                <div className="space-y-2">
+                  <Label htmlFor="degree" className="text-[#313D6A] font-semibold flex items-center gap-2">
+                    <GraduationCap className="w-4 h-4" /> Degree Certificate
+                  </Label>
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-[#F5BB07] transition-colors cursor-pointer bg-gradient-to-br from-purple-50 to-purple-100">
+                    <Input
+                      id="degree"
+                      name="degree"
+                      type="file"
+                      accept="image/*,.pdf"
+                      onChange={(e) => handleFileChange(e, "degree")}
+                      className="hidden"
+                    />
+                    <label htmlFor="degree" className="cursor-pointer">
+                      <GraduationCap className="mx-auto h-12 w-12 text-[#313D6A] mb-3" />
+                      <p className="text-sm text-gray-600 font-medium">{fileNames.degree || "Upload your degree"}</p>
+                    </label>
                   </div>
-                )}
-              </div>
-
-              {/* Language Preferences */}
-              <div className="space-y-3">
-                <Label>Language Preferences</Label>
-                <div className="flex gap-2">
-                  <Input
-                    value={newLanguagePref}
-                    onChange={(e) => setNewLanguagePref(e.target.value)}
-                    placeholder="e.g., English, Spanish"
-                    className="flex-1"
-                    onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), handleAddLanguagePref())}
-                  />
-                  <Button
-                    type="button"
-                    onClick={handleAddLanguagePref}
-                    variant="outline"
-                    className="bg-[#313D6A] text-white hover:bg-[#313D6A]/90"
-                  >
-                    Add
-                  </Button>
-                </div>
-                {languagePrefs.length > 0 && (
-                  <div className="flex flex-wrap gap-2">
-                    {languagePrefs.map((lang) => (
-                      <div
-                        key={lang.id}
-                        className="flex items-center gap-1 bg-orange-100 text-orange-800 px-3 py-1 rounded-full text-sm"
-                      >
-                        {lang.name}
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleRemoveLanguagePref(lang.id)}
-                          className="h-4 w-4 p-0 hover:bg-orange-200 ml-1"
-                        >
-                          ×
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Notification Preferences */}
-              <div className="space-y-3">
-                <Label>Notification Preferences</Label>
-                <div className="flex gap-2">
-                  <Input
-                    value={newNotificationPref}
-                    onChange={(e) => setNewNotificationPref(e.target.value)}
-                    placeholder="e.g., Email, SMS"
-                    className="flex-1"
-                    onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), handleAddNotificationPref())}
-                  />
-                  <Button
-                    type="button"
-                    onClick={handleAddNotificationPref}
-                    variant="outline"
-                    className="bg-[#313D6A] text-white hover:bg-[#313D6A]/90"
-                  >
-                    Add
-                  </Button>
-                </div>
-                {notificationPrefs.length > 0 && (
-                  <div className="flex flex-wrap gap-2">
-                    {notificationPrefs.map((pref) => (
-                      <div
-                        key={pref.id}
-                        className="flex items-center gap-1 bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm"
-                      >
-                        {pref.name}
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleRemoveNotificationPref(pref.id)}
-                          className="h-4 w-4 p-0 hover:bg-yellow-200 ml-1"
-                        >
-                          ×
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Social Links */}
-              <div className="space-y-3">
-                <Label>Additional Social Links</Label>
-                <div className="flex gap-2">
-                  <Input
-                    value={newSocialLink}
-                    onChange={(e) => setNewSocialLink(e.target.value)}
-                    placeholder="e.g., Twitter, Instagram"
-                    className="flex-1"
-                    onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), handleAddSocialLink())}
-                  />
-                  <Button
-                    type="button"
-                    onClick={handleAddSocialLink}
-                    variant="outline"
-                    className="bg-[#313D6A] text-white hover:bg-[#313D6A]/90"
-                  >
-                    Add
-                  </Button>
-                </div>
-                {socialLinks.length > 0 && (
-                  <div className="flex flex-wrap gap-2">
-                    {socialLinks.map((link) => (
-                      <div
-                        key={link.id}
-                        className="flex items-center gap-1 bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full text-sm"
-                      >
-                        {link.name}
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleRemoveSocialLink(link.id)}
-                          className="h-4 w-4 p-0 hover:bg-indigo-200 ml-1"
-                        >
-                          ×
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        )
-
-      case 8:
-        return (
-          <div className="space-y-6">
-            <div className="text-center mb-6">
-              <Upload className="w-12 h-12 text-[#313D6A] mx-auto mb-2" />
-              <h3 className="text-xl font-semibold text-[#313D6A]">Document Uploads</h3>
-              <p className="text-gray-600">Upload your important documents</p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {/* Profile Picture */}
-              <div className="space-y-2">
-                <Label htmlFor="profile_picture">Profile Picture</Label>
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-[#313D6A] transition-colors">
-                  <Input
-                    id="profile_picture"
-                    name="profile_picture"
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => handleFileChange(e, "profile_picture")}
-                    className="hidden"
-                  />
-                  <label htmlFor="profile_picture" className="cursor-pointer">
-                    <Upload className="mx-auto h-8 w-8 text-gray-400 mb-2" />
-                    <p className="text-sm text-gray-500">{fileNames.profile_picture || "Click to upload"}</p>
-                  </label>
-                </div>
-              </div>
-
-              {/* CNIC or Form B Picture */}
-              <div className="space-y-2">
-                <Label htmlFor="cnic_or_form_b_picture">CNIC or Form B Picture</Label>
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-[#313D6A] transition-colors">
-                  <Input
-                    id="cnic_or_form_b_picture"
-                    name="cnic_or_form_b_picture"
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => handleFileChange(e, "cnic_or_form_b_picture")}
-                    className="hidden"
-                  />
-                  <label htmlFor="cnic_or_form_b_picture" className="cursor-pointer">
-                    <FileText className="mx-auto h-8 w-8 text-gray-400 mb-2" />
-                    <p className="text-sm text-gray-500">{fileNames.cnic_or_form_b_picture || "Click to upload"}</p>
-                  </label>
-                </div>
-              </div>
-
-              {/* Degree */}
-              <div className="space-y-2">
-                <Label htmlFor="degree">Degree Certificate</Label>
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-[#313D6A] transition-colors">
-                  <Input
-                    id="degree"
-                    name="degree"
-                    type="file"
-                    accept="image/*,.pdf"
-                    onChange={(e) => handleFileChange(e, "degree")}
-                    className="hidden"
-                  />
-                  <label htmlFor="degree" className="cursor-pointer">
-                    <GraduationCap className="mx-auto h-8 w-8 text-gray-400 mb-2" />
-                    <p className="text-sm text-gray-500">{fileNames.degree || "Click to upload"}</p>
-                  </label>
                 </div>
               </div>
             </div>
-          </div>
-        )
-
-      case 9:
-        return (
-          <div className="space-y-6">
-            <div className="text-center mb-6">
-              <FileText className="w-12 h-12 text-[#313D6A] mx-auto mb-2" />
-              <h3 className="text-xl font-semibold text-[#313D6A]">Certificates</h3>
-              <p className="text-gray-600">Add your professional certificates</p>
-            </div>
-
-            {/* Add New Certificate */}
-            <div className="flex gap-2">
-              <Input
-                value={newCertificateName}
-                onChange={(e) => setNewCertificateName(e.target.value)}
-                placeholder="Certificate name (e.g., 'JavaScript Certification')"
-                className="flex-1"
-                onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), handleAddCertificate())}
-              />
-              <Button
-                type="button"
-                onClick={handleAddCertificate}
-                className="bg-[#313D6A] text-white hover:bg-[#313D6A]/90"
-              >
-                Add Certificate
-              </Button>
-            </div>
-
-            {/* Certificate List */}
-            {certificates.length > 0 && (
-              <div className="space-y-4">
-                {certificates.map((certificate) => (
-                  <div key={certificate.id} className="border rounded-lg p-4 bg-gray-50">
-                    <div className="flex items-center justify-between mb-3">
-                      <h4 className="font-medium text-[#313D6A]">{certificate.name}</h4>
-                      <Button
-                        type="button"
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => handleRemoveCertificate(certificate.id)}
-                      >
-                        Remove
-                      </Button>
-                    </div>
-                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-[#313D6A] transition-colors">
-                      <Input
-                        id={`certificate-${certificate.id}`}
-                        type="file"
-                        accept="image/*,.pdf"
-                        onChange={(e) => handleCertificateFileChange(certificate.id, e.target.files[0])}
-                        className="hidden"
-                      />
-                      <label htmlFor={`certificate-${certificate.id}`} className="cursor-pointer">
-                        <Upload className="mx-auto h-6 w-6 text-gray-400 mb-2" />
-                        <p className="text-sm text-gray-500">
-                          {certificate.file ? certificate.file.name : "Click to upload certificate"}
-                        </p>
-                      </label>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
           </div>
         )
 
@@ -1322,50 +1243,89 @@ export default function StudentRegistrationForm() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-4 sm:py-">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <Card className="shadow-lg overflow-hidden">
-          <CardHeader className="bg-[#313D6A] text-white p-4 sm:p-6">
+    <div className="min-h-screen relative overflow-hidden bg-primary/10 rounded-lg py-4 sm:py-8">
+
+      {/* Decorative background circles */}
+      <div className="absolute z-0 inset-0 pointer-events-none">
+        <div className="absolute top-10 left-10 w-32 h-32 border-[10px] border-[#F5BB07]/60 rounded-full " />
+        <div className="absolute top-20 right-9 w-24 h-24 rounded-full opacity-60 bg-[#F5BB07]" />
+        <div className="absolute bottom-32 left-16 w-40 h-40 rounded-full opacity-25 bg-[#F5BB07]" />
+        <div className="absolute bottom-20 right-32 w-28 h-28 border-[10px] border-[#F5BB07]/60 rounded-full opacity-60" />
+        <div className="absolute top-1/2 left-0 w-36 h-36 rounded-full opacity-50 -translate-x-1/2 bg-[#F5BB07]" />
+        <div className="absolute top-1/3 right-0 w-32 h-32 border-[10px] border-[#F5BB07]/60 rounded-full opacity-60 translate-x-1/2" />
+      </div>
+
+      <div className="max-w-5xl overflow-hidden relative z-10 mx-auto  px-4 sm:px-6 lg:px-8">
+        <Card className="shadow-2xl gap-0  py-0 overflow-hidden border-0">
+          <CardHeader className="bg-gradient-to-r from-[#313D6A] to-[#4A5A8A] rounded-none rounded-t-lg text-white p-6 sm:p-8">
             <ProgressIndicator />
           </CardHeader>
-          <CardContent className="p-4 sm:p-6 lg:p-8">
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="min-h-[400px] sm:min-h-[50px]">{renderStepContent()}</div>
+          <CardContent className="p-6 sm:p-8 lg:p-10 bg-gray-50">
+            <form className="space-y-8">
+              <div className="min-h-[500px]">{renderStepContent()}</div>
 
-              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 pt-6 border-t border-gray-200">
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 pt-8 border-t-2 border-gray-200">
                 <Button
                   type="button"
                   onClick={handleBack}
                   disabled={currentStep === 1}
                   variant="outline"
-                  className="flex items-center justify-center gap-2 bg-transparent order-2 sm:order-1 w-full sm:w-auto"
+                  className="flex items-center justify-center gap-2 bg-white border-2 border-gray-300 hover:border-[#313D6A] order-2 sm:order-1 w-full sm:w-auto px-6 py-3"
                 >
-                  <ChevronLeft className="w-4 h-4" />
+                  <ChevronLeft className="w-5 h-5" />
                   Previous
                 </Button>
 
-                <div className="text-sm text-gray-500 text-center order-1 sm:order-2">
-                  Step {currentStep} of {steps.length}
+                <div className="text-center order-1 sm:order-2">
+                  <div className="text-lg font-bold text-[#313D6A]">
+                    Step {currentStep} of {steps.length}
+                  </div>
+                  <div className="text-sm text-gray-500">
+                    {steps[currentStep - 1].required ? "Required" : "Optional"}
+                  </div>
                 </div>
 
-                {currentStep < steps.length ? (
-                  <Button
-                    type="button"
-                    onClick={handleNext}
-                    className="bg-[#313D6A] text-white hover:bg-[#313D6A]/90 flex items-center justify-center gap-2 order-3 w-full sm:w-auto"
-                  >
-                    Next
-                    <ChevronRight className="w-4 h-4" />
-                  </Button>
-                ) : (
-                  <Button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="bg-[#F5BB07] text-black hover:bg-[#F5BB07]/90 font-semibold px-8 order-3 w-full sm:w-auto"
-                  >
-                    {isSubmitting ? "Submitting..." : "Complete Registration"}
-                  </Button>
-                )}
+                <div className="flex gap-3 order-3 w-full sm:w-auto">
+                  {!steps[currentStep - 1].required && currentStep < steps.length && (
+                    <Button
+                      type="button"
+                      onClick={handleSkip}
+                      variant="ghost"
+                      className="text-gray-500 hover:text-[#313D6A] px-6 py-3"
+                    >
+                      Skip for now
+                    </Button>
+                  )}
+
+                  {currentStep < steps.length ? (
+                    <Button
+                      type="button"
+                      onClick={handleNext}
+                      className="bg-gradient-to-r from-[#F5BB07] to-yellow-400 text-[#313D6A] hover:from-[#F5BB07]/90 hover:to-yellow-400/90 font-bold flex items-center justify-center gap-2 px-8 py-3 shadow-lg transform hover:scale-105 transition-all"
+                    >
+                      Continue
+                      <ChevronRight className="w-5 h-5" />
+                    </Button>
+                  ) : (
+                    <Button
+                      onClick={handleSubmit}
+                      disabled={isSubmitting}
+                      className="bg-gradient-to-r from-[#F5BB07] to-yellow-400 text-[#313D6A] hover:from-[#F5BB07]/90 hover:to-yellow-400/90 font-bold px-8 py-3 shadow-lg transform hover:scale-105 transition-all flex items-center gap-2"
+                    >
+                      {isSubmitting ? (
+                        <>
+                          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-[#313D6A]"></div>
+                          Creating Profile...
+                        </>
+                      ) : (
+                        <>
+                          <Trophy className="w-5 h-5" />
+                          Complete Registration
+                        </>
+                      )}
+                    </Button>
+                  )}
+                </div>
               </div>
             </form>
           </CardContent>

@@ -25,16 +25,16 @@ import { FaArrowRightLong } from "react-icons/fa6"
 
 export default function QueryFormShadcn() {
     const router = useRouter()
-    const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
+    const API_BASE = process.env.NEXT_PUBLIC_API_URL
 
     const [formData, setFormData] = useState({
         name: "",
         area: "",
-        classLevel: "",
+        current_class: "",
         subjects: "",
         email: "",
         contact: "",
-        requirements: "",
+        special_requirements: "",
     })
 
     const [loading, setLoading] = useState(false)
@@ -86,26 +86,31 @@ export default function QueryFormShadcn() {
         setLoading(true)
         try {
             const payload = {
-                full_name: formData.name,
+                name: formData.name,
                 area: formData.area,
-                class: formData.classLevel,
+                current_class: formData.current_class,
                 subjects: formData.subjects,
                 email: formData.email,
                 contact_no: formData.contact,
-                requirements: formData.requirements,
+                special_requirements: formData.special_requirements,
             }
 
-            await axios.post(`${API_BASE}/api/queries/`, payload)
-            toast.success("Query submitted successfully")
-            setFormData({
-                name: "",
-                area: "",
-                classLevel: "",
-                subjects: "",
-                email: "",
-                contact: "",
-                requirements: "",
-            })
+            const response = await axios.post(`${API_BASE}/api/auth/student-query/`, payload)
+            console.log(response)
+            if (response.status === 201) {
+                toast.success("Query submitted successfully")
+                setFormData({
+                    name: "",
+                    area: "",
+                    current_class: "",
+                    subjects: "",
+                    email: "",
+                    contact: "",
+                    special_requirements: "",
+                })
+                router.push("/query-submitted")
+                setLoading(false)
+            }
         } catch (error) {
             console.error(error)
             toast.error("Failed to submit query")
@@ -159,12 +164,12 @@ export default function QueryFormShadcn() {
 
                             {/* Class */}
                             <div className="space-y-1">
-                                <Label htmlFor="classLevel" className="text-white">Class / Grade</Label>
+                                <Label htmlFor="current_class" className="text-white">Class / Grade</Label>
                                 <Input
-                                    id="class"
-                                    name="class"
+                                    id="current_class"
+                                    name="current_class"
                                     placeholder="Your class / grade"
-                                    value={formData.class}
+                                    value={formData.current_class}
                                     onChange={handleChange}
                                     className="bg-white"
                                 />
@@ -232,12 +237,12 @@ export default function QueryFormShadcn() {
 
                             {/* Special requirements full width */}
                             <div className="md:col-span-2 lg:col-span-3 space-y-1">
-                                <Label htmlFor="requirements" className="text-white">Any special requirements</Label>
+                                <Label htmlFor="special_requirements" className="text-white">Any special requirements</Label>
                                 <Textarea
-                                    id="requirements"
-                                    name="requirements"
+                                    id="special_requirements"
+                                    name="special_requirements"
                                     placeholder="Mention timing, preferred tutor gender, accessibility needs, etc."
-                                    value={formData.requirements}
+                                    value={formData.special_requirements}
                                     onChange={handleChange}
                                     className="bg-white text-slate-900"
                                     rows={4}

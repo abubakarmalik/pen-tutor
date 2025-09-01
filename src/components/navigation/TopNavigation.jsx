@@ -37,6 +37,32 @@ export default function TopNavigation() {
     // { name: "Contact Us", href: "/contact" },
   ]
 
+  const getDashboardLink = () => {
+    if (user?.role === "teacher") {
+      return "/tutor/dashboard"
+    }
+    if (user?.role === "student") {
+      return "/student/dashboard"
+    }
+    if (user?.role === "admin") {
+      return "/admin/dashboard"
+    }
+    return "/"
+  }
+
+  const getProfileLink = () => {
+    if (user?.role === "teacher") {
+      return "/tutor/profile"
+    }
+    if (user?.role === "student") {
+      return "/student/profile"
+    }
+    if (user?.role === "admin") {
+      return "/admin/profile"
+    }
+    return "/"
+  }
+
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -79,10 +105,10 @@ export default function TopNavigation() {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48">
                   <DropdownMenuItem asChild>
-                    <Link href={user?.role === "teacher" ? "/tutor/dashboard" : "/student/dashboard"}>Dashboard</Link>
+                    <Link href={getDashboardLink()}>Dashboard</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link href={user?.role === "teacher" ? "/tutor/profile" : "/student/profile"}>Profile</Link>
+                    <Link href={getProfileLink()}>Profile</Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleLogout} className="text-red-600">
@@ -135,14 +161,14 @@ export default function TopNavigation() {
                 {isAuthenticated ? (
                   <div className="space-y-2">
                     <Link
-                      href={user?.role === "teacher" ? "/tutor/dashboard" : "/student/dashboard"}
+                      href={getDashboardLink()}
                       className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-primary hover:bg-primary/20 rounded-md"
                       onClick={() => setIsMenuOpen(false)}
                     >
                       Dashboard
                     </Link>
                     <Link
-                      href={user?.role === "teacher" ? "/tutor/profile" : "/student/profile"}
+                      href={getProfileLink()}
                       className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-primary hover:bg-primary/20 rounded-md"
                       onClick={() => setIsMenuOpen(false)}
                     >

@@ -116,9 +116,9 @@ export default function ServicesPage() {
                                 the classes and all subjects your child needs help in. Our experienced tutors are available to give your child
                                 100% personalized attention and the freedom to ask questions resulting in improved performance.
                             </p>
-                            <Button className="text-white font-semibold px-6 py-2 rounded-md hover:opacity-95 bg-[#313D6A]" >
+                            <Link href="/home-tutoring" className="text-white font-semibold px-6 py-2 rounded-md hover:opacity-95 bg-[#313D6A]" >
                                 Read More
-                            </Button>
+                            </Link>
                         </div>
 
                         <div className="flex justify-center py-4">

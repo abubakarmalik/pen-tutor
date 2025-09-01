@@ -14,7 +14,7 @@ export default function Footer() {
     toast.success("Subscribed successfully");
   }
   return (
-    <footer className="bg-gradient-to-b from-primary/80 to-primary/95 text-white">
+    <footer className="relative z-10 bg-gradient-to-b from-primary/80 to-primary/95 text-white">
       <div className="container mx-auto px-4 py-12">
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Company Info */}
