@@ -24,10 +24,10 @@ import {
 } from "lucide-react"
 import { toast } from "sonner"
 import Loader from "@/components/shared/Loader"
-import { useAuth } from "../auth/AuthContext"
 import axios from "axios"
 import { useRouter } from "next/navigation"
 import { Label } from "../ui/label"
+import Link from "next/link"
 
 const steps = [
   {
@@ -150,7 +150,6 @@ const ProgressIndicator = ({ currentStep, totalSteps, onStepClick }) => {
 }
 
 export default function TutorRegistrationForm() {
-  const { user, refetchUser } = useAuth()
   const router = useRouter()
 
   const [currentStep, setCurrentStep] = useState(1)
@@ -243,119 +242,7 @@ export default function TutorRegistrationForm() {
     degree_image: "",
   })
 
-  const [educationEntries, setEducationEntries] = useState([{ institution: "", degree: "", year: "" }])
-  const [certificationEntries, setCertificationEntries] = useState([{ name: "", year: "" }])
-  const [awardEntries, setAwardEntries] = useState([{ title: "", year: "", description: "" }])
-  const [publicationEntries, setPublicationEntries] = useState([{ title: "", year: "", journal: "" }])
-  const [socialLinksEntries, setSocialLinksEntries] = useState({ twitter: "", facebook: "", instagram: "" })
-
-  const [availableSubjects, setAvailableSubjects] = useState([
-    { id: 1, name: "Mathematics" },
-    { id: 2, name: "Physics" },
-    { id: 3, name: "Chemistry" },
-    { id: 4, name: "Biology" },
-    { id: 5, name: "English" },
-    { id: 6, name: "Computer Science" },
-  ])
-
-  const [availableQualifications, setAvailableQualifications] = useState([
-    { id: 1, name: "Bachelor's Degree" },
-    { id: 2, name: "Master's Degree" },
-    { id: 3, name: "PhD" },
-    { id: 4, name: "Teaching Certificate" },
-  ])
-
-  const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
-
-  const genderOptions = [
-    { value: "male", label: "Male" },
-    { value: "female", label: "Female" },
-    { value: "other", label: "Other" },
-  ]
-
-  const expertiseLevelOptions = [
-    { value: "beginner", label: "Beginner" },
-    { value: "intermediate", label: "Intermediate" },
-    { value: "expert", label: "Expert" },
-    { value: "master", label: "Master" },
-  ]
-
-  const employmentTypeOptions = [
-    { value: "full_time", label: "Full Time" },
-    { value: "part_time", label: "Part Time" },
-    { value: "contract", label: "Contract" },
-    { value: "freelance", label: "Freelance" },
-  ]
-
-  const teachingMethodOptions = [
-    "video_lectures",
-    "live_qna",
-    "interactive_sessions",
-    "assignments",
-    "group_discussions",
-    "one_on_one",
-    "workshops",
-    "practical_demos",
-  ]
-
-  const courseCategoryOptions = [
-    "programming",
-    "science",
-    "mathematics",
-    "languages",
-    "business",
-    "arts",
-    "music",
-    "sports",
-    "technology",
-    "design",
-  ]
-
-  const languageOptions = [
-    "English",
-    "Spanish",
-    "French",
-    "German",
-    "Chinese",
-    "Japanese",
-    "Arabic",
-    "Hindi",
-    "Portuguese",
-    "Russian",
-    "Italian",
-    "Korean",
-  ]
-
-  const daysOfWeek = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
-
-  const timezoneOptions = [
-    { value: "GMT-12:00", label: "GMT-12:00 (Baker Island)" },
-    { value: "GMT-11:00", label: "GMT-11:00 (American Samoa)" },
-    { value: "GMT-10:00", label: "GMT-10:00 (Hawaii)" },
-    { value: "GMT-09:00", label: "GMT-09:00 (Alaska)" },
-    { value: "GMT-08:00", label: "GMT-08:00 (Pacific Time)" },
-    { value: "GMT-07:00", label: "GMT-07:00 (Mountain Time)" },
-    { value: "GMT-06:00", label: "GMT-06:00 (Central Time)" },
-    { value: "GMT-05:00", label: "GMT-05:00 (Eastern Time)" },
-    { value: "GMT-04:00", label: "GMT-04:00 (Atlantic Time)" },
-    { value: "GMT-03:00", label: "GMT-03:00 (Brazil)" },
-    { value: "GMT-02:00", label: "GMT-02:00 (Mid-Atlantic)" },
-    { value: "GMT-01:00", label: "GMT-01:00 (Azores)" },
-    { value: "GMT+00:00", label: "GMT+00:00 (London, Dublin)" },
-    { value: "GMT+01:00", label: "GMT+01:00 (Paris, Berlin)" },
-    { value: "GMT+02:00", label: "GMT+02:00 (Cairo, Athens)" },
-    { value: "GMT+03:00", label: "GMT+03:00 (Moscow, Nairobi)" },
-    { value: "GMT+04:00", label: "GMT+04:00 (Dubai, Baku)" },
-    { value: "GMT+05:00", label: "GMT+05:00 (Karachi, Tashkent)" },
-    { value: "GMT+05:30", label: "GMT+05:30 (India, Sri Lanka)" },
-    { value: "GMT+06:00", label: "GMT+06:00 (Dhaka, Almaty)" },
-    { value: "GMT+07:00", label: "GMT+07:00 (Bangkok, Jakarta)" },
-    { value: "GMT+08:00", label: "GMT+08:00 (Beijing, Singapore)" },
-    { value: "GMT+09:00", label: "GMT+09:00 (Tokyo, Seoul)" },
-    { value: "GMT+10:00", label: "GMT+10:00 (Sydney, Melbourne)" },
-    { value: "GMT+11:00", label: "GMT+11:00 (Solomon Islands)" },
-    { value: "GMT+12:00", label: "GMT+12:00 (New Zealand)" },
-  ]
+  const API_BASE = process.env.NEXT_PUBLIC_API_URL
 
   const nextStep = () => {
     if (currentStep < steps.length) {
@@ -392,19 +279,6 @@ export default function TutorRegistrationForm() {
     }
   }, [])
 
-  const validateCNIC = (cnic) => {
-    const cnicPattern = /^\d{5}-\d{7}-\d{1}$/
-    return cnicPattern.test(cnic)
-  }
-
-  // validate on blur instead of every keystroke
-  const handleCNICBlur = (e) => {
-    const { value } = e.target
-    if (value && !validateCNIC(value)) {
-      toast.error("CNIC format should be xxxxx-xxxxxxx-x")
-    }
-  }
-
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({
       ...prev,
@@ -418,138 +292,99 @@ export default function TutorRegistrationForm() {
       [field]: Array.isArray(value) ? value : [value],
     }))
   }
-
-  const handleSelectChange = (name, value) => {
-    setFormData((prev) => ({ ...prev, [name]: value }))
-    // Auto-save progress
-    localStorage.setItem(
-      "tutorFormProgress",
-      JSON.stringify({ step: currentStep, formData: { ...formData, [name]: value } }),
-    )
-  }
-
-  const handleCheckboxChange = (name, checked) => {
-    setFormData((prev) => ({ ...prev, [name]: checked }))
-  }
-
   const handleFileChange = (e, fieldName) => {
     const file = e.target.files?.[0]
     if (file) {
+      // Validate file size (example: 5MB max)
+      const maxSize = 5 * 1024 * 1024; // 5MB
+      if (file.size > maxSize) {
+        toast.error(`File size must be less than 5MB`);
+        e.target.value = ''; // Reset the file input
+        return;
+      }
+
       setFormData((prev) => ({ ...prev, [fieldName]: file }))
       setFileNames((prev) => ({ ...prev, [fieldName]: file.name }))
     }
   }
-
-  const handleArrayFieldToggle = (fieldName, value) => {
-    setFormData((prev) => ({
-      ...prev,
-      [fieldName]:
-        prev[fieldName] && Array.isArray(prev[fieldName])
-          ? prev[fieldName].includes(value)
-            ? prev[fieldName].filter((item) => item !== value)
-            : [...prev[fieldName], value]
-          : [value],
-    }))
-  }
-
-  const handleScheduleChange = (day, timeSlots) => {
-    setFormData((prev) => ({
-      ...prev,
-      availability_schedule: {
-        ...prev.availability_schedule,
-        [day]: timeSlots
-          .split(",")
-          .map((slot) => slot.trim())
-          .filter((slot) => slot),
-      },
-    }))
-  }
-
   // more robust dynamic handlers (explicit field name)
-  const handleDynamicArrayChange = (fieldName, entries, setEntries, index, field, value) => {
-    const newEntries = [...entries]
-    newEntries[index] = { ...newEntries[index], [field]: value }
-    setEntries(newEntries)
-
-    setFormData((prev) => ({ ...prev, [fieldName]: newEntries }))
-  }
-
-  const addDynamicEntry = (fieldName, entries, setEntries, template) => {
-    const newEntries = [...entries, template]
-    setEntries(newEntries)
-    setFormData((prev) => ({ ...prev, [fieldName]: newEntries }))
-  }
-
-  const removeDynamicEntry = (fieldName, entries, setEntries, index) => {
-    const newEntries = entries.filter((_, i) => i !== index)
-    setEntries(newEntries)
-    setFormData((prev) => ({ ...prev, [fieldName]: newEntries }))
-  }
-
-  const handleSubjectToggle = (subjectId) => {
-    setFormData((prev) => ({
-      ...prev,
-      subjects:
-        prev.subjects && Array.isArray(prev.subjects)
-          ? prev.subjects.includes(subjectId)
-            ? prev.subjects.filter((id) => id !== subjectId)
-            : [...prev.subjects, subjectId]
-          : [subjectId],
-    }))
-  }
-
-  const handleQualificationToggle = (qualificationId) => {
-    setFormData((prev) => ({
-      ...prev,
-      qualifications:
-        prev.qualifications && Array.isArray(prev.qualifications)
-          ? prev.qualifications.includes(qualificationId)
-            ? prev.qualifications.filter((id) => id !== qualificationId)
-            : [...prev.qualifications, qualificationId]
-          : [qualificationId],
-    }))
-  }
-
-  const appendIf = (form, key, value) => {
-    if (value === null || value === undefined) return
-    // Files
-    if (typeof File !== "undefined" && value instanceof File) {
-      form.append(key, value)
-      return
-    }
-    // FileList
-    if (typeof FileList !== "undefined" && value instanceof FileList) {
-      Array.from(value).forEach((f) => form.append(key, f))
-      return
-    }
-    // Arrays
-    if (Array.isArray(value)) {
-      if (value.length) form.append(key, JSON.stringify(value))
-      return
-    }
-    // Objects -> stringify if not empty
-    if (typeof value === "object") {
-      if (Object.keys(value).length) form.append(key, JSON.stringify(value))
-      return
-    }
-    // booleans & primitives
-    form.append(key, String(value))
-  }
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    setIsSubmitting(true)
+    e.preventDefault();
+    setIsSubmitting(true);
 
     try {
-      const response = await axios.post("/api/tutors/register/", formData)
-      toast.success("Registration completed successfully!")
-      router.push("/success?type=tutor")
+      // Create FormData object
+      const formDataToSend = new FormData();
+
+      // Create a copy of formData without files
+      const { profile_picture, resume, degree_certificates, id_proof, ...nonFileData } = formData;
+
+      // Stringify non-file data and add to FormData
+      formDataToSend.append('data', JSON.stringify(nonFileData));
+
+      // Append files if they exist
+      if (formData.resume) {
+        formDataToSend.append('resume', formData.resume);
+      }
+      if (formData.degree_certificates) {
+        formDataToSend.append('degree_certificates', formData.degree_certificates);
+      }
+      if (formData.id_proof) {
+        formDataToSend.append('id_proof', formData.id_proof);
+      }
+
+      const response = await axios.post(
+        `${API_BASE}/api/auth/teacher-profile/create/`,
+        formDataToSend,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+            'Content-Type': 'multipart/form-data',
+          },
+        }
+      );
+      toast.success('Registration completed successfully!');
+      router.push('/tutor/waiting-for-approval');
     } catch (error) {
-      console.error("Registration error:", error)
-      toast.error("Registration failed. Please try again.")
+      console.error('Registration error:', error);
+      toast.error('Registration failed. Please try again.');
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
+  };
+
+  function FileInput({ id, name, labelText, accept, required = false, hintPrimary, hintSecondary }) {
+    return (
+      <div>
+        <Label htmlFor={id} className="text-sm font-medium text-[#313D6A] mb-3 block">
+          {labelText}{required && ' *'}
+        </Label>
+
+        <div
+          className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-[#313D6A] transition-colors cursor-pointer min-h-[160px] flex flex-col items-center justify-center"
+        >
+          <input
+            id={id}
+            name={name}
+            type="file"
+            accept={accept}
+            onChange={(e) => handleFileChange(e, name)}
+            className="sr-only"
+          />
+
+          <label htmlFor={id} className="cursor-pointer flex flex-col items-center">
+            <Upload className="w-10 h-10 text-gray-400 mx-auto mb-3" />
+            <p className="text-sm font-medium text-gray-700 mb-1">{hintPrimary ?? 'Click to upload or drag and drop'}</p>
+            <p className="text-xs text-gray-500">{hintSecondary}</p>
+          </label>
+        </div>
+
+        {fileNames[name] && (
+          <p className="mt-2 text-sm text-green-600">Selected: {fileNames[name]}</p>
+        )}
+      </div>
+    );
   }
 
   const renderStepContent = () => {
@@ -615,18 +450,34 @@ export default function TutorRegistrationForm() {
                 </div>
 
                 <div className="space-y-6">
-                  <div>
-                    <Label htmlFor="date_of_birth" className="text-sm font-medium text-[#313D6A] mb-2 block">
-                      Date of Birth *
-                    </Label>
-                    <Input
-                      id="date_of_birth"
-                      type="date"
-                      value={formData.date_of_birth}
-                      onChange={(e) => handleInputChange("date_of_birth", e.target.value)}
-                      className="h-12 border-2 border-gray-200 focus:border-[#313D6A] focus:ring-0 transition-colors"
-                      required
-                    />
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="date_of_birth" className="text-sm font-medium text-[#313D6A] mb-2 block">
+                        Date of Birth *
+                      </Label>
+                      <Input
+                        id="date_of_birth"
+                        type="date"
+                        value={formData.date_of_birth}
+                        onChange={(e) => handleInputChange("date_of_birth", e.target.value)}
+                        className="h-12 border-2 border-gray-200 focus:border-[#313D6A] focus:ring-0 transition-colors"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="profile_picture" className="text-sm font-medium text-[#313D6A] mb-2 block">
+                        Age
+                      </Label>
+                      <Input
+                        id="age"
+                        type="number"
+                        placeholder="Enter your age"
+                        value={formData.age}
+                        onChange={(e) => handleInputChange("age", e.target.value)}
+                        className="h-12 border-2 border-gray-200 focus:border-[#313D6A] focus:ring-0 transition-colors"
+                        required
+                      />
+                    </div>
                   </div>
 
                   <div>
@@ -1192,48 +1043,49 @@ export default function TutorRegistrationForm() {
             <div className="space-y-6">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div className="space-y-6">
-                  <div>
-                    <Label className="text-sm font-medium text-[#313D6A] mb-3 block">Resume/CV *</Label>
-                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-[#313D6A] transition-colors cursor-pointer">
-                      <Upload className="w-10 h-10 text-gray-400 mx-auto mb-3" />
-                      <p className="text-sm font-medium text-gray-700 mb-1">Click to upload or drag and drop</p>
-                      <p className="text-xs text-gray-500">PDF, DOC, DOCX (Max 5MB)</p>
-                    </div>
-                  </div>
+                  <FileInput
+                    id="resume"
+                    name="resume"
+                    labelText="Resume/CV"
+                    accept=".pdf,.doc,.docx"
+                    required
+                    hintPrimary="Click to upload or drag and drop"
+                    hintSecondary="PDF, DOC, DOCX (Max 5MB)"
+                  />
 
-                  <div>
-                    <Label className="text-sm font-medium text-[#313D6A] mb-3 block">
-                      Degree Certificates (Optional)
-                    </Label>
-                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-[#313D6A] transition-colors cursor-pointer">
-                      <Upload className="w-10 h-10 text-gray-400 mx-auto mb-3" />
-                      <p className="text-sm font-medium text-gray-700 mb-1">Upload your certificates</p>
-                      <p className="text-xs text-gray-500">PDF, JPG, PNG (Max 10MB)</p>
-                    </div>
-                  </div>
+                  <FileInput
+                    id="degree_certificates"
+                    name="degree_certificates"
+                    labelText="Degree Certificates (Optional)"
+                    accept=".pdf,.doc,.docx"
+                    hintPrimary="Click to upload or drag and drop"
+                    hintSecondary="PDF, DOC, DOCX (Max 5MB)"
+                  />
                 </div>
 
                 <div className="space-y-6">
-                  <div>
-                    <Label className="text-sm font-medium text-[#313D6A] mb-3 block">ID Proof *</Label>
-                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-[#313D6A] transition-colors cursor-pointer">
-                      <Upload className="w-10 h-10 text-gray-400 mx-auto mb-3" />
-                      <p className="text-sm font-medium text-gray-700 mb-1">Upload government ID</p>
-                      <p className="text-xs text-gray-500">PDF, JPG, PNG (Max 5MB)</p>
-                    </div>
-                  </div>
+                  <FileInput
+                    id="id_proof"
+                    name="id_proof"
+                    labelText="ID Proof"
+                    accept=".pdf,.jpg,.png"
+                    required
+                    hintPrimary="Upload government ID"
+                    hintSecondary="PDF, JPG, PNG (Max 5MB)"
+                  />
 
-                  <div>
-                    <Label className="text-sm font-medium text-[#313D6A] mb-3 block">Profile Picture (Optional)</Label>
-                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-[#313D6A] transition-colors cursor-pointer">
-                      <Upload className="w-10 h-10 text-gray-400 mx-auto mb-3" />
-                      <p className="text-sm font-medium text-gray-700 mb-1">Upload your photo</p>
-                      <p className="text-xs text-gray-500">JPG, PNG (Max 2MB)</p>
-                    </div>
-                  </div>
+                  <FileInput
+                    id="profile_picture"
+                    name="profile_picture"
+                    labelText="Profile Picture (Optional)"
+                    accept=".jpg,.png"
+                    hintPrimary="Upload your photo"
+                    hintSecondary="JPG, PNG (Max 2MB)"
+                  />
                 </div>
               </div>
 
+              {/* rest of your panel (terms box etc) unchanged */}
               <div className="bg-gray-50 p-6 rounded-lg border border-gray-200">
                 <div className="flex items-start space-x-4">
                   <div className="w-8 h-8 rounded-full bg-[#F5BB07] flex items-center justify-center flex-shrink-0 mt-1">
@@ -1248,7 +1100,7 @@ export default function TutorRegistrationForm() {
                     <div className="flex items-start space-x-3">
                       <Checkbox id="terms_agreement" required className="mt-0.5" />
                       <Label htmlFor="terms_agreement" className="text-sm text-gray-600 leading-relaxed">
-                        I agree to the Terms of Service and Privacy Policy
+                        I agree to the <Link href="/terms-and-conditions" className="text-indigo-600 hover:underline">Terms of Service</Link> and <Link href="/privacy" className="text-indigo-600 hover:underline">Privacy Policy</Link>
                       </Label>
                     </div>
                   </div>

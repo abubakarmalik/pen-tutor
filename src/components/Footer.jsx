@@ -113,7 +113,7 @@ export default function Footer() {
 
         <div className="border-t border-slate-700 mt-8 pt-8 text-center">
           <p className="text-gray-400 text-sm">
-            © {new Date().getFullYear()} Pen Tutor. All rights reserved. | Privacy Policy | Terms of Service
+            © {new Date().getFullYear()} Pen Tutor. All rights reserved. | <Link href="/privacy" className="text-yellow-500 hover:underline">Privacy Policy</Link> | <Link href="/terms-and-conditions" className="text-yellow-500 hover:underline">Terms of Service</Link>
           </p>
         </div>
       </div>
