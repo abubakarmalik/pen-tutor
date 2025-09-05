@@ -12,6 +12,19 @@ export const metadata = {
   description: "Smart Learning Solutions",
   generator: 'v0.dev',
   favicon: '/favicon.png',
+  keywords: ['Pen Tutor', 'Online Tutoring', 'Tutoring Services', 'Online Learning', 'Smart Learning', 'Smart Tutoring', 'Online Tutor', 'Tutor', 'Learning', 'Smart Learning Solutions'],
+  authors: [{ name: 'Pen Tutor' }],
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+    },
+  },
+  icons: {
+    icon: '/favicon.png',
+  },
 };
 
 // add favicon to page

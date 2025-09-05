@@ -1,7 +1,3 @@
-// terms.jsx
-// Place this file in your Next.js project under `/pages/terms.jsx` (Pages Router)
-// or copy the component into `app/terms/page.jsx` (App Router) as a server component.
-
 export default function Terms() {
     return (
         <main className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">

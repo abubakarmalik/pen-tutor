@@ -13,6 +13,9 @@ import whyChooseUS from "@/assets/images/why-choose-us.png"
 import Link from "next/link"
 import QueryForm from "@/components/home/query-form"
 import OurServices from "@/components/home/our-services"
+import GroupSessions from "@/components/home/GroupSessions"
+import CoursesSection from "@/components/home/CoursesSection"
+import Banner from "@/components/home/Banner"
 
 export default function HomePage() {
   return (
@@ -184,6 +187,8 @@ export default function HomePage() {
 
       <OurServices />
 
+      <GroupSessions />
+      <CoursesSection />
       {/* Why Choose Pen Tutor Section */}
       <section className="py-16 bg-gray-50">
         <div className="container mx-auto px-4">
@@ -231,6 +236,7 @@ export default function HomePage() {
         </div>
       </section>
 
+      <Banner />
       {/* Footer */}
       {/* <Footer /> */}
     </div>

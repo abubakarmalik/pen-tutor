@@ -13,79 +13,22 @@ import TutD from "@/assets/images/tutors/tut-d.webp"
 import TutE from "@/assets/images/tutors/tut-e.webp"
 
 const tutors = [
-  {
-    id: 1,
-    name: "Dr. Alice",
-    teacherId: "PT001",
-    subject: "Mathematics",
-    degree: "PhD",
-    specialization: "Algebra",
-    experience: "8 years",
-    rating: 4.8,
-    students: 120,
-    image: TutA,
-  },
-  {
-    id: 2,
-    name: "Dr. Brian",
-    teacherId: "PT002",
-    subject: "Physics",
-    degree: "PhD",
-    specialization: "Quantum Mechanics",
-    experience: "12 years",
-    rating: 4.9,
-    students: 200,
-    image: TutB,
-  },
-  {
-    id: 3,
-    name: "Prof. Clara",
-    teacherId: "PT003",
-    subject: "English Literature",
-    degree: "MA",
-    specialization: "Poetry",
-    experience: "6 years",
-    rating: 4.7,
-    students: 95,
-    image: TutC,
-  },
-  {
-    id: 4,
-    name: "Dr. Daniel",
-    teacherId: "PT004",
-    subject: "Chemistry",
-    degree: "PhD",
-    specialization: "Organic Chemistry",
-    experience: "10 years",
-    rating: 4.8,
-    students: 160,
-    image: TutD,
-  },
-  {
-    id: 5,
-    name: "Dr. Emma",
-    teacherId: "PT005",
-    subject: "Biology",
-    degree: "PhD",
-    specialization: "Genetics",
-    experience: "9 years",
-    rating: 4.9,
-    students: 180,
-    image: TutE,
-  },
+  { id: 1, name: "M Hashmi", teacherId: "PT149", subject: "Mathematics", degree: "Masters", specialization: "Math, Physics", experience: "21 Years", rating: 4.8, students: 120, image: TutA },
+  { id: 2, name: "Imrah Anjum", teacherId: "PT150", subject: "Physics", degree: "Masters", specialization: "Quantum Mechanics", experience: "12 Years", rating: 4.9, students: 200, image: TutB },
+  { id: 3, name: "Qasim Iqbal", teacherId: "PT151", subject: "English", degree: "Bachelor", specialization: "Poetry", experience: "6 Years", rating: 4.7, students: 95, image: TutC },
+  { id: 4, name: "Kashif liaqat", teacherId: "PT152", subject: "Chemistry", degree: "Masters", specialization: "Organic Chemistry", experience: "15 Years", rating: 4.8, students: 160, image: TutD },
+  { id: 5, name: "Imran Nazir", teacherId: "PT153", subject: "Biology", degree: "Masters", specialization: "Genetics", experience: "9 Years", rating: 4.9, students: 180, image: TutE },
 ]
 
 export default function FeaturedTutors() {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isPaused, setIsPaused] = useState(false)
   const [isTransitioning, setIsTransitioning] = useState(false)
-  const [progressKey, setProgressKey] = useState(0)
 
   const nextSlide = useCallback(() => {
     if (isTransitioning) return
     setIsTransitioning(true)
     setCurrentIndex((prev) => (prev + 1) % tutors.length)
-    setProgressKey((k) => k + 1)
     setTimeout(() => setIsTransitioning(false), 600)
   }, [isTransitioning])
 
@@ -93,7 +36,6 @@ export default function FeaturedTutors() {
     if (isTransitioning) return
     setIsTransitioning(true)
     setCurrentIndex((prev) => (prev - 1 + tutors.length) % tutors.length)
-    setProgressKey((k) => k + 1)
     setTimeout(() => setIsTransitioning(false), 600)
   }, [isTransitioning])
 
@@ -101,16 +43,13 @@ export default function FeaturedTutors() {
     if (isTransitioning) return
     setIsTransitioning(true)
     setCurrentIndex(index)
-    setProgressKey((k) => k + 1)
     setTimeout(() => setIsTransitioning(false), 600)
   }
 
   useEffect(() => {
     if (isPaused || isTransitioning) return
-    const interval = setInterval(() => {
-      nextSlide()
-    }, 5000)
-    return () => clearInterval(interval)
+    const iv = setInterval(() => nextSlide(), 5000)
+    return () => clearInterval(iv)
   }, [isPaused, isTransitioning, nextSlide])
 
   const getVisibleTutors = () => {
@@ -122,195 +61,148 @@ export default function FeaturedTutors() {
 
   return (
     <section className="py-20 bg-gradient-to-br from-slate-50 via-blue-50/30 to-white relative overflow-hidden">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(49,61,106,0.05),transparent_50%)]" />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(245,187,7,0.05),transparent_50%)]" />
-
       <div className="container mx-auto px-4 relative">
-        {/* Section Heading */}
-        <div className="text-center mb-16">
-          <div className="inline-block">
-            <h2 className="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-[#313D6A] to-slate-800 bg-clip-text text-transparent mb-4">
-              Featured Tutors
-            </h2>
-            <div className="h-1 w-24 bg-[#F5BB07] mx-auto rounded-full" />
-          </div>
-          <p className="text-gray-600 text-lg mt-6 max-w-2xl mx-auto">
+        <div className="text-center mb-12">
+          <h2 className="text-4xl lg:text-5xl font-extrabold text-[#313D6A] mb-3">Featured Tutors</h2>
+          <div className="mx-auto w-24 h-1 rounded-full bg-[#F5BB07]" />
+          <p className="text-gray-600 mt-6 max-w-2xl mx-auto">
             Meet our exceptional educators who are passionate about helping students achieve their academic goals
           </p>
         </div>
 
-        {/* Carousel */}
         <div
           className="relative max-w-6xl mx-auto"
           onMouseEnter={() => setIsPaused(true)}
           onMouseLeave={() => setIsPaused(false)}
         >
-          <div className="relative w-full h-[600px] flex items-center justify-center overflow-hidden">
-            {/* Prev Button */}
-            <Button
-              variant="outline"
-              size="icon"
+          <div className="relative w-full flex items-center justify-center h-[560px] sm:h-[520px] md:h-[480px]">
+            <button
               onClick={prevSlide}
-              disabled={isTransitioning}
               aria-label="Previous slide"
-              className="absolute left-2 sm:left-4 z-20 w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 border-[#F5BB07] text-[#F5BB07] hover:bg-[#F5BB07] hover:text-white bg-white/90 backdrop-blur-sm shadow-lg transition-all duration-300 hover:scale-110 disabled:opacity-50"
+              disabled={isTransitioning}
+              className="hidden md:flex items-center justify-center z-30 absolute left-6 w-14 h-14 rounded-full bg-white border-2 border-gray-200 shadow-lg hover:scale-105 transition-transform"
             >
-              <ChevronLeft className="h-5 w-5" />
-            </Button>
+              <ChevronLeft className="w-6 h-6 text-[#313D6A]" />
+            </button>
 
-            {/* Tutor Cards */}
-            {getVisibleTutors().map((tutor) => {
-              const isCenter = tutor.position === 0
-              return (
-                <div
-                  key={tutor.id}
-                  className="absolute transition-all duration-700 ease-out"
-                  style={{
-                    transform: `translateX(${tutor.position * 320}px) scale(${isCenter ? 1 : 0.85})`,
-                    zIndex: isCenter ? 20 : 10,
-                    opacity: isCenter ? 1 : 0.7,
-                  }}
-                >
-                  <Card
-                    className={`w-80 h-[480px] transition-all duration-700 ${isCenter
-                        ? "shadow-2xl bg-gradient-to-br from-white to-[#F5BB07]/10"
-                        : "shadow-lg bg-white/80 backdrop-blur-sm"
-                      }`}
+            <div className="w-full max-w-5xl relative flex items-center justify-center">
+              {getVisibleTutors().map((tutor) => {
+                const isCenter = tutor.position === 0
+
+                // Reduced center width to address "too wide" complaint
+                const GAP = 320 // px horizontal gap from center to side cards
+                const xOffset = isCenter ? 0 : tutor.position === -1 ? -GAP : GAP
+                const scale = isCenter ? 1 : 0.86
+                const opacity = isCenter ? 1 : 0.65
+                const cardWidth = isCenter ? "w-[380px]" : "w-[300px]" // center width reduced
+                const cardHeight = isCenter ? "h-[420px]" : "h-[360px]"
+                const verticalOffset = isCenter ? 0 : 14 // push side cards slightly down so center stands out
+                const responsiveHide = isCenter ? "" : "hidden md:block"
+
+                return (
+                  <div
+                    key={tutor.id}
+                    className={`absolute transform transition-all duration-700 ease-out ${isCenter ? "z-40" : "z-30"} ${responsiveHide}`}
+                    style={{
+                      left: "50%",
+                      top: "50%",
+                      transform: `translate(-50%,-50%) translateX(${xOffset}px) translateY(${verticalOffset}px) scale(${scale})`,
+                      opacity,
+                    }}
                   >
-                    <CardContent className="p-8 text-center space-y-6">
-                      {/* Tutor Image */}
-                      <div className="relative mx-auto -mt-12">
-                        <div className={`relative ${isCenter ? "w-32 h-32" : "w-28 h-28"} mx-auto`}>
-                          <div
-                            className={`absolute inset-0 rounded-full bg-gradient-to-br from-[#F5BB07] to-[#F5BB07] ${isCenter ? "p-1" : "p-0.5"
-                              }`}
-                          >
+                    <Card
+                      className={`relative ${cardWidth} ${cardHeight} rounded-2xl overflow-visible px-6 py-8 ${
+                        isCenter
+                          ? "bg-white shadow-[0_20px_60px_rgba(49,61,106,0.10)]"
+                          : "bg-white/95 shadow-md"
+                      }`}
+                    >
+                      <div className="absolute left-1/2 -top-18 transform -translate-x-1/2">
+                        <div className={`rounded-full p-1 ${isCenter ? "bg-white" : "bg-white"} shadow-lg`}>
+                          <div className={`${isCenter ? "w-36 h-36" : "w-28 h-28"} rounded-full overflow-hidden`}>
                             <Image
                               src={tutor.image || "/placeholder.svg"}
-                              alt={`${tutor.subject} Tutor`}
-                              width={isCenter ? 120 : 105}
-                              height={isCenter ? 120 : 105}
-                              className="rounded-full w-full h-full object-cover bg-white transition-transform duration-300 hover:scale-105"
+                              alt={tutor.name}
+                              width={isCenter ? 144 : 112}
+                              height={isCenter ? 144 : 112}
+                              className="object-cover w-full h-full"
                             />
                           </div>
-                          {/* {isCenter && (
-                            <div className="absolute -top-2 -right-2 bg-[#F5BB07] text-white text-xs font-bold px-2 py-1 rounded-full shadow-lg">
+                        </div>
+
+                        {isCenter && (
+                          <div className="mt-3 flex justify-center">
+                            <div className="bg-[#F5BB07] text-md font-semibold px-3 py-1 rounded-md text-white shadow-sm">
                               ID: {tutor.teacherId}
                             </div>
-                          )} */}
-                        </div>
-                      </div>
-
-                      {/* Tutor Info */}
-                      <div className="space-y-3 pt-4">
-                        <h3 className={`font-bold text-[#313D6A] ${isCenter ? "text-xl" : "text-lg"}`}>
-                          {tutor.teacherId}
-                        </h3>
-
-                        {isCenter ? (
-                          <>
-                            <div className="space-y-2">
-                              <p className="font-semibold text-[#F5BB07] text-lg">
-                                {tutor.degree} in {tutor.subject}
-                              </p>
-                              <p className="text-sm text-[#313D6A] font-medium">
-                                Specialization: {tutor.specialization}
-                              </p>
-                              <p className="text-sm text-gray-600">
-                                <span className="font-semibold">Experience:</span> {tutor.experience}
-                              </p>
-                            </div>
-
-                            <div className="flex items-center justify-center space-x-4 text-sm text-gray-600">
-                              <div className="flex items-center space-x-1">
-                                <span className="text-[#F5BB07]">★</span>
-                                <span>{tutor.rating}</span>
-                              </div>
-                              <div>
-                                <span className="font-medium">{tutor.students}+</span> students
-                              </div>
-                            </div>
-                          </>
-                        ) : (
-                          <div className="space-y-2">
-                            <p className="font-semibold text-[#F5BB07]">{tutor.subject}</p>
-                            <p className="text-xs text-gray-600">{tutor.experience}</p>
                           </div>
                         )}
                       </div>
 
-                      {/* Button */}
-                      <Button
-                        className={`transition-all duration-300 ${isCenter
-                            ? "w-full bg-gradient-to-r from-[#313D6A] to-[#313D6A] text-white shadow-lg hover:scale-105"
-                            : "w-full bg-[#313D6A] text-white"
-                          }`}
-                        size={isCenter ? "default" : "sm"}
-                      >
-                        View Profile
-                      </Button>
-                    </CardContent>
-                  </Card>
-                </div>
-              )
-            })}
+                      <CardContent className="pt-28 text-center flex flex-col items-center justify-between h-full">
+                        <div className="space-y-3">
+                          {/* <h3 className={`text-[#313D6A] font-bold ${isCenter ? "text-lg" : "text-base"}`}>{tutor.name}</h3> */}
 
-            {/* Next Button */}
-            <Button
-              variant="outline"
-              size="icon"
+                          {isCenter ? (
+                            <>
+                              <p className="text-sm text-start font-semibold text-[#313D6A]">
+                                {tutor.degree} in {tutor.subject}
+                              </p>
+
+                              <p className="text-sm text-start text-gray-600">
+                                <span className="font-semibold">Bachelor:</span> In Chemistry, Zoology & Botany
+                              </p>
+
+                              <p className="text-sm text-start text-gray-600">
+                                <span className="font-semibold">Experience:</span> {tutor.experience}
+                              </p>
+                            </>
+                          ) : (
+                            <div className="space-y-1">
+                              <p className="text-sm font-semibold text-[#313D6A]">{tutor.subject}</p>
+                              <p className="text-xs text-gray-500">{tutor.experience}</p>
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="w-full mt-2">
+                          <Button
+                            className={`w-full rounded-md ${isCenter ? "bg-[#313D6A] text-white" : "bg-[#313D6A] text-white"}`}
+                            size={isCenter ? "default" : "sm"}
+                          >
+                            View Profile
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                )
+              })}
+            </div>
+
+            <button
               onClick={nextSlide}
-              disabled={isTransitioning}
               aria-label="Next slide"
-              className="absolute right-2 sm:right-4 z-20 w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 border-[#F5BB07] text-[#F5BB07] hover:bg-[#F5BB07] hover:text-white bg-white/90 backdrop-blur-sm shadow-lg transition-all duration-300 hover:scale-110 disabled:opacity-50"
+              disabled={isTransitioning}
+              className="hidden md:flex items-center justify-center z-30 absolute right-6 w-14 h-14 rounded-full bg-white border-2 border-gray-200 shadow-lg hover:scale-105 transition-transform"
             >
-              <ChevronRight className="h-5 w-5" />
-            </Button>
+              <ChevronRight className="w-6 h-6 text-[#313D6A]" />
+            </button>
           </div>
 
-          {/* Dots */}
-          <div className="flex justify-center mt-12 space-x-3">
+          <div className="flex justify-center mt-8 space-x-3">
             {tutors.map((_, index) => (
               <button
                 key={index}
                 onClick={() => goToSlide(index)}
                 disabled={isTransitioning}
                 aria-label={`Go to slide ${index + 1}`}
-                className={`transition-all duration-300 rounded-full ${currentIndex === index
-                    ? "w-8 h-3 bg-[#F5BB07] shadow-lg"
-                    : "w-3 h-3 bg-gray-300 hover:bg-gray-400 hover:scale-125"
-                  }`}
+                className={`transition-all duration-300 rounded-full ${currentIndex === index ? "w-10 h-2 bg-[#F5BB07] shadow-md" : "w-3 h-3 bg-gray-300 hover:bg-gray-400"}`}
               />
             ))}
           </div>
-
-          {/* Progress Bar */}
-          {/* {!isPaused && !isTransitioning && (
-            <div className="mt-8 max-w-md mx-auto">
-              <div className="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
-                <div
-                  key={progressKey}
-                  className="bg-[#F5BB07] h-full rounded-full shadow-sm"
-                  style={{
-                    animation: "progress 5s linear forwards",
-                  }}
-                />
-              </div>
-            </div>
-          )} */}
         </div>
       </div>
-
-      <style jsx>{`
-        @keyframes progress {
-          from {
-            width: 0%;
-          }
-          to {
-            width: 100%;
-          }
-        }
-      `}</style>
     </section>
   )
 }
