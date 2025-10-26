@@ -34,6 +34,8 @@ export default function AuthLayout() {
 
   const [errors, setErrors] = useState({})
 
+
+
   const validateForm = () => {
     const newErrors = {}
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -76,12 +78,33 @@ export default function AuthLayout() {
     setLoading(true)
     setErrors({})
 
+    const getPushURL = () => {
+      console.log("Getting Role")
+      const user = JSON.parse(localStorage.getItem("user_data"))
+      console.log("fond user", user)
+      console.log("fond role", user.role)
+      if (user.role === "student" || user.role === "Student"
+      ) {
+        return "/student/dashboard"
+      }
+      else if (user.role === "teacher" || user.role === "Teacher"
+      ) {
+        return "/tutor/dashboard"
+      }
+      else if (user.role === "admin" || user.role === "Admin"
+      ) {
+        return "/admin/dashboard"
+      }
+      else {
+        return "/"
+      }
+    }
     try {
       if (!isSignUp) {
         // delegate login to AuthContext
         await login({ email: formData.email, password: formData.password })
         toast.success("Welcome back!")
-        router.push("/")
+        router.push(getPushURL())
       } else {
         // delegate register to AuthContext
         await register({

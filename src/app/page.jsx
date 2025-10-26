@@ -1,33 +1,31 @@
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Card, CardContent } from "@/components/ui/card"
-import Image from "next/image"
-import { FaArrowRightLong } from "react-icons/fa6"
-import FeaturedTutors from "@/components/home/FeaturedTutors"
-import Footer from "@/components/Footer"
-
-import stdBags from "@/assets/images/student_with_bags.png"
-import lady from "@/assets/images/home/teacher-smile.png"
-import studentSmiling from "@/assets/images/home/std-smiling.png"
-import whyChooseUS from "@/assets/images/why-choose-us.png"
-import Link from "next/link"
-import QueryForm from "@/components/home/query-form"
-import OurServices from "@/components/home/our-services"
-import GroupSessions from "@/components/home/GroupSessions"
-import CoursesSection from "@/components/home/CoursesSection"
-import Banner from "@/components/home/Banner"
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent } from '@/components/ui/card';
+import Image from 'next/image';
+import { FaArrowRightLong } from 'react-icons/fa6';
+import FeaturedTutors from '@/components/home/FeaturedTutors';
+import Footer from '@/components/Footer';
+import stdBags from '@/assets/images/student_with_bags.png';
+import lady from '@/assets/images/home/teacher-smile.png';
+import studentSmiling from '@/assets/images/home/std-smiling.png';
+import whyChooseUS from '@/assets/images/why-choose-us.png';
+import Link from 'next/link';
+import QueryForm from '@/components/home/query-form';
+import OurServices from '@/components/home/our-services';
+import GroupSessions from '@/components/home/GroupSessions';
+import CoursesSection from '@/components/home/CoursesSection';
+import Banner from '@/components/home/Banner';
 
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
-      <section className="relative lg:pt-16  bg-gradient-to-r from-yellow-100 to-tertiary overflow-hidden">
+      <section className="relative lg:pt-16  bg-gradient-to-r from-yellow-100 to-tertiary overflow-hidden px-4">
         <div className="container mx-auto px-4 lg:px-0 pt-12 lg:pt-16">
-          <div className="grid lg:grid-cols-2 items-center">
-
+          <div className="grid lg:grid-cols-2 items-center justify-center min-h-[50vh]">
             {/* Text */}
-            <div className="flex flex-col h-full py-8 items-start justify-start">
-              <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900">
+            <div className="flex flex-col h-full py-8 items-center justify-center text-center">
+              <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-[#313D6A]">
                 Welcome To Pen Tutor
               </h1>
             </div>
@@ -36,11 +34,11 @@ export default function HomePage() {
             <div className="relative flex justify-center items-center">
               <div
                 className="
-            absolute rounded-full opacity-50 bg-yellow-400
-            w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 lg:w-64 lg:h-64
-            top-1/2 -translate-y-[90%]   /* moved a lil higher */
-            translate-x-9 sm:translate-x-8 md:translate-x-10 lg:translate-x-12
-          "
+          absolute rounded-full opacity-50 bg-yellow-400
+          w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 lg:w-64 lg:h-64
+          top-1/2 -translate-y-1/2
+          translate-x-9 sm:translate-x-8 md:translate-x-10 lg:translate-x-12
+        "
               ></div>
               <Image
                 src={stdBags}
@@ -49,13 +47,9 @@ export default function HomePage() {
                 priority
               />
             </div>
-
           </div>
         </div>
       </section>
-
-
-
 
       {/* Query Form Section */}
       <QueryForm />
@@ -85,12 +79,10 @@ export default function HomePage() {
         </div>
       </section> */}
 
-
       {/* For Students Section */}
       <section className="py-16 bg-gray-50">
         <div className="container mx-auto px-4">
           <div className="grid lg:grid-cols-2 gap-12 items-end justify-items-center">
-
             {/* Image + Background Boxes */}
             <div className="relative flex justify-center items-end min-h-[250px] order-2 lg:order-1">
               {/* Background Box (always bigger than image) */}
@@ -126,7 +118,10 @@ export default function HomePage() {
                   </span>
                 </li>
               </ul>
-              <Link href="/online-tutoring" className="bg-yellow-500 hover:bg-yellow-600 text-white px-6 sm:px-8 py-2 sm:py-3 rounded-lg">
+              <Link
+                href="/online-tutoring"
+                className="bg-yellow-500 hover:bg-yellow-600 text-white px-6 sm:px-8 py-2 sm:py-3 rounded-lg"
+              >
                 Read More
               </Link>
             </div>
@@ -138,7 +133,6 @@ export default function HomePage() {
       <section className="py-16">
         <div className="container mx-auto px-4">
           <div className="grid lg:grid-cols-2 gap-12 items-end justify-items-center">
-
             {/* Text Section */}
             <div className="space-y-4 text-left">
               <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-800">
@@ -194,25 +188,29 @@ export default function HomePage() {
         <div className="container mx-auto px-4">
           <Card className="border-2 border-slate-800 max-w-6xl mx-auto">
             <CardContent className="p-8">
-              <h2 className="text-3xl font-bold text-center text-slate-800 mb-8">Why Choose Pen Tutor</h2>
+              <h2 className="text-3xl font-bold text-center text-slate-800 mb-8">
+                Why Choose Pen Tutor
+              </h2>
               <div className="grid lg:grid-cols-2 gap-8">
                 <div className="space-y-6">
                   <p className="text-gray-600 leading-relaxed">
                     {/* Pen Tutor is a 'Network of Trained Tutors' committed to provide you highly qualified & experienced Online & Home tutoring services, individual and group sessions anywhere, anytime. */}
-
                     {/* Pen Tutor provides the best conceptual study environment. Our staff is equipped with unique teaching techniques and methodologies. Our mode of teaching is flexible, engaging and advanced. We keep the deficiencies and needs of students in focus to cover the gaps. we provide the best and right Tutors. */}
-
-                    Pen Tutor is your personalized tutoring service to fit your needs. Our goal is to provide a world-class education to anyone, anywhere. We focus on skill mastering to help learners establish strong basics so there is no limit to what they can pursue next!
+                    Pen Tutor is your personalized tutoring service to fit your
+                    needs. Our goal is to provide a world-class education to
+                    anyone, anywhere. We focus on skill mastering to help
+                    learners establish strong basics so there is no limit to
+                    what they can pursue next!
                   </p>
                   <ul className="space-y-3">
                     {[
-                      "Conceptual Study Environment",
-                      "Expert Tutors",
-                      "Affordable Pricing",
-                      "Flexible Schedules",
-                      "Safe Learning Environment",
-                      "Regular Updates",
-                      "24/7 Support",
+                      'Conceptual Study Environment',
+                      'Expert Tutors',
+                      'Affordable Pricing',
+                      'Flexible Schedules',
+                      'Safe Learning Environment',
+                      'Regular Updates',
+                      '24/7 Support',
                     ].map((item, index) => (
                       <li key={index} className="flex items-center space-x-3">
                         <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
@@ -240,5 +238,5 @@ export default function HomePage() {
       {/* Footer */}
       {/* <Footer /> */}
     </div>
-  )
+  );
 }

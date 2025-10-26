@@ -5,7 +5,7 @@
 
 :root {
   /* Custom brand colors - 313D6A (dark blue) and F5BB07 (golden yellow) */
-  --brand-primary: #313d6a;
+  --brand-primary: #313d6a; 
   --brand-secondary: #f5bb07;
   --brand-primary-light: #4a5a8a;
   --brand-secondary-light: #f7c93d;

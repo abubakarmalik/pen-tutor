@@ -1,67 +1,68 @@
-"use client"
+'use client';
 
-import { useState } from "react"
-import Link from "next/link"
-import { useRouter } from "next/navigation"
-import { Menu, X, User, LogOut } from "lucide-react"
-import Image from "next/image"
-import { Button } from "@/components/ui/button"
-import { useAuth } from "@/components/auth/AuthContext"
+import { useState } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { Menu, X, User, LogOut } from 'lucide-react';
+import Image from 'next/image';
+import { Button } from '@/components/ui/button';
+import { useAuth } from '@/components/auth/AuthContext';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from '@/components/ui/dropdown-menu';
 
 export default function TopNavigation() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const { user, logout, isAuthenticated } = useAuth()
-  const router = useRouter()
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { user, logout, isAuthenticated } = useAuth();
+  const router = useRouter();
 
   const handleLogout = () => {
-    logout()
-    router.push("/auth")
-  }
+    logout();
+    router.push('/auth');
+  };
 
   const navItems = [
-    { name: "Home", href: "/" },
+    { name: 'Home', href: '/' },
     // { name: "About Us", href: "/about" },
-    { name: "Our Services", href: "/our-services" },
-    { name: "Courses", href: "/courses" },
-    { name: "Our Tutors", href: "/our-tutors" },
-    { name: "Job Board", href: "/job-board" },
+    { name: 'Our Services', href: '/our-services' },
+    { name: 'Courses', href: '/courses' },
+    { name: 'Our Tutors', href: '/our-tutors' },
+    { name: 'About Us', href: '/about-us' },
+    { name: 'Job Board', href: '/job-board' },
     // { name: "Get Registered", href: "/profile" },
-    // { name: "Blog", href: "/blog" },
+    // { name: 'Blog', href: '/blog' },
     // { name: "Contact Us", href: "/contact" },
-  ]
+  ];
 
   const getDashboardLink = () => {
-    if (user?.role === "teacher") {
-      return "/tutor/dashboard"
+    if (user?.role === 'teacher') {
+      return '/tutor/dashboard';
     }
-    if (user?.role === "student") {
-      return "/student/dashboard"
+    if (user?.role === 'student') {
+      return '/student/dashboard';
     }
-    if (user?.role === "admin") {
-      return "/admin/dashboard"
+    if (user?.role === 'admin') {
+      return '/admin/dashboard';
     }
-    return "/"
-  }
+    return '/';
+  };
 
   const getProfileLink = () => {
-    if (user?.role === "teacher") {
-      return "/tutor/profile"
+    if (user?.role === 'teacher') {
+      return '/tutor/profile';
     }
-    if (user?.role === "student") {
-      return "/student/profile"
+    if (user?.role === 'student') {
+      return '/student/profile';
     }
-    if (user?.role === "admin") {
-      return "/admin/profile"
+    if (user?.role === 'admin') {
+      return '/admin/profile';
     }
-    return "/"
-  }
+    return '/';
+  };
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-200">
@@ -69,7 +70,13 @@ export default function TopNavigation() {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2">
-            <Image src="/logo.png" alt="Pen Tutor" className="h-12 w-auto" width={100} height={100} />
+            <Image
+              src="/logo.png"
+              alt="Pen Tutor"
+              className="h-12 w-auto"
+              width={100}
+              height={100}
+            />
             {/* <span className="text-xl font-bold text-gray-900">Pen Tutor</span> */}
           </Link>
 
@@ -88,17 +95,27 @@ export default function TopNavigation() {
 
           {/* Auth Section */}
           <div className="hidden lg:flex items-center space-x-4">
-            {user?.role === "user" && <Button variant="outline" className="flex hover:bg-primary/20 items-center">
-              {/* {<Button variant="outline" className="flex hover:bg-primary/20 items-center"> */}
-              <Link href="/profile" className="px-3 py-2 text-sm font-medium rounded-md">
-                Register
-              </Link>
-            </Button>
-            }
+            {user?.role === 'user' && (
+              <Button
+                variant="outline"
+                className="flex hover:bg-primary/20 items-center"
+              >
+                {/* {<Button variant="outline" className="flex hover:bg-primary/20 items-center"> */}
+                <Link
+                  href="/profile"
+                  className="px-3 py-2 text-sm font-medium rounded-md"
+                >
+                  Register
+                </Link>
+              </Button>
+            )}
             {isAuthenticated ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="flex items-center space-x-2">
+                  <Button
+                    variant="ghost"
+                    className="flex items-center space-x-2"
+                  >
                     <User className="h-4 w-4" />
                     <span>{user?.first_name || user?.username}</span>
                   </Button>
@@ -111,7 +128,10 @@ export default function TopNavigation() {
                     <Link href={getProfileLink()}>Profile</Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleLogout} className="text-red-600">
+                  <DropdownMenuItem
+                    onClick={handleLogout}
+                    className="text-red-600"
+                  >
                     <LogOut className="mr-2 h-4 w-4" />
                     Logout
                   </DropdownMenuItem>
@@ -131,8 +151,16 @@ export default function TopNavigation() {
 
           {/* Mobile menu button */}
           <div className="lg:hidden">
-            <Button variant="ghost" size="sm" onClick={() => setIsMenuOpen(!isMenuOpen)}>
-              {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+            >
+              {isMenuOpen ? (
+                <X className="h-6 w-6" />
+              ) : (
+                <Menu className="h-6 w-6" />
+              )}
             </Button>
           </div>
         </div>
@@ -153,8 +181,11 @@ export default function TopNavigation() {
               ))}
 
               <div className="pt-4 border-t border-gray-200 space-y-2">
-                {user?.role === "user" && (
-                  <Button variant="outline" className="flex w-full hover:bg-primary/20 items-center space-x-2">
+                {user?.role === 'user' && (
+                  <Button
+                    variant="outline"
+                    className="flex w-full hover:bg-primary/20 items-center space-x-2"
+                  >
                     <Link href="/profile">Register</Link>
                   </Button>
                 )}
@@ -176,8 +207,8 @@ export default function TopNavigation() {
                     </Link>
                     <button
                       onClick={() => {
-                        handleLogout()
-                        setIsMenuOpen(false)
+                        handleLogout();
+                        setIsMenuOpen(false);
                       }}
                       className="block w-full text-left px-3 py-2 text-base font-medium text-red-600 hover:bg-red-50 rounded-md"
                     >
@@ -208,5 +239,5 @@ export default function TopNavigation() {
         )}
       </div>
     </nav>
-  )
+  );
 }

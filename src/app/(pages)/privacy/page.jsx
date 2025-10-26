@@ -2,6 +2,8 @@
 // Place this file in your Next.js project under `/pages/privacy.jsx` (Pages Router)
 // or copy the component into `app/privacy/page.jsx` (App Router) as a server component.
 
+import Link from "next/link";
+
 export default function Privacy() {
     return (
         <main className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -104,7 +106,7 @@ export default function Privacy() {
                     </section>
 
                     <section className="pt-6 border-t">
-                        <p className="text-sm text-gray-600">This Privacy Policy works together with our <a href="/terms" className="text-indigo-600 hover:underline">Terms &amp; Conditions</a>. Please review both documents carefully.</p>
+                        <p className="text-sm text-gray-600">This Privacy Policy works together with our <Link href="/terms-and-conditions" className="text-indigo-600 hover:underline">Terms &amp; Conditions</Link>. Please review both documents carefully.</p>
                     </section>
                 </article>
             </div>
