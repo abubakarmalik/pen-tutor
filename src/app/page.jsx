@@ -20,31 +20,42 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
-      <section className="relative lg:pt-16  bg-gradient-to-r from-yellow-100 to-tertiary overflow-hidden px-4">
-        <div className="container mx-auto px-4 lg:px-0 pt-12 lg:pt-16">
-          <div className="grid lg:grid-cols-2 items-center justify-center min-h-[50vh]">
+      <section className="relative bg-gradient-to-r from-yellow-100 to-tertiary overflow-hidden">
+        <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-14 lg:py-16">
+          <div className="grid grid-cols-1 lg:grid-cols-2 items-center gap-8 md:gap-10 lg:gap-12 min-h-[55vh] md:min-h-[50vh]">
             {/* Text */}
-            <div className="flex flex-col h-full py-8 items-center justify-center text-center">
-              <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-[#313D6A]">
+            <div className="flex flex-col h-full items-center lg:items-start justify-center text-center lg:text-left">
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-[#313D6A] tracking-tight">
                 Welcome To Pen Tutor
               </h1>
+              <p className="mt-3 text-sm sm:text-base text-[#313D6A] max-w-xl leading-relaxed">
+                Your trusted learning companion, connecting students with expert
+                tutors for all academic levels—so you can learn faster, smarter,
+                and with confidence.
+              </p>
             </div>
 
             {/* Image + BG Circle */}
-            <div className="relative flex justify-center items-center">
+            <div className="relative flex justify-center lg:justify-end items-center">
+              {/* decorative circle */}
               <div
+                aria-hidden="true"
                 className="
-          absolute rounded-full opacity-50 bg-yellow-400
-          w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 lg:w-64 lg:h-64
-          top-1/2 -translate-y-1/2
-          translate-x-9 sm:translate-x-8 md:translate-x-10 lg:translate-x-12
-        "
-              ></div>
+            pointer-events-none absolute rounded-full opacity-50 bg-yellow-400
+            w-40 h-40 sm:w-52 sm:h-52 md:w-72 md:h-72 lg:w-96 lg:h-96 xl:w-[28rem] xl:h-[28rem]
+            top-1/2 -translate-y-1/2
+            translate-x-4 sm:translate-x-8 md:translate-x-10 lg:translate-x-12 xl:translate-x-16
+          "
+              />
               <Image
                 src={stdBags}
                 alt="Students with backpacks"
-                className="relative z-10 max-w-[250px] sm:max-w-[280px] md:max-w-[320px] lg:max-w-[360px] h-auto object-contain"
                 priority
+                className="
+            relative z-10 h-auto object-contain
+            max-w-[260px] sm:max-w-[340px] md:max-w-[420px] lg:max-w-[520px] xl:max-w-[600px]
+          "
+                sizes="(min-width:1280px) 600px, (min-width:1024px) 520px, (min-width:768px) 420px, (min-width:640px) 340px, 260px"
               />
             </div>
           </div>
