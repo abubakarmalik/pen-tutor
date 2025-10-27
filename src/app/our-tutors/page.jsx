@@ -1,117 +1,131 @@
-"use client"
+'use client';
 
-import { useState, useEffect } from "react"
-import { ChevronLeft, ChevronRight } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { useRouter } from "next/navigation"
-import { toast } from "sonner"
-import axios from "axios"
+import { useState, useEffect } from 'react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
+import axios from 'axios';
 
-import TeacherImage from "@/assets/images/our-tutors/teacher.webp"
-import MaleTeacher from "@/assets/images/our-tutors/male-teacher.webp"
-import Image from "next/image"
-import { Separator } from "@/components/ui/separator"
+import TeacherImage from '@/assets/images/our-tutors/teacher.webp';
+import MaleTeacher from '@/assets/images/our-tutors/male-teacher.webp';
+import Image from 'next/image';
+import { Separator } from '@/components/ui/separator';
+import { dummyData } from './dummyData';
 
 export default function OurTutorPage() {
-  const router = useRouter()
-  const [teachers, setTeachers] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [searchQuery, setSearchQuery] = useState("")
-  const [gradeFilter, setGradeFilter] = useState("")
-  const [cityFilter, setCityFilter] = useState("")
-  const [isAdmin, setIsAdmin] = useState(false)
-  const [currentPage, setCurrentPage] = useState(0)
-  const tutorsPerPage = 6
+  const router = useRouter();
+  const [teachers, setTeachers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [gradeFilter, setGradeFilter] = useState('');
+  const [cityFilter, setCityFilter] = useState('');
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [currentPage, setCurrentPage] = useState(0);
+  const tutorsPerPage = 6;
 
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
   useEffect(() => {
-    const user = localStorage.getItem("user")
+    const user = localStorage.getItem('user');
     if (user) {
       try {
-        const userData = JSON.parse(user)
-        setIsAdmin(userData.role === "admin")
+        const userData = JSON.parse(user);
+        setIsAdmin(userData.role === 'admin');
       } catch (error) {
-        console.error("Error parsing user data:", error)
+        console.error('Error parsing user data:', error);
       }
     }
-  }, [])
+  }, []);
 
   const fetchTeachers = async () => {
     try {
-      setLoading(true)
-      const response = await axios.get(`${API_URL}/api/courses/teachers/`)
+      setLoading(true);
+      const response = await axios.get(`${API_URL}/api/courses/teachers/`);
 
       if (response.data.success) {
-        setTeachers(response.data.data || [])
+        setTeachers(response.data.data || []);
       } else {
-        throw new Error("Failed to fetch teachers")
+        throw new Error('Failed to fetch teachers');
       }
     } catch (error) {
-      console.error("Error fetching teachers:", error)
-      toast.error("Failed to load tutors")
-      setTeachers([])
+      console.error('Error fetching teachers:', error);
+      toast.error('Failed to load tutors');
+      setTeachers([]);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   useEffect(() => {
-    fetchTeachers()
-  }, [])
+    // fetchTeachers();
+    setTeachers(dummyData);
+    setLoading(false);
+  }, []);
 
   const handleTrialClass = async (teacherId) => {
+    const user = localStorage.getItem('user');
 
-    const user = localStorage.getItem("user")
-    
-    toast.success("Trial class booking feature coming soon!")
-  }
+    toast.success('Trial class booking feature coming soon!');
+  };
 
   const filteredTeachers = teachers.filter((teacher) => {
     const matchesSearch =
-      searchQuery === "" ||
-      teacher.expertise_areas.some((area) => area.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      teacher.course_categories.some((category) => category.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      searchQuery === '' ||
+      teacher.expertise_areas.some((area) =>
+        area.toLowerCase().includes(searchQuery.toLowerCase()),
+      ) ||
+      teacher.course_categories.some((category) =>
+        category.toLowerCase().includes(searchQuery.toLowerCase()),
+      ) ||
       (isAdmin &&
         (teacher.first_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          teacher.last_name.toLowerCase().includes(searchQuery.toLowerCase())))
+          teacher.last_name.toLowerCase().includes(searchQuery.toLowerCase())));
 
     // For now, we'll keep the existing filtering logic since grade and city aren't in the API response
-    return matchesSearch
-  })
+    return matchesSearch;
+  });
 
   const handleTutorClick = (tutorId) => {
-    router.push(`/our-tutors/tutor/${tutorId}`)
-  }
+    const t = (teachers || []).find((x) => String(x.id) === String(tutorId));
+    if (t) {
+      // sessionStorage so it clears when the tab is closed
+      sessionStorage.setItem('selectedTutor', JSON.stringify(t));
+    }
+    router.push(`/our-tutors/tutor/${tutorId}`);
+  };
 
   const getDisplayName = (teacher) => {
     if (isAdmin) {
-      return `${teacher.first_name} ${teacher.last_name}`
+      return `${teacher.first_name} ${teacher.last_name}`;
     }
-    return `Teacher #${teacher.id}`
-  }
+    return `Teacher #${teacher.id}`;
+  };
 
-  const totalPages = Math.ceil(filteredTeachers.length / tutorsPerPage)
-  const currentTutors = filteredTeachers.slice(currentPage * tutorsPerPage, (currentPage + 1) * tutorsPerPage)
+  const totalPages = Math.ceil(filteredTeachers.length / tutorsPerPage);
+  const currentTutors = filteredTeachers.slice(
+    currentPage * tutorsPerPage,
+    (currentPage + 1) * tutorsPerPage,
+  );
 
   const handlePrevPage = () => {
-    setCurrentPage((prev) => Math.max(0, prev - 1))
-  }
+    setCurrentPage((prev) => Math.max(0, prev - 1));
+  };
 
   const handleNextPage = () => {
-    setCurrentPage((prev) => Math.min(totalPages - 1, prev + 1))
-  }
+    setCurrentPage((prev) => Math.min(totalPages - 1, prev + 1));
+  };
 
   const handleSearch = () => {
-    setCurrentPage(0) // Reset to first page when searching
-  }
+    setCurrentPage(0); // Reset to first page when searching
+  };
 
   return (
-    <div className="min-h-screen" >
+    <div className="min-h-screen">
       <div className="relative bg-[#FFFCE0]">
         <div className="relative min-h-[600px] overflow-hidden">
           {/* Background decorative elements */}
@@ -225,9 +239,6 @@ export default function OurTutorPage() {
               </div>
             </div>
           </section>
-
-
-
         </div>
       </div>
 
@@ -240,7 +251,10 @@ export default function OurTutorPage() {
       </div> */}
 
       <Separator />
-
+      <h2 className="text-4xl lg:text-5xl font-extrabold text-[#313D6A] mb-3 mt-4 text-center">
+        Register Tutors
+      </h2>
+      <div className="mx-auto w-24 h-1 rounded-full bg-[#F5BB07] mb-2" />
       <div className="container bg-white mx-auto px-4 py-8">
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -266,7 +280,7 @@ export default function OurTutorPage() {
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8 p-8">
               {currentTutors.map((teacher) => (
                 <Card
                   key={teacher.id}
@@ -278,11 +292,13 @@ export default function OurTutorPage() {
                     <div className="flex justify-center mb-4">
                       <Avatar className="h-20 w-20 border-4 border-gray-200">
                         <AvatarImage
-                          src={teacher.profile_picture || "/placeholder.svg"}
+                          src={teacher.profile_picture || '/placeholder.svg'}
                           alt={getDisplayName(teacher)}
                         />
                         <AvatarFallback className="bg-[#313D6A] text-white text-xl">
-                          {isAdmin ? `${teacher.first_name[0]}${teacher.last_name[0]}` : `T${teacher.id}`}
+                          {isAdmin
+                            ? `${teacher.first_name[0]}${teacher.last_name[0]}`
+                            : `T${teacher.id}`}
                         </AvatarFallback>
                       </Avatar>
                     </div>
@@ -290,42 +306,63 @@ export default function OurTutorPage() {
                     {/* ID Badge */}
                     <div className="mb-4">
                       <Badge className="bg-[#F5BB07] text-black font-bold px-3 py-1">
-                        ID: PT{teacher.id.toString().padStart(3, "0")}
+                        ID: PT{teacher.id.toString().padStart(3, '0')}
                       </Badge>
                     </div>
 
                     {/* Teacher Details */}
                     <div className="space-y-2 text-sm">
                       <div className="flex justify-between">
-                        <span className="font-semibold text-[#313D6A]">Qualification:</span>
-                        <span className="text-gray-700">{teacher?.education[0]?.degree}</span>
-                      </div>
-
-                      <div className="flex justify-between">
-                        <span className="font-semibold text-[#313D6A]">Experience:</span>
-                        <span className="text-gray-700">{teacher?.years_of_experience}</span>
-                      </div>
-
-                      <div className="flex justify-between">
-                        <span className="font-semibold text-[#313D6A]">Areas To Teach:</span>
+                        <span className="font-semibold text-[#313D6A]">
+                          Qualification:
+                        </span>
                         <span className="text-gray-700">
-                          {teacher.expertise_areas.slice(0, 1).join(", ") || "Multiple"}
+                          {teacher?.education[0]?.degree}
                         </span>
                       </div>
 
                       <div className="flex justify-between">
-                        <span className="font-semibold text-[#313D6A]">Age:</span>
+                        <span className="font-semibold text-[#313D6A]">
+                          Experience:
+                        </span>
+                        <span className="text-gray-700">
+                          {teacher?.years_of_experience}
+                        </span>
+                      </div>
+
+                      <div className="flex justify-between">
+                        <span className="font-semibold text-[#313D6A]">
+                          Areas To Teach:
+                        </span>
+                        <span className="text-gray-700">
+                          {teacher.expertise_areas.slice(0, 1).join(', ') ||
+                            'Multiple'}
+                        </span>
+                      </div>
+
+                      <div className="flex justify-between">
+                        <span className="font-semibold text-[#313D6A]">
+                          Age:
+                        </span>
                         <span className="text-gray-700">{teacher?.age}</span>
                       </div>
 
                       <div className="flex justify-between">
-                        <span className="font-semibold text-[#313D6A]">Course Category:</span>
-                        <span className="text-gray-700">{teacher?.course_categories[0] || "Multiple"}</span>
+                        <span className="font-semibold text-[#313D6A]">
+                          Course Category:
+                        </span>
+                        <span className="text-gray-700">
+                          {teacher?.course_categories[0] || 'Multiple'}
+                        </span>
                       </div>
 
                       <div className="flex justify-between">
-                        <span className="font-semibold text-[#313D6A]">Teaching Method:</span>
-                        <span className="text-gray-700">{teacher?.preferred_teaching_methods[0] || "Multiple"}</span>
+                        <span className="font-semibold text-[#313D6A]">
+                          Teaching Method:
+                        </span>
+                        <span className="text-gray-700">
+                          {teacher?.preferred_teaching_methods[0] || 'Multiple'}
+                        </span>
                       </div>
                     </div>
 
@@ -334,8 +371,8 @@ export default function OurTutorPage() {
                       <Button
                         className="flex-1 bg-[#F5BB07] hover:bg-[#F5BB07]/90 text-black font-medium"
                         onClick={(e) => {
-                          e.stopPropagation()
-                          handleTutorClick(teacher.id)
+                          e.stopPropagation();
+                          handleTutorClick(teacher.id);
                         }}
                       >
                         View Full Profile
@@ -379,5 +416,5 @@ export default function OurTutorPage() {
         )}
       </div>
     </div>
-  )
+  );
 }

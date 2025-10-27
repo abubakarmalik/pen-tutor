@@ -33,6 +33,8 @@ export default function TopNavigation() {
     { name: 'Our Tutors', href: '/our-tutors' },
     { name: 'About Us', href: '/about-us' },
     { name: 'Job Board', href: '/job-board' },
+    { name: 'Blog', href: '/blog' },
+    { name: 'Contact Us', href: '/contact-us' },
     // { name: "Get Registered", href: "/profile" },
     // { name: 'Blog', href: '/blog' },
     // { name: "Contact Us", href: "/contact" },
