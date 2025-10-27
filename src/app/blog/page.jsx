@@ -5,7 +5,6 @@ export default function BlogPage() {
   return (
     <>
       <BlogHeader />
-      <SearchBlog />
     </>
   );
 }
