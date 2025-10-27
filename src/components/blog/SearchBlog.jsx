@@ -1,30 +1,67 @@
 'use client';
+import { useState } from 'react';
 
-export default function SearchBlog() {
+export default function SearchBlog({ onSearch, bgImage = '/images/blog-bg-placeholder.jpg' }) {
+  const [q, setQ] = useState('');
+
+  const submit = (e) => {
+    e.preventDefault();
+    onSearch?.(q);
+  };
+
   return (
-    <section className="relative bg-[#FFFCE0] flex flex-col items-center justify-center py-10">
-      {/* Header Button */}
-      <div className="bg-[#F5BB07] text-[#313D6A] font-bold text-xl px-6 py-2 rounded-t-lg -mb-3 z-10 shadow-md">
-        Search Blog
+    <section className="relative bg-[#FFFCE0] py-10 flex flex-col items-center">
+      {/* Top label pill */}
+      <div className="z-20 -mb-5">
+        <span className="inline-block bg-[#F5BB07] text-[#313D6A] font-extrabold text-lg md:text-xl px-8 py-3 rounded-t-[1.25rem] shadow">
+          Search Blog
+        </span>
       </div>
 
-      {/* Background Bar */}
-      <div className="relative w-[90%] md:w-3/4 lg:w-2/3 bg-[#313D6A] rounded-b-[3rem] rounded-t-[3rem] px-6 py-8 shadow-xl overflow-hidden">
-        {/* Inner Image Overlay (optional background blur or pattern) */}
-        <div className="absolute inset-0 bg-[url('/placeholder.svg')] bg-cover bg-center opacity-10"></div>
-
-        {/* Input */}
-        <div className="relative z-10 flex flex-col items-center gap-4">
-          <input
-            type="text"
-            placeholder="Enter Your Required Course"
-            className="w-full md:w-4/5 px-6 py-3 text-gray-700 rounded-full shadow-inner focus:outline-none focus:ring-4 focus:ring-[#F5BB07] text-center text-base md:text-lg"
+      {/* Big rounded bar with bg image + dark overlay */}
+      <div className="relative w-[92%] sm:w-5/6 lg:w-3/4 xl:w-2/3">
+        <div
+          className="relative rounded-[3rem] shadow-2xl overflow-hidden"
+          style={{ boxShadow: '0 10px 20px rgba(0,0,0,0.25)' }}
+        >
+          {/* background image */}
+          <div
+            className="h-40 sm:h-44 md:h-48 w-full bg-cover bg-center"
+            style={{ backgroundImage: `url(${bgImage})` }}
           />
-          <button className="bg-[#F5BB07] text-[#313D6A] font-bold px-8 py-2 rounded-full hover:bg-[#F5BB07]/90 transition">
-            Search
-          </button>
+          {/* dark overlay */}
+          <div className="absolute inset-0 rounded-[3rem] bg-[#313D6A]/70" />
+
+          {/* input */}
+          <form
+            onSubmit={submit}
+            className="absolute inset-0 flex items-center justify-center px-6 md:px-10"
+          >
+            <input
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="Enter Your Required Course"
+              className="
+                w-full md:w-[85%] 
+                bg-white/98 text-gray-800 placeholder-gray-500
+                rounded-[1.25rem] px-6 py-3 md:py-4
+                shadow-[0_8px_20px_rgba(0,0,0,0.25)]
+                outline-none ring-2 ring-[#F5BB07]
+                focus:ring-4 focus:ring-[#F5BB07]/70
+                transition
+              "
+            />
+          </form>
         </div>
       </div>
+
+      {/* Bottom Search button pill */}
+      <button
+        onClick={submit}
+        className="mt-4 md:mt-6 bg-[#F5BB07] text-[#313D6A] font-extrabold text-lg md:text-xl px-10 md:px-14 py-3 rounded-full shadow hover:bg-[#F5BB07]/90 transition"
+      >
+        Search
+      </button>
     </section>
   );
 }
