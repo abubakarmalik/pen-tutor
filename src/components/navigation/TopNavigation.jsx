@@ -1,69 +1,72 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { Menu, X, User, LogOut } from 'lucide-react';
-import Image from 'next/image';
-import { Button } from '@/components/ui/button';
-import { useAuth } from '@/components/auth/AuthContext';
+import { useState } from "react";
+import Link from "next/link";
+import { useRouter, usePathname } from "next/navigation";
+import { Menu, X, User, LogOut } from "lucide-react";
+import Image from "next/image";
+import { Button } from "@/components/ui/button";
+import { useAuth } from "@/components/auth/AuthContext";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from "@/components/ui/dropdown-menu";
 
 export default function TopNavigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { user, logout, isAuthenticated } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
+
+  console.log("current path name", pathname);
 
   const handleLogout = () => {
     logout();
-    router.push('/auth');
+    router.push("/auth");
   };
 
   const navItems = [
-    { name: 'Home', href: '/' },
+    { name: "Home", href: "/" },
     // { name: "About Us", href: "/about" },
-    { name: 'Our Services', href: '/our-services' },
-    { name: 'Courses', href: '/courses' },
-    { name: 'Our Tutors', href: '/our-tutors' },
-    { name: 'About Us', href: '/about-us' },
-    { name: 'Job Board', href: '/job-board' },
-    { name: 'Blog', href: '/blog' },
-    { name: 'Contact Us', href: '/contact-us' },
+    { name: "Our Services", href: "/our-services" },
+    { name: "Courses", href: "/courses" },
+    { name: "Our Tutors", href: "/our-tutors" },
+    { name: "About Us", href: "/about-us" },
+    { name: "Job Board", href: "/job-board" },
+    { name: "Blog", href: "/blog" },
+    { name: "Contact Us", href: "/contact-us" },
     // { name: "Get Registered", href: "/profile" },
     // { name: 'Blog', href: '/blog' },
     // { name: "Contact Us", href: "/contact" },
   ];
 
   const getDashboardLink = () => {
-    if (user?.role === 'teacher') {
-      return '/tutor/dashboard';
+    if (user?.role === "teacher") {
+      return "/tutor/dashboard";
     }
-    if (user?.role === 'student') {
-      return '/student/dashboard';
+    if (user?.role === "student") {
+      return "/student/dashboard";
     }
-    if (user?.role === 'admin') {
-      return '/admin/dashboard';
+    if (user?.role === "admin") {
+      return "/admin/dashboard";
     }
-    return '/';
+    return "/";
   };
 
   const getProfileLink = () => {
-    if (user?.role === 'teacher') {
-      return '/tutor/profile';
+    if (user?.role === "teacher") {
+      return "/tutor/profile";
     }
-    if (user?.role === 'student') {
-      return '/student/profile';
+    if (user?.role === "student") {
+      return "/student/profile";
     }
-    if (user?.role === 'admin') {
-      return '/admin/profile';
+    if (user?.role === "admin") {
+      return "/admin/profile";
     }
-    return '/';
+    return "/";
   };
 
   return (
@@ -84,20 +87,27 @@ export default function TopNavigation() {
 
           {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center space-x-1">
-            {navItems.map((item) => (
-              <Link
-                key={item.name}
-                href={item.href}
-                className="px-3 py-2 text-sm font-medium text-gray-700 hover:text-primary hover:bg-primary/20 rounded-md transition-colors"
-              >
-                {item.name}
-              </Link>
-            ))}
+            {navItems.map((item) => {
+              const isActive = pathname === item.href;
+              return (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+                    isActive
+                      ? "text-primary bg-primary/10"
+                      : "text-gray-700 hover:text-primary hover:bg-primary/20"
+                  }`}
+                >
+                  {item.name}
+                </Link>
+              );
+            })}
           </div>
 
           {/* Auth Section */}
           <div className="hidden lg:flex items-center space-x-4">
-            {user?.role === 'user' && (
+            {user?.role === "user" && (
               <Button
                 variant="outline"
                 className="flex hover:bg-primary/20 items-center"
@@ -183,7 +193,7 @@ export default function TopNavigation() {
               ))}
 
               <div className="pt-4 border-t border-gray-200 space-y-2">
-                {user?.role === 'user' && (
+                {user?.role === "user" && (
                   <Button
                     variant="outline"
                     className="flex w-full hover:bg-primary/20 items-center space-x-2"
