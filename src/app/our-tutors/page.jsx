@@ -133,7 +133,7 @@ export default function OurTutorPage() {
           <div className="absolute top-0 right-0 w-64 h-64 bg-[#F5BB07] rounded-full opacity-20 translate-x-32 -translate-y-32"></div>
 
           {/* Hero Content Container */}
-          <section className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 lg:pt-12 pb-8">
+          <section className="relative z-10 container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 lg:pt-12 pb-8">
             {/* Decorative background rings */}
             <div className="absolute inset-0 -z-10 overflow-hidden pointer-events-none">
               <div className="md:hidden block absolute top-28 md:-left-16 lg:-left-28 w-36 md:w-44 lg:w-48 h-36 md:h-44 lg:h-56 rounded-full border-4 border-[#F5BB07]/30" />
@@ -251,11 +251,12 @@ export default function OurTutorPage() {
       </div> */}
 
       <Separator />
+
       <h2 className="text-4xl lg:text-5xl font-extrabold text-[#313D6A] mb-3 mt-4 text-center">
         Register Tutors
       </h2>
       <div className="mx-auto w-24 h-1 rounded-full bg-[#F5BB07] mb-2" />
-      <div className="container bg-white mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-8 max-w-7xl">
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {Array.from({ length: 6 }).map((_, index) => (
