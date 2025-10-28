@@ -102,7 +102,7 @@ export default function GroupSessions() {
 
     return (
         <section
-            className="py-16 bg-white relative overflow-hidden"
+            className="py-10 pt-20 bg-white relative overflow-hidden"
             onMouseEnter={() => setIsPaused(true)}
             onMouseLeave={() => setIsPaused(false)}
             aria-label="Group Sessions carousel"
@@ -113,7 +113,7 @@ export default function GroupSessions() {
                     <span className="text-[#F5BB07]">Sessions</span>
                 </h2>
 
-                <div className="relative max-w-5xl mx-auto">
+                <div className="relative max-w-6xl mx-auto">
                     {/* Desktop arrows (kept as-is) */}
                     <button
                         onClick={prev}
