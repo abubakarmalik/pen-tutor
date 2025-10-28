@@ -11,17 +11,7 @@ import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import QueryBgImage from "@/assets/images/home/query-bg.png"
 
-// shadcn Select composed components
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select"
-
-import { Loader2 } from "lucide-react"
-import { FaArrowRightLong } from "react-icons/fa6"
+import { Loader2, Send } from "lucide-react"
 
 export default function QueryFormShadcn() {
     const router = useRouter()
@@ -39,31 +29,9 @@ export default function QueryFormShadcn() {
 
     const [loading, setLoading] = useState(false)
 
-    const grades = [
-        "Nursery",
-        "KG",
-        "1",
-        "2",
-        "3",
-        "4",
-        "5",
-        "6",
-        "7",
-        "8",
-        "9",
-        "10",
-        "11",
-        "12",
-        "Other",
-    ]
-
     const handleChange = (e) => {
         const { name, value } = e.target
         setFormData((s) => ({ ...s, [name]: value }))
-    }
-
-    const handleSelectChange = (field) => (value) => {
-        setFormData((s) => ({ ...s, [field]: value }))
     }
 
     const validate = () => {
@@ -120,158 +88,172 @@ export default function QueryFormShadcn() {
     }
 
     return (
-        <>
-            {/* set image as bg */}
-            <h3 className="text-white bg-primary text-2xl text-center  font-semibold py-2">Student Query Form</h3>
-            <section
-                className="relative py-10 bg-cover bg-center bg-no-repeat"
-                style={{ backgroundImage: `url(${QueryBgImage.src})` }}
-            >
-                <div className="absolute inset-0 bg-primary/80 z-0" />
-                <div className="container relative z-10 mx-auto px-4">
-                    <form
-                        onSubmit={handleSubmit}
-                        className="max-w-4xl mx-auto rounded-2xl shadow-lg"
-                    >
+        <section
+            className="relative min-h-screen py-12 sm:py-16 md:py-20 bg-cover bg-center bg-no-repeat"
+            style={{ backgroundImage: `url(${QueryBgImage.src})` }}
+        >
+            {/* Overlay with gradient */}
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/90 via-primary/85 to-primary/80 z-0" />
+            
+            <div className="container relative z-10 mx-auto px-3 sm:px-0">
+                <div className="max-w-5xl mx-auto">
+                    {/* Header */}
+                    <div className="text-center mb-8 sm:mb-12">
+                        <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-3 sm:mb-4 tracking-tight">
+                            Student Query Form
+                        </h2>
+                        <p className="text-white/90 text-base sm:text-lg max-w-2xl mx-auto px-4">
+                            Fill out the form below and we'll connect you with the perfect tutor for your needs
+                        </p>
+                    </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {/* Full Name */}
-                            <div className="space-y-1">
-                                <Label htmlFor="name" className="text-white">Full Name</Label>
-                                <Input
-                                    id="name"
-                                    name="name"
-                                    placeholder="Enter your full name"
-                                    value={formData.name}
-                                    onChange={handleChange}
-                                    className="bg-white"
-                                    required
-                                />
+                    {/* Form Card */}
+                    <div className="bg-white rounded-2xl sm:rounded-3xl shadow-2xl p-6 sm:p-8 md:p-10 lg:p-12 backdrop-blur-sm">
+                        <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 lg:gap-6">
+                                {/* Full Name */}
+                                <div className="space-y-2 sm:col-span-2 lg:col-span-1">
+                                    <Label htmlFor="name" className="text-sm font-semibold text-gray-700">
+                                        Full Name <span className="text-red-500">*</span>
+                                    </Label>
+                                    <Input
+                                        id="name"
+                                        name="name"
+                                        placeholder="John Doe"
+                                        value={formData.name}
+                                        onChange={handleChange}
+                                        className="h-11 sm:h-12 border-gray-300 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                                        required
+                                    />
+                                </div>
+
+                                {/* Area */}
+                                <div className="space-y-2">
+                                    <Label htmlFor="area" className="text-sm font-semibold text-gray-700">
+                                        Area
+                                    </Label>
+                                    <Input
+                                        id="area"
+                                        name="area"
+                                        placeholder="e.g., Gulberg, DHA"
+                                        value={formData.area}
+                                        onChange={handleChange}
+                                        className="h-11 sm:h-12 border-gray-300 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                                    />
+                                </div>
+
+                                {/* Class */}
+                                <div className="space-y-2">
+                                    <Label htmlFor="current_class" className="text-sm font-semibold text-gray-700">
+                                        Class / Grade
+                                    </Label>
+                                    <Input
+                                        id="current_class"
+                                        name="current_class"
+                                        placeholder="e.g., 10th, A-Levels"
+                                        value={formData.current_class}
+                                        onChange={handleChange}
+                                        className="h-11 sm:h-12 border-gray-300 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                                    />
+                                </div>
+
+                                {/* Subjects */}
+                                <div className="space-y-2 sm:col-span-2 lg:col-span-1">
+                                    <Label htmlFor="subjects" className="text-sm font-semibold text-gray-700">
+                                        Subjects
+                                    </Label>
+                                    <Input
+                                        id="subjects"
+                                        name="subjects"
+                                        placeholder="Math, Physics, Chemistry"
+                                        value={formData.subjects}
+                                        onChange={handleChange}
+                                        className="h-11 sm:h-12 border-gray-300 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                                    />
+                                </div>
+
+                                {/* Email */}
+                                <div className="space-y-2">
+                                    <Label htmlFor="email" className="text-sm font-semibold text-gray-700">
+                                        Email <span className="text-red-500">*</span>
+                                    </Label>
+                                    <Input
+                                        id="email"
+                                        name="email"
+                                        type="email"
+                                        placeholder="john@example.com"
+                                        value={formData.email}
+                                        onChange={handleChange}
+                                        className="h-11 sm:h-12 border-gray-300 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                                        required
+                                    />
+                                </div>
+
+                                {/* Contact No */}
+                                <div className="space-y-2">
+                                    <Label htmlFor="contact" className="text-sm font-semibold text-gray-700">
+                                        Contact Number <span className="text-red-500">*</span>
+                                    </Label>
+                                    <Input
+                                        id="contact"
+                                        name="contact"
+                                        type="tel"
+                                        placeholder="+92 3XX XXXXXXX"
+                                        value={formData.contact}
+                                        onChange={handleChange}
+                                        className="h-11 sm:h-12 border-gray-300 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                                        required
+                                        inputMode="tel"
+                                    />
+                                </div>
+
+                                {/* Special Requirements - Full Width */}
+                                <div className="space-y-2 sm:col-span-2 lg:col-span-3">
+                                    <Label htmlFor="special_requirements" className="text-sm font-semibold text-gray-700">
+                                        Special Requirements
+                                    </Label>
+                                    <Textarea
+                                        id="special_requirements"
+                                        name="special_requirements"
+                                        placeholder="Please mention your preferred timing, tutor gender, any accessibility needs, or other specific requirements..."
+                                        value={formData.special_requirements}
+                                        onChange={handleChange}
+                                        className="min-h-[120px] border-gray-300 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all resize-none"
+                                        rows={5}
+                                    />
+                                </div>
                             </div>
 
-                            {/* Area */}
-                            <div className="space-y-1">
-                                <Label htmlFor="area" className="text-white">Area</Label>
-                                <Input
-                                    id="area"
-                                    name="area"
-                                    placeholder="e.g., Gulberg, DHA"
-                                    value={formData.area}
-                                    onChange={handleChange}
-                                    className="bg-white"
-                                />
+                            {/* Submit Button */}
+                            <div className="flex justify-center pt-2 sm:pt-4">
+                                <Button
+                                    type="submit"
+                                    size="lg"
+                                    className="bg-[#F5BB07] hover:bg-[#e5ab00] text-primary font-semibold text-base sm:text-lg rounded-full px-8 sm:px-12 py-2 sm:py-3 h-auto shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:scale-100 w-full sm:w-auto"
+                                    disabled={loading}
+                                >
+                                    {loading ? (
+                                        <>
+                                            <Loader2 className="h-5 w-5 animate-spin mr-2" />
+                                            <span>Submitting...</span>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <span>Send Query</span>
+                                            {/* <Send className="h-5 w-5 ml-2" /> */}
+                                        </>
+                                    )}
+                                </Button>
                             </div>
 
-                            {/* Class */}
-                            <div className="space-y-1">
-                                <Label htmlFor="current_class" className="text-white">Class / Grade</Label>
-                                <Input
-                                    id="current_class"
-                                    name="current_class"
-                                    placeholder="Your class / grade"
-                                    value={formData.current_class}
-                                    onChange={handleChange}
-                                    className="bg-white"
-                                />
-                                {/* <Select
-                                onValueChange={handleSelectChange("classLevel")}
-                                defaultValue={formData.classLevel}
-                                className="w-full"
-                            >
-                                <SelectTrigger className="bg-white">
-                                    <SelectValue placeholder="Select class" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {grades.map((grade) => (
-                                        <SelectItem key={grade} value={grade}>
-                                            {grade}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select> */}
-                            </div>
-
-                            {/* Subjects (span 2 on lg) */}
-                            <div className=" space-y-1">
-                                <Label htmlFor="subjects" className="text-white">Subjects</Label>
-                                <Input
-                                    id="subjects"
-                                    name="subjects"
-                                    placeholder="e.g., Math, Physics (comma separated)"
-                                    value={formData.subjects}
-                                    onChange={handleChange}
-                                    className="bg-white"
-                                />
-                            </div>
-
-                            {/* Email */}
-                            <div className="space-y-1">
-                                <Label htmlFor="email" className="text-white">Email</Label>
-                                <Input
-                                    id="email"
-                                    name="email"
-                                    type="email"
-                                    placeholder="you@example.com"
-                                    value={formData.email}
-                                    onChange={handleChange}
-                                    className="bg-white"
-                                    required
-                                />
-                            </div>
-
-                            {/* Contact No */}
-                            <div className="space-y-1">
-                                <Label htmlFor="contact" className="text-white">Contact No</Label>
-                                <Input
-                                    id="contact"
-                                    name="contact"
-                                    type="tel"
-                                    placeholder="+92 3XX XXXXXXX"
-                                    value={formData.contact}
-                                    onChange={handleChange}
-                                    className="bg-white"
-                                    required
-                                    inputMode="tel"
-                                />
-                            </div>
-
-                            {/* Special requirements full width */}
-                            <div className="md:col-span-2 lg:col-span-3 space-y-1">
-                                <Label htmlFor="special_requirements" className="text-white">Any special requirements</Label>
-                                <Textarea
-                                    id="special_requirements"
-                                    name="special_requirements"
-                                    placeholder="Mention timing, preferred tutor gender, accessibility needs, etc."
-                                    value={formData.special_requirements}
-                                    onChange={handleChange}
-                                    className="bg-white text-slate-900"
-                                    rows={4}
-                                />
-                            </div>
-                        </div>
-
-                        <div className="mt-6 flex justify-center">
-                            <Button
-                                type="submit"
-                                className="bg-[#F5BB07] hover:bg-[#F5BB07]/80 cursor-pointer text-primary text-lg rounded-full px-5 py-3 flex items-center gap-3"
-                                disabled={loading}
-                            >
-                                {loading ? (
-                                    <>
-                                        <Loader2 className="h-5 w-5 animate-spin" />
-                                        <span>Sending...</span>
-                                    </>
-                                ) : (
-                                    <>
-                                        <span>Send Query</span>
-                                        {/* <FaArrowRightLong className="h-5 w-5" /> */}
-                                    </>
-                                )}
-                            </Button>
-                        </div>
-                    </form>
+                            {/* Helper Text */}
+                            <p className="text-center text-sm text-gray-500 mt-4">
+                                <span className="text-red-500">*</span> Required fields
+                            </p>
+                        </form>
+                    </div>
                 </div>
-            </section >
-        </>
+            </div>
+        </section>
     )
 }

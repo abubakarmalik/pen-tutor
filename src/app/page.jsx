@@ -15,24 +15,33 @@ import OurServices from '@/components/home/our-services';
 import GroupSessions from '@/components/home/GroupSessions';
 import CoursesSection from '@/components/home/CoursesSection';
 import Banner from '@/components/home/Banner';
+import { CheckCircle2, ArrowRight } from "lucide-react"
 
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
       <section className="relative bg-gradient-to-r from-yellow-100 to-tertiary overflow-hidden">
-        <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-14 lg:py-16">
+        <div className="container max-w-7xl mx-auto px-3 sm:px-0 py-10 md:py-14 lg:py-16">
           <div className="grid grid-cols-1 lg:grid-cols-2 items-center gap-8 md:gap-10 lg:gap-12 min-h-[55vh] md:min-h-[50vh]">
             {/* Text */}
             <div className="flex flex-col h-full items-center lg:items-start justify-center text-center lg:text-left">
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-[#313D6A] tracking-tight">
+              <h1 className="text-2xl sm:text-3xl lg:text-5xl font-bold text-[#313D6A] tracking-tight">
                 Welcome To Pen Tutor
               </h1>
-              <p className="mt-3 text-sm sm:text-base text-[#313D6A] max-w-xl leading-relaxed">
+              <p className="mt-5 text-sm sm:text-base text-[#313D6A] max-w-xl leading-relaxed">
                 Your trusted learning companion, connecting students with expert
                 tutors for all academic levels—so you can learn faster, smarter,
                 and with confidence.
               </p>
+                <Link href="/courses">
+                        <Button
+                            variant="outline"
+                            className="border-2 mt-[25px] sm:mt-[30px] cursor-pointer border-[#313D6A] text-white bg-[#313D6A] px-8 py-5 rounded-lg text-lg font-semibold shadow-sm"
+                        >
+                            View All
+                        </Button>
+                    </Link>
             </div>
 
             {/* Image + BG Circle */}
@@ -64,76 +73,72 @@ export default function HomePage() {
 
       {/* Query Form Section */}
       <QueryForm />
-
-      {/* <section className="bg-slate-800 py-12">
-        <div className="container mx-auto px-4">
-          <div className="max-w-3xl mx-auto text-center text-white">
-            <h2 className="text-2xl lg:text-3xl font-extrabold">Need help with studies? Get a trusted tutor in 24 hours.</h2>
-            <p className="mt-4 text-gray-200 text-lg">Browse verified tutors, compare reviews, and book a session that fits your schedule — online or in-person.</p>
-
-            <div className="mt-6 flex items-center justify-center space-x-4">
-              <Link href="/our-tutors">
-                <Button className="bg-yellow-500 hover:bg-yellow-600 text-white px-6 py-3 rounded-lg inline-flex items-center">
-                  <span>Search Tutors</span>
-                  <FaArrowRightLong className="ml-2" />
-                </Button>
-              </Link>
-
-              <Link href="/how-it-works" className="inline-flex items-center text-sm text-gray-300 hover:text-white">
-                <span>How it works</span>
-                <FaArrowRightLong className="ml-2" />
-              </Link>
-            </div>
-
-            <div className="mt-6 text-sm text-gray-400">No sign-up required to browse. Safe, vetted, and local tutors.</div>
-          </div>
-        </div>
-      </section> */}
-
       {/* For Students Section */}
-      <section className="py-16 bg-gray-50">
-        <div className="container mx-auto px-4">
-          <div className="grid lg:grid-cols-2 gap-12 items-end justify-items-center">
-            {/* Image + Background Boxes */}
-            <div className="relative flex justify-center items-end min-h-[250px] order-2 lg:order-1">
-              {/* Background Box (always bigger than image) */}
-              <div className="absolute w-40 h-40 sm:w-56 sm:h-56 lg:w-72 lg:h-72 bg-yellow-400 rounded-md"></div>
 
-              {/* Image (slightly smaller, so it "pops out") */}
+
+      
+     <section className="py-12 sm:py-16 lg:py-20 bg-gradient-to-br from-gray-50 to-white">
+        <div className="mx-auto px-3 sm:px-0">
+          <div className="grid lg:grid-cols-2 gap-8 lg:gap-16 items-center">
+            {/* Image + Background Boxes */}
+            <div className="relative flex justify-center items-center min-h-[300px] sm:min-h-[350px] lg:min-h-[450px] order-2 lg:order-1">
+              {/* Decorative circles */}
+              <div className="absolute top-8 right-8 w-16 h-16 sm:w-20 sm:h-20 bg-yellow-200/40 rounded-full blur-xl"></div>
+              <div className="absolute bottom-12 left-8 w-20 h-20 sm:w-24 sm:h-24 bg-yellow-300/30 rounded-full blur-xl"></div>
+              
+              {/* Background Box */}
+              <div className="absolute w-48 h-48 sm:w-64 sm:h-64 lg:w-80 lg:h-80 bg-gradient-to-br from-yellow-400 to-yellow-500 rounded-3xl rotate-6 shadow-2xl"></div>
+
+              {/* Image */}
               <Image
                 src={studentSmiling}
                 alt="Female student with tablet"
-                className="relative z-10 w-32 sm:w-48 lg:w-60 h-auto object-contain"
+                className="relative z-10 w-40 sm:w-56 lg:w-72 h-auto object-contain drop-shadow-2xl transform hover:scale-105 transition-transform duration-300"
               />
             </div>
 
             {/* Text Section */}
-            <div className="space-y-4 order-1 lg:order-2 text-left">
-              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-yellow-500">
+            <div className="space-y-5 sm:space-y-6 order-1 lg:order-2">
+              <div className="inline-block px-4 py-1.5 bg-yellow-100 text-yellow-700 rounded-full text-xs sm:text-sm font-semibold uppercase tracking-wide">
                 For Students
+              </div>
+              
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 leading-tight">
+                Find Your Perfect
+                <span className="block text-yellow-500 mt-1">Tutor Today</span>
               </h2>
-              <p className="text-base sm:text-lg text-gray-600">
-                Search Thousands Of Tutors
+              
+              <p className="text-base sm:text-lg text-gray-600 leading-relaxed max-w-xl">
+                Connect with thousands of qualified tutors in your area. Start your learning journey with personalized guidance.
               </p>
-              <ul className="space-y-2 sm:space-y-3">
-                <li className="flex items-center space-x-3">
-                  <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                  <span className="text-sm sm:text-base text-gray-700">
-                    Find A Tutor In Your Area
+
+              <ul className="space-y-3 sm:space-y-4">
+                <li className="flex items-start space-x-3 group">
+                  <CheckCircle2 className="w-6 h-6 text-yellow-500 flex-shrink-0 mt-0.5 group-hover:scale-110 transition-transform" />
+                  <span className="text-sm sm:text-base text-gray-700 font-medium">
+                    Browse verified tutors in your local area
                   </span>
                 </li>
-                <li className="flex items-center space-x-3">
-                  <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                  <span className="text-sm sm:text-base text-gray-700">
-                    Contact & Arrange Lessons With Tutor
+                <li className="flex items-start space-x-3 group">
+                  <CheckCircle2 className="w-6 h-6 text-yellow-500 flex-shrink-0 mt-0.5 group-hover:scale-110 transition-transform" />
+                  <span className="text-sm sm:text-base text-gray-700 font-medium">
+                    Contact directly & arrange flexible lessons
+                  </span>
+                </li>
+                <li className="flex items-start space-x-3 group">
+                  <CheckCircle2 className="w-6 h-6 text-yellow-500 flex-shrink-0 mt-0.5 group-hover:scale-110 transition-transform" />
+                  <span className="text-sm sm:text-base text-gray-700 font-medium">
+                    Get personalized learning at affordable rates
                   </span>
                 </li>
               </ul>
+
               <Link
                 href="/online-tutoring"
-                className="bg-yellow-500 hover:bg-yellow-600 text-white px-6 sm:px-8 py-2 sm:py-3 rounded-lg"
+                className="inline-flex items-center gap-2 bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-white font-semibold px-6 sm:px-8 py-3 sm:py-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 group"
               >
-                Read More
+                <span>Explore Tutors</span>
+                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </Link>
             </div>
           </div>
@@ -141,46 +146,65 @@ export default function HomePage() {
       </section>
 
       {/* For Tutors Section */}
-      <section className="py-16">
-        <div className="container mx-auto px-4">
-          <div className="grid lg:grid-cols-2 gap-12 items-end justify-items-center">
+      <section className="py-12 sm:py-16 lg:py-20 bg-gradient-to-br from-slate-50 to-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid lg:grid-cols-2 gap-8 lg:gap-16 items-center">
             {/* Text Section */}
-            <div className="space-y-4 text-left">
-              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-800">
+            <div className="space-y-5 sm:space-y-6">
+              <div className="inline-block px-4 py-1.5 bg-slate-100 text-slate-700 rounded-full text-xs sm:text-sm font-semibold uppercase tracking-wide">
                 For Tutors
+              </div>
+              
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 leading-tight">
+                Grow Your Tutoring
+                <span className="block text-slate-800 mt-1">Business Online</span>
               </h2>
-              <p className="text-base sm:text-lg text-gray-600">
-                Search Thousands Of Tutors
+              
+              <p className="text-base sm:text-lg text-gray-600 leading-relaxed max-w-xl">
+                Join our community of expert tutors. Reach more students and build your reputation with our powerful platform.
               </p>
-              <ul className="space-y-2 sm:space-y-3">
-                <li className="flex items-center space-x-3">
-                  <div className="w-2 h-2 bg-slate-800 rounded-full"></div>
-                  <span className="text-sm sm:text-base text-gray-700">
-                    Find A Tutor In Your Area
+
+              <ul className="space-y-3 sm:space-y-4">
+                <li className="flex items-start space-x-3 group">
+                  <CheckCircle2 className="w-6 h-6 text-slate-700 flex-shrink-0 mt-0.5 group-hover:scale-110 transition-transform" />
+                  <span className="text-sm sm:text-base text-gray-700 font-medium">
+                    Create your professional tutor profile
                   </span>
                 </li>
-                <li className="flex items-center space-x-3">
-                  <div className="w-2 h-2 bg-slate-800 rounded-full"></div>
-                  <span className="text-sm sm:text-base text-gray-700">
-                    Contact & Arrange Lessons With Tutor
+                <li className="flex items-start space-x-3 group">
+                  <CheckCircle2 className="w-6 h-6 text-slate-700 flex-shrink-0 mt-0.5 group-hover:scale-110 transition-transform" />
+                  <span className="text-sm sm:text-base text-gray-700 font-medium">
+                    Connect with motivated students nearby
+                  </span>
+                </li>
+                <li className="flex items-start space-x-3 group">
+                  <CheckCircle2 className="w-6 h-6 text-slate-700 flex-shrink-0 mt-0.5 group-hover:scale-110 transition-transform" />
+                  <span className="text-sm sm:text-base text-gray-700 font-medium">
+                    Manage your schedule with flexibility
                   </span>
                 </li>
               </ul>
-              <Button className="bg-slate-800 hover:bg-slate-900 text-white px-6 sm:px-8 py-2 sm:py-3 rounded-lg">
-                Read More
+
+              <Button className="inline-flex items-center gap-2 bg-gradient-to-r from-slate-700 to-slate-900 hover:from-slate-800 hover:to-slate-950 text-white font-semibold px-6 sm:px-8 py-3 sm:py-4 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 group h-auto">
+                <span>Join as Tutor</span>
+                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </Button>
             </div>
 
             {/* Image + Background Box */}
-            <div className="relative flex justify-center items-end min-h-[250px]">
-              {/* Background Box (bigger than image) */}
-              <div className="absolute w-40 h-40 sm:w-56 sm:h-56 lg:w-72 lg:h-72 bg-slate-800 rounded-md"></div>
+            <div className="relative flex justify-center items-center min-h-[300px] sm:min-h-[350px] lg:min-h-[450px]">
+              {/* Decorative circles */}
+              <div className="absolute top-8 left-8 w-16 h-16 sm:w-20 sm:h-20 bg-slate-200/40 rounded-full blur-xl"></div>
+              <div className="absolute bottom-12 right-8 w-20 h-20 sm:w-24 sm:h-24 bg-slate-300/30 rounded-full blur-xl"></div>
+              
+              {/* Background Box */}
+              <div className="absolute w-48 h-48 sm:w-64 sm:h-64 lg:w-80 lg:h-80 bg-gradient-to-br from-slate-700 to-slate-900 rounded-3xl -rotate-6 shadow-2xl"></div>
 
-              {/* Image (slightly smaller so it overlaps the box) */}
+              {/* Image */}
               <Image
                 src={lady}
                 alt="Professional female tutor"
-                className="relative z-10 w-36 sm:w-48 lg:w-64 h-auto object-contain"
+                className="relative z-10 w-44 sm:w-56 lg:w-72 h-auto object-contain drop-shadow-2xl transform hover:scale-105 transition-transform duration-300"
               />
             </div>
           </div>
@@ -189,20 +213,17 @@ export default function HomePage() {
 
       {/* Featured Tutors Section */}
       <FeaturedTutors />
-
       <OurServices />
-
       <GroupSessions />
-      <CoursesSection />
       {/* Why Choose Pen Tutor Section */}
-      <section className="py-16 bg-gray-50">
-        <div className="container mx-auto px-4">
-          <Card className="border-2 border-slate-800 max-w-6xl mx-auto">
+      <section className="py-16">
+        <div className="mx-auto px-4">
+          <Card className="max-w-7xl mx-auto">
             <CardContent className="p-8">
               <h2 className="text-3xl font-bold text-center text-slate-800 mb-8">
                 Why Choose Pen Tutor
               </h2>
-              <div className="grid lg:grid-cols-2 gap-8">
+              <div className="">
                 <div className="space-y-6">
                   <p className="text-gray-600 leading-relaxed">
                     {/* Pen Tutor is a 'Network of Trained Tutors' committed to provide you highly qualified & experienced Online & Home tutoring services, individual and group sessions anywhere, anytime. */}
@@ -230,15 +251,7 @@ export default function HomePage() {
                     ))}
                   </ul>
                 </div>
-                <div className="flex justify-center items-center">
-                  <Image
-                    src={whyChooseUS}
-                    alt="Tutoring session"
-                    width={300}
-                    height={250}
-                    className="rounded-lg shadow-lg"
-                  />
-                </div>
+  
               </div>
             </CardContent>
           </Card>
@@ -246,8 +259,6 @@ export default function HomePage() {
       </section>
 
       <Banner />
-      {/* Footer */}
-      {/* <Footer /> */}
     </div>
   );
 }

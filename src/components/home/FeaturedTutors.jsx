@@ -129,7 +129,7 @@ export default function FeaturedTutors() {
         </div>
 
         <div
-          className="relative max-w-6xl mx-auto"
+          className="relative max-w-7xl mx-auto"
           onMouseEnter={() => setIsPaused(true)}
           onMouseLeave={() => setIsPaused(false)}
         >
@@ -143,7 +143,7 @@ export default function FeaturedTutors() {
               <ChevronLeft className="w-6 h-6 text-[#313D6A]" />
             </button>
 
-            <div className="w-full max-w-5xl relative flex items-center justify-center">
+            <div className="w-full max-w-7xl relative flex items-center justify-center">
               {getVisibleTutors().map((tutor) => {
                 const isCenter = tutor.position === 0;
 

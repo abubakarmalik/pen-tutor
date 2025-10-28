@@ -1,4 +1,3 @@
-import { Button } from "@/components/ui/button"
 import Image from "next/image"
 
 import ChildPlay from "@/assets/images/home/childs-play.png"
@@ -10,8 +9,6 @@ export default function OurServices() {
         <section className="relative min-h-screen bg-gradient-to-br from-amber-50 to-yellow-50 py-16 px-8 overflow-hidden">
             {/* Background Decorative Elements */}
             <div className="absolute inset-0 pointer-events-none">
-                {/* Large yellow circle - top right */}
-                {/* <div className="absolute -top-20 -right-20 w-80 h-80 bg-[#F5BB07] rounded-full opacity-60 blur-"></div> */}
                 <div className="absolute -top-20 -right-20 w-80 h-80 bg-gradient-to-br from-yellow-100 to-yellow-300 rounded-full opacity-60 blur-"></div>
 
                 {/* Medium yellow circle - bottom left */}
@@ -40,8 +37,6 @@ export default function OurServices() {
                     <div className="grid lg:grid-cols-2 gap-8 lg:gap-16 items-center">
                         {/* Image Container */}
                         <div className="relative order-2 lg:order-1">
-                            {/* <div className="relative bg-[#F5BB07] rounded-3xl p-4 shadow-2xl transform rotate-2 hover:rotate-0 transition-transform duration-300"> */}
-                            {/* <div className="bg-[#313D6A] rounded-2xl p-2 transform -rotate-1"> */}
                             <div className="relative h-64 md:h-80 lg:h-96 rounded-xl overflow-hidden">
                                 <Image
                                     src={ChildPlay}
@@ -50,11 +45,6 @@ export default function OurServices() {
                                     className="object-cover"
                                 />
                             </div>
-                            {/* </div> */}
-                            {/* </div> */}
-                            {/* Decorative elements around image */}
-                            {/* <div className="absolute top-4 -right-4 w-8 h-8 bg-[#F5BB07] rounded-full opacity-80"></div> */}
-                            {/* <div className="absolute bottom-6 left-6 w-12 h-12 bg-[#313D6A] rounded-full opacity-60"></div> */}
                         </div>
 
                         {/* Content */}
@@ -105,8 +95,7 @@ export default function OurServices() {
 
                         {/* Image Container */}
                         <div className="relative">
-                            {/* <div className="relative bg-[#F5BB07] rounded-3xl p-4 shadow-2xl transform -rotate-2 hover:rotate-0 transition-transform duration-300"> */}
-                            {/* <div className="bg-[#313D6A] rounded-2xl p-2 transform rotate-1"> */}
+
                             <div className="relative h-64 md:h-80 lg:h-96 rounded-xl overflow-hidden">
                                 <Image
                                     src={Child}
@@ -124,10 +113,6 @@ export default function OurServices() {
                     </div>
                 </div>
             </div>
-
-            {/* Additional floating decorative elements */}
-            {/* <div className="absolute top-20 left-1/2 w-4 h-4 bg-[#F5BB07] rounded-full opacity-60 animate-bounce"></div>
-            <div className="absolute bottom-32 right-1/4 w-6 h-6 bg-[#313D6A] rounded-full opacity-40 animate-pulse"></div> */}
         </section>
     )
 }

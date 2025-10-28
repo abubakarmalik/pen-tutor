@@ -9,7 +9,7 @@ import Link from "next/link";
 export default function Banner() {
 
     return (
-        <section className="max-w-6xl mx-auto py-12">
+        <section className="max-w-7xl mx-auto py-12">
             <div className="container mx-auto px-6 relative rounded-2xl overflow-hidden">
                 {/* Background image */}
                 <div className="absolute inset-0">
