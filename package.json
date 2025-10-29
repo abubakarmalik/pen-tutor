@@ -9,6 +9,7 @@
     "lint": "next lint",
     "setup-db": "node src/scripts/setupDb.js"
   },
+  
   "dependencies": {
     "@hookform/resolvers": "^5.2.1",
     "@neondatabase/serverless": "^1.0.1",

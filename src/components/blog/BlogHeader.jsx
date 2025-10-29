@@ -3,10 +3,6 @@ import Image from 'next/image';
 import STUDENT_IMG from '@/assets/images/blog/student.svg';
 import SearchBlog from './SearchBlog';
 
-// replace with your real asset paths
-// const STUDENT_IMG = '/images/student-laptop.png';
-// const BG_IMG = '/images/blog-bg-placeholder.jpg';
-
 export default function BlogHeader({ onSearch }) {
   return (
     <>
